@@ -1,11 +1,26 @@
 import os
 
 chinese = []
-chinese_zhuyin=[]
+chinese_zhuyin = []
 
-#建立辭典檔
+# 中文辭典檔前處理
+def preprocess():
+    inFile = open('./chinese_dict.txt', 'r+', encoding='utf8')
+    outFile = open('./chinese_dict.txt_out', 'w', encoding='utf8')
+    fileContent = inFile.read().splitlines()
+    inFile.close()
+
+    for line in fileContent:
+        line = re.sub(r'\(.*\)', '', line)
+        line = re.sub(r'（.*）', '', line)
+        outFile.write(line + '\n')
+
+    outFile.close()
+    return
+
+# 建立辭典檔
 def createDict(path):
-    dictFile = open(path, 'r', encoding='utf8')
+    dictFile = open(path, 'r', encoding = 'utf8')
     dictContent = dictFile.read().splitlines()
     dictFile.close()
 
@@ -17,21 +32,20 @@ def createDict(path):
     return
 
 def isRomanOnly(text):
-    #Usage and result: isRomanOnly('abc') == True, isRomanOnly('我abc') == False
+    # Usage and result: isRomanOnly('abc') == True, isRomanOnly('我abc') == False
     for char in text:
-        if not (('A' <= char <= 'Z') or ('a' <= char <= 'z')
-             or ('0' <= char <= '9') or (char == '-')
-             or ('\u00C0' <= char <= '\u1EFF')
-             or ('\u2C60' <= char <= '\u2C7D')
-             or ('\uA720' <= char <= '\uA78C')
-             or ('\uA7FB' <= char <= '\uA7FF')
-             or ('\uFB00' <= char <= '\uFB06')):
+        if not ((r'A' <= char <= r'Z') or (r'a' <= char <= r'z')
+             or (r'0' <= char <= r'9') or (char == r'-')
+             or (r'\u00C0' <= char <= r'\u1EFF')
+             or (r'\u2C60' <= char <= r'\u2C7D')
+             or (r'\uA720' <= char <= r'\uA78C')
+             or (r'\uA7FB' <= char <= r'\uA7FF')
+             or (r'\uFB00' <= char <= r'\uFB06')):
 
             return False
 
     return True
 
-#有空白的都併在一起然後斷詞
 def taiwanese_split(sentence):
     spiltedStrs = []
     mergedStrs = merge(sentence)
@@ -54,26 +68,77 @@ def taiwanese_split(sentence):
 
     return spiltedStrs
 
-#斷詞程式
-#將中英併在一起英英分開
+# 有空白的都併在一起然後斷詞
+def taiwanese_split_binary_search(sentence):
+    spiltedStrs = []
+    mergedStrs = merge(sentence)
+    debugCount = 0
+
+    for sentence in mergedStrs:
+        strLen = len(sentence)
+        wordOffset = 0
+        while wordOffset < strLen:
+            maxWordBound = strLen - wordOffset
+            possibleChinese = lambda: (phrase for phrase in chinese if len(phrase) <= maxWordBound)
+
+            # binary search
+            lBound = 1
+            rBound = maxWordBound
+            wordBound = (lBound + rBound + 1) // 2
+
+            while 1 < wordBound <= maxWordBound:
+                if wordBound < maxWordBound  and  sentence[wordOffset : wordOffset + wordBound + 1] in chinese:
+                    lBound = min(wordBound + 1, rBound)
+                elif sentence[wordOffset : wordOffset + wordBound] in chinese:
+                    break
+                else:
+                    rBound = max(wordBound - 1, lBound)
+
+                wordBound = (lBound + rBound) // 2
+            else:
+                lBound = 1
+                rBound = maxWordBound
+                wordBound = (lBound + rBound + 1) // 2
+
+                while wordBound <= maxWordBound:
+                    if wordBound < maxWordBound  and  isRomanOnly(sentence[wordOffset : wordOffset + wordBound + 1]):
+                        lBound = min(wordBound + 1, rBound)
+                    elif isRomanOnly(sentence[wordOffset : wordOffset + wordBound]):
+                        break
+                    elif wordBound <= 1:
+                        wordBound = 1
+                        break
+                    else:
+                        rBound = max(wordBound - 1, lBound)
+
+                    wordBound = (lBound + rBound) // 2
+
+            spiltedStrs.append(sentence[wordOffset : wordOffset + wordBound])
+            wordOffset += wordBound
+
+    return spiltedStrs
+
+# 斷詞程式
+# 將中羅併在一起羅羅分開
+#   ^^^^  wut
 def merge(sentence):
     mergedStrs = []
     words = sentence.strip().split(' ')
     mergedWords = ''
     isLastWordRoman = False
     for wordItem in words:
-        if wordItem == '':  continue
-        #代表全英文
-        if isRomanOnly(wordItem):
-            if not isLastWordRoman:
-                mergedWords += wordItem
-                isLastWordRoman = True
+        if wordItem != '':
+            # 代表全羅馬字
+            if isRomanOnly(wordItem):
+                if not isLastWordRoman:
+                    mergedWords += wordItem
+                    isLastWordRoman = True
+                else:
+                    mergedStrs.append(mergedWords)
+                    mergedWords = wordItem
             else:
-                mergedStrs.append(mergedWords)
-                mergedWords = wordItem
-        else:
-            mergedWords += wordItem
-            isLastWordRoman = False
+                mergedWords += wordItem
+                isLastWordRoman = False
     if mergedWords != '':
         mergedStrs.append(mergedWords)
 
@@ -81,10 +146,10 @@ def merge(sentence):
 
 
 def split_file(path):
-    if os.path.isfile(path)  and  re.match('\.trn$', path) != None:
-        trnFile = open(path, 'r+', encoding='utf8', newline='\n')
-        text = trnFile.read().splitlines()
-        srcWords = taiwanese_split(text[0])
+    if os.path.isfile(path)  and  os.path.splitext(path) == '.trn':
+        trnFile = open(path, 'r+', encoding = 'utf8', newline = '\n')
+        trnContent = trnFile.read().splitlines()
+        srcWords = taiwanese_split(trnContent[0])
         trnFile.truncate(0)
         trnFile.seek(0)
         isFirstWord = False
@@ -95,31 +160,41 @@ def split_file(path):
                 isFirstWord = True
                 trnFile.write(word)
 
-        trnFile.write('\n' + text[1] + '\n' + text[2])
+        trnFile.write('\n' + trnContent[1] + '\n' + trnContent[2])
         trnFile.close()
 
-#Usage: split_for_each_file("/home/thh101u/Desktop/333_sentence_trn0629/")
-#資料夾下的trn重新斷詞
-def split_for_each_file(directory):
-    if directory != '':
-        path = directory
-        if path[-1] != '/':
-            path += '/'
-    else:
-        path = './'
+# Usage: split_for_each_file(path_to_the_folder)
+# Example: split_for_each_file("/home/thh101u/Desktop/333_sentence_trn0629/")
+# 資料夾下的 trn 重新斷詞
+def split_for_each_file(path = ''):
+    truePath = os.path.join(os.curdir, path)
 
-    for subpath in os.listdir(path):
-        if os.path.isdir(path + subpath):
-            for subfile in os.listdir(path + subpath):
-                split_file(subpath + i + '/' + subfile)
+    for subpath in os.listdir(truePath):
+        trueSubpath = os.path.join(truePath, subpath)
+        if os.path.isdir(trueSubpath):
+            for subfile in os.listdir(trueSubpath):
+                split_file(os.path.join(trueSubpath, subfile))
         else:
-            split_file(path + subpath)
+            split_file(trueSubpath)
 
     print("Split for each file done!")
     return
 
-if __name__  == '__main__':
+if __name__ == '__main__':
     createDict("chinese_dict.txt_out")
-    print(taiwanese_split('你 是 鬱tiau5誰 a2 無a7好 se ven 買 泡 麵 和 感 心'))
+
+    import time
+
+    t0 = time.clock()
+    print(taiwanese_split('你 是 鬱tiau5誰 a2 無a7好 se ven 買 泡 麵 和 感 心 測試'))
+
+    t1 = time.clock()
+    print(t1 - t0)
+
+    t1 = time.clock()
+    print(taiwanese_split_binary_search('你 是 鬱tiau5誰 a2 無a7好 se ven 買 泡 麵 和 感 心 測試'))
+
+    t2 = time.clock()
+    print(t2 - t1)
 
     print("Done!")

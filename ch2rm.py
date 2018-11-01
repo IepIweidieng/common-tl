@@ -138,7 +138,7 @@ def zhuyinWord_to_commonIPA(zhuyin):
                 ['ɥɚ' , [None , 'ɥɚ' , 'ɥeɚ'], None , None , 'ɥɚ' , 'jʊ̃˞' , None , None , None  , 'ɥɐɚ', None ],
         ]
 
-        final = finalList[medial][rhyme] or ''
+        final = finalList[medial][rhyme]
 
         if type(final) == list:
             final = final[{
@@ -150,7 +150,10 @@ def zhuyinWord_to_commonIPA(zhuyin):
     if tone == '':
         tone = bopomofoToneList[bopomofoSuffixTone]
 
-    return initial + (final or '') + tone
+    if final == None:
+        print('Warning: ' + bopomofoMedial + bopomofoRhyme + ' is invalid final sound combination')
+        return (initial, '?' + tone)
+    return (initial, final + tone)
 
 # Converts an IPA syllable to commonized TL
 def commonIPA_to_commonTL(ipa, useOr = False):
@@ -161,95 +164,101 @@ def commonIPA_to_commonTL(ipa, useOr = False):
 
     for i, ipaPhone in enumerate(ipa):
         tlPhone = {
+            # *: phonetic alphabet that doesn't exists in original TL
+
             # IPA consonants.
-            'd': ''  ,  # TL "j" is pronounced as [dz] in Taiwanese Choân-chiu accent
-                        # always followed by [z] or [ʑ]; just drop it
-            'z': 'j' ,  # TL "j" is pronounced as [z] in Taiwanese Chiang-chiu accent
+            'd': ''  ,  #   TL "j" is pronounced as [dz] in Taiwanese Choân-chiu accent
+                        #   always followed by [z] or [ʑ]; just drop it
+            'z': 'j' ,  #   TL "j" is pronounced as [z] in Taiwanese Chiang-chiu accent
 
-            'ʈ': 't' ,  # rhotic consonant; always followed by [ʂ]
-            'ʂ': 'sr',  # rhotic consonant
-            'ʐ': 'jr',  # rhotic consonant
+            'ʈ': 't' ,  #   rhotic consonant; always followed by [ʂ]
+            'ʂ': 'sr',  # * rhotic consonant
+            'ʐ': 'jr',  # * rhotic consonant
 
-            'ɕ': 's' ,  # an allophone of TL "s"
-            'ʑ': 'j' ,  # an allophone of TL "j"
-            'x': 'h' ,  # Taiwanese Mandarin "ㄏ" can be pronounced as either [x] or [h].
+            'ɕ': 's' ,  #   an allophone of TL "s"
+            'ʑ': 'j' ,  #   an allophone of TL "j"
+            'x': 'h' ,  #   Taiwanese Mandarin "ㄏ" can be pronounced as either [x] or [h].
 
-            'ȵ': 'gn',  # used in Taiwanese Chiang-chiu accent.
+            'ȵ': 'gn',  #   used in Taiwanese Chiang-chiu accent.
             'ŋ': 'ng',
 
             'ʰ': 'h' ,
 
-            'ʔ': 'h' ,  # as coda; not used as initial for now.
+            'ʔ': 'h' ,  #   as coda; not used as initial for now.
 
             # Also IPA consonants. Semi-vowel part.
             'j': 'i',
             'w': 'u',
-            'ɥ': 'y',   # Use only the vowel characters.
+            'ɥ': 'y',   # * Use only the vowel characters.
 
             # IPA vowels.
-            'ɨ': 'ir',  # used in Taiwanese Choân-chiu accent
+            'ɨ': 'ir',  #   used in Taiwanese Choân-chiu accent
 
-            'ɹ': 'ir',  # Also writen as "ɯ" in IPA sometimes.
-            'ɻ': 'ir',  # Also writen as "ɨ" in IPA sometimes.
-                        # They are allophones. Let's use only one symbol for them.
+            'ɹ': 'ir',  #   Also writen as "ɯ" in IPA sometimes.
+            'ɻ': 'ir',  #   Also writen as "ɨ" in IPA sometimes.
+                        #   They are allophones. Let's use only one symbol for them.
 
-            'ɘ': 'er',  # used in Taiwanese Choân-chiu accent
+            'ɘ': 'er',  #   used in Taiwanese Choân-chiu accent
 
             'ɤ': useOr
-             and 'or'   # for Taiwanese northern accent
-             or  'o' ,  # for Taiwanese southern accent
+             and 'or'   #   for Taiwanese northern accent
+             or  'o' ,  #   for Taiwanese southern accent
             'ə': useOr
              and 'or'
              or  'o' ,
-                        # They are allophones. Let's use only one symbol for them.
+                        #   They are allophones. Let's use only one symbol for them.
 
             'ʊ': useOr
-             and 'o'    # more accurate transcription for Taiwanese northern accent
+             and 'o'    #   more accurate transcription for Taiwanese northern accent
              or  'oo',
 
             'ɔ': 'oo',
 
             'ɛ': afterIY
-             and 'a'    # produced by bopomofo finals "ㄧㄢ" and "ㄩㄢ"
-                        # In TL, the "a" in "-ian", "-iat" also are pronounced as [ɛ].
-                        # For now, just leave it as is.
-             or  'ee',  # used in Taiwanese Chiang-chiu accent
+             and 'a'    #   produced by bopomofo finals "ㄧㄢ" and "ㄩㄢ"
+                        #   In TL, the "a" in "-ian", "-iat" also are pronounced as [ɛ].
+                        #   For now, just leave it as is.
+             or  'ee',  #   used in Taiwanese Chiang-chiu accent
 
             # Still IPA vowels. Erization-related part.
-            'ɚ': 'orr',  # See u'\u02DE'.
-            'ɐ': 'a'  ,  # produced by rhotic bopomofo finals "ㄧㄢㄦ" and "ㄩㄢㄦ"
+            'ɚ': 'orr',  # * See u'\u02DE'.
+            'ɐ': 'a'  ,  #   produced by rhotic bopomofo finals "ㄧㄢㄦ" and "ㄩㄢㄦ"
 
             # IPA symbols.
-            u'\u0303': 'nn',  # ' ̃ '; vowel nasalization
-            u'\u02DE': 'rr',  # ' ˞ '; erization
-                              # Alternatives:
-                              #   rh:  from Wade–Giles Romanization system for Mandarin Chinese
-                              #        causes ambiguity, e.g., "orh" as either "o -rh" or "or -h".
-                              #   rr:  digraph
-                              #        doesn't cause ambiguity, e.g., "orr" as "o -rr".
-                              #        seems cumbersome sometimes, e.g., "orrr" as "or -rr".
+            u'\u0303': 'nn',  #   ' ̃ '; vowel nasalization
+            u'\u02DE': 'rr',  # * ' ˞ '; erization
+                              #   Alternatives:
+                              #     rh:  from Wade–Giles Romanization system for Mandarin Chinese
+                              #          causes ambiguity, e.g., "orh" as either "o -rh" or "or -h".
+                              #     rr:  digraph
+                              #          doesn't cause ambiguity, e.g., "orr" as "o -rr".
+                              #          seems cumbersome sometimes, e.g., "orrr" as "or -rr".
 
-            u'\u031A': ''  ,  # ' ̚ '; unreleased plosive, which is used in entering tones (入聲)
-                              # Just drop it.
+            u'\u031A': ''  ,  #   ' ̚ '; unreleased plosive, which is used in entering tones (入聲)
+                              #   Just drop it.
         }.get(ipaPhone, ipaPhone)
 
         if tlPhone == 'i' or tlPhone == 'y':
             afterIY = True
 
         if tlPhone[-2:] == 'nn':
+            # merges multiple 'nn'
             if lastNN != -1:
-                tl = tl[:lastNN] + tl[lastNN+2:]
+                tl = tl[:lastNN] + tl[lastNN + 2:]
                 if lastRR > lastNN:  lastRR -= 2
             lastNN = len(tl) + len(tlPhone) - 2
+
+            # 'rr' should comes after 'nn'
             if lastRR != -1:
-                tl = tl[:lastRR] + 'nn' + tl[lastRR+2:] + 'rr'
+                tl = tl[:lastRR] + 'nn' + tl[lastRR + 2:] + 'rr'
                 if lastNN > lastRR:  lastNN -= 2
                 lastRR = -1
                 continue
 
+        # merges multiple 'rr'
         if tlPhone[-2:] == 'rr':
             if lastRR != -1:
-                tl = tl[:lastRR] + tl[lastRR+2:]
+                tl = tl[:lastRR] + tl[lastRR + 2:]
                 if lastNN > lastRR:  lastNN -= 2
             lastRR = len(tl) + len(tlPhone) - 2
 
@@ -257,22 +266,7 @@ def commonIPA_to_commonTL(ipa, useOr = False):
 
     return tl
 
-#中文辭典檔前處理
-def preprocess():
-    inFile = open('./chinese_dict.txt', 'r+', encoding='utf8')
-    outFile = open('./chinese_dict.txt_out', 'w', encoding='utf8')
-    fileContent = inFile.read().splitlines()
-    inFile.close()
-
-    for line in fileContent:
-        line = re.sub(r'\(.*\)', '', line)
-        line = re.sub(r'（.*）', '', line)
-        outFile.write(line + '\n')
-
-    outFile.close()
-    return
-
-#依照中文辭典檔轉成中文注音
+# 依照中文辭典檔轉成中文注音
 def chinese_to_zhuyin(word):
     zhuyin = ''
 
@@ -283,29 +277,25 @@ def chinese_to_zhuyin(word):
 
     return zhuyin[:-1].split('\t')
 
-#將中文注音轉成國際音標
+# 將國際音標轉成台羅拼音
+def IPAPair_to_TL(ipaPair):
+    tl = []
+    for syllable in ipaPair:
+        tl.append((commonIPA_to_commonTL(syllable[0]), commonIPA_to_commonTL(syllable[1])))
+
+    return tl
+
+# 將中文注音轉成國際音標
 def zhuyinWord_to_IPA(zhuyin):
     if zhuyin == '':
         return ''
 
-    ipa = ''
+    ipa = []
     zhuyinSyllables = zhuyin.replace('　', ' ').split(' ')
     for syllable in zhuyinSyllables:
-        ipa += zhuyinWord_to_commonIPA(syllable) + ' '
+        ipa.append(zhuyinWord_to_commonIPA(syllable))
 
-    return ipa[:-1]
-
-#將國際音標轉成台羅拼音
-def IPAWord_to_TL(ipa):
-    if ipa == '':
-        return ''
-
-    tl = ''
-    ipaSyllables = ipa.split(' ')
-    for syllable in ipaSyllables:
-        tl += commonIPA_to_commonTL(syllable) + ' '
-
-    return tl[:-1]
+    return ipa
 
 
 if __name__ == '__main__':
@@ -315,17 +305,21 @@ if __name__ == '__main__':
 '''
     wordsOfSentence = TLseg.taiwanese_split(sentence)
 
+    tlPairList = []
     output = ''
     for word in wordsOfSentence:
         output += word + '\t'
 
         candidateZhuyinWord = chinese_to_zhuyin(word)
         for zhuyinWord in candidateZhuyinWord:
-            ipaWord = zhuyinWord_to_IPA(zhuyinWord)
-            output += zhuyinWord + '\t' and ''
-            output += ipaWord + '\t' and ''
-            output += IPAWord_to_TL(ipaWord) + '\t'
+            ipaWordPair = zhuyinWord_to_IPA(zhuyinWord)
+            # output += zhuyinWord + '\t'
+            # output += ipaWord + '\t'
+            output += str(IPAPair_to_TL(ipaWordPair)) + '\t'
+
+            tlPairList.append(IPAPair_to_TL(ipaWordPair))
         output += '\n'
 
     print(output[:-1])
     print('main done!')
+    print(tlPairList)
