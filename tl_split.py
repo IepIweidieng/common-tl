@@ -178,11 +178,13 @@ def demonstrate():
 
 # Usage example
 if __name__ == '__main__':
+    from tl_dict import WORD, ZHUYIN, TL, PHONETIC, ETC
+
     sentence = '這是個範例！'
 
     tl_dict.set_dict([
-        'chinese_dict.txt',
-        ('Ch2TwRoman.txt', (tl_dict.TL, tl_dict.WORD, tl_dict.ETC)),
-        ('dictionary_num.txt', (tl_dict.TL, tl_dict.WORD))])
+        ('chinese_dict.txt', (WORD, ZHUYIN)),
+        ('Ch2TwRoman.txt', (TL, WORD, ETC)),
+        ('dictionary_num.txt', (TL, WORD))])
 
     print(split_chinese_word(sentence))

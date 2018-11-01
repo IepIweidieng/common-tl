@@ -13,7 +13,6 @@ ZHUYIN = 'zhuyin'
 TL = 'tl'
 PHONETIC = 'phonetic'
 ETC = 'ETC'
-DEFAULT_FORMAT = (WORD, ZHUYIN)
 
 # Data structure:
 #   chinese_phonetic: {word: candidate_phonetics, word2: candidate_phonetics2, ...}
@@ -124,14 +123,13 @@ def preprocess_dict(dict_path, format_):
             continue
 
         # Handle spaces
-        new_line = parenthesis_pattern.sub(
-            '', multi_space_pattern.sub(' ', line.replace('　', ' ')))
+        new_line = multi_space_pattern.sub(' ', line.replace('　', ' '))
 
-        # Strip unnecessary spaces
+        # Strip parentheses and unnecessary spaces
         (word, phonetic, phonetic_type, etcs) = (
             parse_line_in_format(new_line, format_))
-        new_word = word.strip()
-        new_phonetic = phonetic.strip()
+        new_word = parenthesis_pattern.sub('', word).strip()
+        new_phonetic = parenthesis_pattern.sub('', phonetic).strip()
 
         if phonetic_type is TL or phonetic_type is PHONETIC:
             # Decompose precomposed characters
@@ -222,7 +220,7 @@ def set_dict(*arg, **kwarg):
 
     global add_dict_src
 
-    def add_dict_src(path, format_=DEFAULT_FORMAT):
+    def add_dict_src(path, format_):
         """
         新增要讀取的詞典檔 \n
         Add the dictionary file to the dictionary source. \n
@@ -313,11 +311,7 @@ def set_dict(*arg, **kwarg):
                 return
 
         for path_item in dict_src:
-            if isinstance(path_item, str):
-                path = path_item
-                format_ = DEFAULT_FORMAT
-            else:
-                (path, format_) = path_item
+            (path, format_) = path_item
             dict_data_file = f'{path}{PICKLED_SUFFIX}'
 
             # Keep path to refer the pre-processed dictionary text file

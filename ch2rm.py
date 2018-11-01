@@ -158,13 +158,13 @@ def demonstrate():
 
 # Usage example
 if __name__ == '__main__':
+    from tl_dict import WORD, ZHUYIN, TL, PHONETIC, ETC
+
     sentence = '這是個範例！'
 
-    tl_dict.add_dict_src('chinese_dict.txt')
-    tl_dict.add_dict_src(
-        'Ch2TwRoman.txt', (tl_dict.TL, tl_dict.WORD, tl_dict.ETC))
-    tl_dict.add_dict_src(
-        'dictionary_num.txt', (tl_dict.TL, tl_dict.WORD))
+    tl_dict.add_dict_src('chinese_dict.txt', (WORD, ZHUYIN))
+    tl_dict.add_dict_src('Ch2TwRoman.txt', (TL, WORD, ETC))
+    tl_dict.add_dict_src('dictionary_num.txt', (TL, WORD))
 
     tl_dict.create_dict()
 
