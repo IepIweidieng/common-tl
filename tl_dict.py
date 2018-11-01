@@ -181,7 +181,8 @@ def preprocess_dict(dict_path, format_):
             (new_word, new_phonetic, phonetic_type, etcs), format_))
 
     # Write processed dictionary to file
-    with open(f'{dict_path}{PROCESSED_SUFFIX}', 'w', encoding='utf8') as out_file:
+    with open(f'{dict_path}{PROCESSED_SUFFIX}',
+              'w', encoding='utf8', newline='\n') as out_file:
         out_file.write('\n'.join(out_content))
 
     # Write Warnings to files
@@ -192,7 +193,7 @@ def preprocess_dict(dict_path, format_):
         warning_file = f'{dict_path}_{warning_name}'
         if warning:
             with open(warning_file,
-                      'w', encoding='utf8') as warn_file:
+                      'w', encoding='utf8', newline='\n') as warn_file:
                 warn_file.write('\n'.join(warning))
         elif os.path.isfile(warning_file):
             os.remove(warning_file)
