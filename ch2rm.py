@@ -1,325 +1,473 @@
-import re
-import segmentation as TLseg
-# Pinyin != Zhuyin
+import sys
 
-chinese = TLseg.chinese
-chinese_zhuyin = TLseg.chinese_zhuyin
+import tl_split
+from tl_split import tl_dict
 
-# Converts a zhuyin syllable to IPA
-def zhuyinWord_to_commonIPA(zhuyin):
-    def get(str, pos):
-        return len(str) > pos and str[pos] or ''
+# Used by zhuyin_syllable_to_ipa
 
-    def isBopomofo(ch):
-        return u'\u3105' <= ch <= u'\u3129'  # 'ㄅ' ~ 'ㄩ'
 
-    bopomofoToneList = {
-        ''       : "01",
-        u'\u02C9': '01',  # 'ˉ'
-        u'\u02CA': '02',  # 'ˊ'
-        u'\u02C7': '03',  # 'ˇ'
-        u'\u02CB': '04',  # 'ˋ'
-        u'\u02D9': '05',  # '˙'
-    }
+def _str_get(str_, pos):
+    return len(str_) > pos and str_[pos] or ''
 
+
+_BOPOMOFO_TONE_LIST = {
+    '': "01",
+    u'\u02C9': '01',  # 'ˉ'
+    u'\u02CA': '02',  # 'ˊ'
+    u'\u02C7': '03',  # 'ˇ'
+    u'\u02CB': '04',  # 'ˋ'
+    u'\u02D9': '05',  # '˙'
+}
+
+_BOPOMOFO_INITIAL_LIST = {
+    'ㄅ': 'p',  'ㄉ': 't',                             'ㄍ': 'k',
+    'ㄆ': 'pʰ', 'ㄊ': 'tʰ',                            'ㄎ': 'kʰ',
+    'ㄇ': 'm',  'ㄋ': 'n',
+                'ㄌ': 'l',
+                'ㄗ': 'ts',  'ㄓ': 'ʈʂ',  'ㄐ': 'tɕ',
+                'ㄘ': 'tsʰ', 'ㄔ': 'ʈʂʰ', 'ㄑ': 'tɕʰ',
+    'ㄈ': 'f',  'ㄙ': 's',   'ㄕ': 'ʂ',   'ㄒ': 'ɕ',   'ㄏ': 'x',
+                'ㄖ': 'ʐ',
+}
+
+_BOPOMOFO_MEDIAL_LIST = {'ㄧ': 1, 'ㄨ': 2, 'ㄩ': 3}
+
+_BOPOMOFO_RHYME_LIST = {
+    'ㄦ': 0,
+    'ㄛ': 1, 'ㄜ': 1, 'ㄝ': 1,
+    'ㄟ': 2, 'ㄡ': 3, 'ㄣ': 4, 'ㄥ': 5,
+    'ㄚ': 6, 'ㄞ': 7, 'ㄠ': 8, 'ㄢ': 9, 'ㄤ': 10,
+}
+
+
+def _f00(initial):
+    return {
+        'ts': 'ɹ', 'tsʰ': 'ɹ', 's': 'ɹ',
+        'ʈʂ': 'ɻ', 'ʈʂʰ': 'ɻ', 'ʂ': 'ɻ', 'ʐ': 'ɻ',
+    }.get(initial, 'ə')
+
+
+def _f010(initial):
+    return {
+        'p': 'wo', 'pʰ': 'wo', 'm': 'wo',
+    }.get(initial, 'o')
+
+
+def _f05(initial):
+    return {
+        'p': 'ʊŋ', 'pʰ': 'ʊŋ', 'm': 'ʊŋ', 'f': 'ʊŋ',
+    }.get(initial, 'əŋ')
+
+
+def _f25(initial): return initial and 'ʊŋ' or 'wəŋ'
+
+
+_FINAL_LIST = (
+# Nucleus ∅    /ə/                                             /a/
+# Coda    ∅     /o/    /ɤ/   /e/    /i/    /u/    /n/    /ŋ/    ∅    /i/    /u/    /n/    /ŋ/
+# Medial
+        (_f00, (_f010, 'ɤ',  'e'),  'ei',  'ou',  'ən',  _f05, 'a',  'ai',  'au',  'an',  'aŋ'),
+        ('i',  ('jo',  None, 'je'), None,  'jou', 'in',  'iŋ', 'ja', 'jai', 'jau', 'jɛn', 'jaŋ'),
+        ('u',  ('wo',  None, None), 'wei', None,  'wən', _f25, 'wa', 'wai', None,  'wan', 'waŋ'),
+        ('y',  (None,  None, 'ɥe'), None,  None,  'yn', 'jʊŋ', None, None,  None,  'ɥɛn', None),
+)
+
+
+def _r010(initial):
+    return {
+        'p': 'wo˞', 'pʰ': 'wo˞', 'm': 'wo˞',
+    }.get(initial, 'o˞')
+
+
+def _r05(initial):
+    return {
+        'p': 'ʊ̃˞', 'pʰ': 'ʊ̃˞', 'm': 'ʊ̃˞', 'f': 'ʊ̃˞',
+    }.get(initial, 'ɚ̃')
+
+
+def _r25(initial): return initial and 'ʊ̃˞' or 'wɚ̃'
+
+
+_RHOTIC_FINAL_LIST = (
+# Nucleus ∅    /ə/                                            /a/
+# Coda    ∅     /o/    /ɤ/   /e/     /i/   /u/    /n/   /ŋ/    ∅     /i/    /u/    /n/    /ŋ/
+# Medial
+        ('ɚ',  (_r010, 'ɤ˞',  'eɚ'),  'ɚ',  'ou˞',  'ɚ',  _r05, 'aɚ',  'aɚ',  'au˞',  'aɚ',  'ãɚ̃'),
+        ('jɚ', ('jo˞',  'jɚ', 'jeɚ'), None, 'jou', 'jɚ', 'jɚ̃', 'jaɚ', 'jaɚ', 'jau˞', 'jɐɚ', 'jãɚ̃'),
+        ('u˞',  ('wo˞ ', 'wɚ', None), 'wɚ',  None,  'ʊ˞',  _r25, 'waɚ', 'waɚ', None,  'waɚ', 'wãɚ̃'),
+        ('ɥɚ', (None,  'ɥɚ', 'ɥeɚ'), None, None,  'ɥɚ', 'jʊ̃˞', None,  None,  None,  'ɥɐɚ', None),
+)
+
+
+def _final_branch(final, bopomofo_rhyme):
+    return final[{
+        'ㄛ': 0, 'ㄜ': 1, 'ㄝ': 2,
+    }.get(bopomofo_rhyme)]
+
+
+# Convert a zhuyin syllable to IPA.
+# Side effect: IO (w)
+
+def zhuyin_syllable_to_ipa(zhuyin):
     offset = 0
-    tone = bopomofoToneList.get(get(zhuyin, offset), '')
-    if tone != '':
+
+    # Handle neutral tone
+    tone = _BOPOMOFO_TONE_LIST.get(_str_get(zhuyin, offset), '')
+    if tone:
         if tone == '05':
             tone = '00'
 
         offset = 1
 
-
-    bopomofoInitial = get(zhuyin, offset)
-    initial = {
-        'ㄅ': 'p'  , 'ㄉ': 't'  ,                          'ㄍ': 'k'  ,
-        'ㄆ': 'pʰ' , 'ㄊ': 'tʰ' ,                          'ㄎ': 'kʰ' ,
-        'ㄇ': 'm'  , 'ㄋ': 'n'  ,
-                     'ㄌ': 'l'  ,
-                     'ㄗ': 'ts' , 'ㄓ': 'ʈʂ' , 'ㄐ': 'tɕ' ,
-                     'ㄘ': 'tsʰ', 'ㄔ': 'ʈʂʰ', 'ㄑ': 'tɕʰ',
-        'ㄈ': 'f'  , 'ㄙ': 's'  , 'ㄕ': 'ʂ'  , 'ㄒ': 'ɕ'  , 'ㄏ': 'x'  ,
-                                  'ㄖ': 'ʐ'  ,
-    }.get(bopomofoInitial, '')
-
-    if initial != '':
+    bopomofo_initial = _str_get(zhuyin, offset)
+    initial = _BOPOMOFO_INITIAL_LIST.get(bopomofo_initial, '')
+    if initial:
         offset += 1
     else:
-        bopomofoInitial = ''
+        bopomofo_initial = ''
 
-
-    bopomofoMedial = get(zhuyin, offset)
-    medial = {'ㄧ': 1, 'ㄨ': 2, 'ㄩ': 3}.get(bopomofoMedial, 0)
-
-    if medial != 0:
+    bopomofo_medial = _str_get(zhuyin, offset)
+    medial = _BOPOMOFO_MEDIAL_LIST.get(bopomofo_medial, 0)
+    if medial:
         offset += 1
     else:
-        bopomofoMedial = ''
+        bopomofo_medial = ''
 
-
-    bopomofoRhyme = get(zhuyin, offset)
-    rhyme = {
-        'ㄦ': 0,
-        'ㄛ': 1, 'ㄜ': 1, 'ㄝ': 1,
-        'ㄟ': 2, 'ㄡ': 3, 'ㄣ': 4, 'ㄥ': 5,
-        'ㄚ': 6, 'ㄞ': 7, 'ㄠ': 8, 'ㄢ': 9, 'ㄤ': 10,
-    }.get(bopomofoRhyme, None)
-
-    if rhyme != None:
+    bopomofo_rhyme = _str_get(zhuyin, offset)
+    rhyme = _BOPOMOFO_RHYME_LIST.get(bopomofo_rhyme, None)
+    if rhyme is not None:
         offset += 1
     else:
-        bopomofoRhyme = ''
+        bopomofo_rhyme = ''
         rhyme = 0
 
-    f00 = {
-        'ts': 'ɹ', 'tsʰ': 'ɹ', 's': 'ɹ',
-        'ʈʂ': 'ɻ', 'ʈʂʰ': 'ɻ', 'ʂ': 'ɻ', 'ʐ': 'ɻ',
-    }.get(initial, 'ə')
+    final = _FINAL_LIST[medial][rhyme]
+    if isinstance(final, tuple):
+        final = _final_branch(final, bopomofo_rhyme)
+    if callable(final):
+        final = final(initial)
 
-    f010 = {
-        'p': 'wo', 'pʰ': 'wo', 'm': 'wo',
-    }.get(initial, 'o')
-
-    f05 = {
-        'p': 'ʊŋ', 'pʰ': 'ʊŋ', 'm': 'ʊŋ', 'f': 'ʊŋ',
-    }.get(initial, 'əŋ')
-
-    f25 = initial and 'ʊŋ' or 'wəŋ'
-
-    finalList = [
-    # Nucleus ∅     /ə/                                             /a/
-    # Coda    ∅       /o/   /ɤ/   /e/    /i/    /u/    /n/    /ŋ/     ∅     /i/    /u/    /n/    /ŋ/
-    # Medial
-            [f00  , [f010, 'ɤ' , 'e' ], 'ei' , 'ou' , 'ən' , f05  , 'a'  , 'ai' , 'au' , 'an' , 'aŋ' ],
-            ['i'  , ['jo', None, 'je'], None , 'jou', 'in' , 'iŋ' , 'ja' , 'jai', 'jau', 'jɛn', 'jaŋ'],
-            ['u'  , ['wo', None, None], 'wei', None , 'wən', f25  , 'wa' , 'wai', None , 'wan', 'waŋ'],
-            ['y'  , [None, None, 'ɥe'], None , None , 'yn' , 'jʊŋ', None , None , None , 'ɥɛn', None ],
-    ]
-
-    final = finalList[medial][rhyme]
-
-    if type(final) == list:
-        final = final[{
-            'ㄛ': 0, 'ㄜ': 1, 'ㄝ': 2,
-        }.get(bopomofoRhyme)]
-
-
-
-    bopomofoSuffix = get(zhuyin, offset)
-    if bopomofoSuffix  == 'ㄦ':
-        bopomofoSuffixTone = get(zhuyin, offset + 1)
+    # Handle the character after the final: tone or erization 'ㄦ'
+    bopomofo_suffix = _str_get(zhuyin, offset)
+    if bopomofo_suffix == 'ㄦ':
+        bopomofo_suffix_tone = _str_get(zhuyin, offset + 1)
     else:
-        bopomofoSuffixTone = bopomofoSuffix
-        bopomofoSuffix = get(zhuyin, offset + 1)
-
-    if bopomofoSuffixTone in bopomofoToneList:
+        bopomofo_suffix_tone = bopomofo_suffix
+        bopomofo_suffix = _str_get(zhuyin, offset + 1)
+    if bopomofo_suffix_tone in _BOPOMOFO_TONE_LIST:
         offset += 1
 
-
-    if bopomofoSuffix == 'ㄦ' or bopomofoRhyme == 'ㄦ':
-        f010 = {
-            'p': 'wo˞', 'pʰ': 'wo˞', 'm': 'wo˞',
-        }.get(initial, 'o˞')
-
-        f05 = {
-            'p': 'ʊ̃˞', 'pʰ': 'ʊ̃˞', 'm': 'ʊ̃˞', 'f': 'ʊ̃˞',
-        }.get(initial, 'ɚ̃')
-
-        f25 = initial and 'ʊ̃˞' or 'wɚ̃'
-
-        finalList = [
-        # Nucleus ∅     /ə/                                                /a/
-        # Coda    ∅       /o/    /ɤ/    /e/     /i/    /u/    /n/    /ŋ/     ∅     /i/    /u/    /n/    /ŋ/
-        # Medial
-                ['ɚ'  , [f010 , 'ɤ˞' , 'eɚ' ], 'ɚ'  , 'ou˞', 'ɚ'  , f05  , 'aɚ' , 'aɚ' , 'au˞' , 'aɚ' , 'ãɚ̃' ],
-                ['jɚ' , ['jo˞', 'jɚ' , 'jeɚ'], None , 'jou', 'jɚ' , 'jɚ̃' , 'jaɚ', 'jaɚ', 'jau˞', 'jɐɚ', 'jãɚ̃'],
-                ['u˞' , ['wo˞', 'wɚ' , None ], 'wɚ' , None , 'ʊ˞' , f25  , 'waɚ', 'waɚ', None  , 'waɚ', 'wãɚ̃'],
-                ['ɥɚ' , [None , 'ɥɚ' , 'ɥeɚ'], None , None , 'ɥɚ' , 'jʊ̃˞' , None , None , None  , 'ɥɐɚ', None ],
-        ]
-
-        final = finalList[medial][rhyme]
-
-        if type(final) == list:
-            final = final[{
-                'ㄛ': 0, 'ㄜ': 1, 'ㄝ': 2,
-            }.get(bopomofoRhyme)]
+    # Process rhyme 'ㄦ' as erization 'ㄦ'
+    if bopomofo_suffix == 'ㄦ' or bopomofo_rhyme == 'ㄦ':
+        final = _RHOTIC_FINAL_LIST[medial][rhyme]
+        if isinstance(final, tuple):
+            final = _final_branch(final, bopomofo_rhyme)
+        if callable(final):
+            final = final(initial)
 
         offset += 1
 
-    if tone == '':
-        tone = bopomofoToneList[bopomofoSuffixTone]
+    # Handle suffix tone if there is no prefix tone
+    if not tone:
+        tone = _BOPOMOFO_TONE_LIST[bopomofo_suffix_tone]
 
-    if final == None:
-        print('Warning: ' + bopomofoMedial + bopomofoRhyme + ' is invalid final sound combination')
-        return (initial, '?' + tone)
-    return (initial, final + tone)
+    if final is None:
+        print('Warning: ', bopomofo_medial, bopomofo_rhyme,
+              ' is invalid final bopomofo combination.  Continued.',
+              sep='', file=sys.stderr, flush=True)
+        return (initial, f'?{tone}')
+    return (initial, f'{final}{tone}')
 
-# Converts an IPA syllable to commonized TL
-def commonIPA_to_commonTL(ipa, useOr = False):
-    tl = ''
-    afterIY = False
-    lastNN = -1
-    lastRR = -1
 
-    for i, ipaPhone in enumerate(ipa):
-        tlPhone = {
-            # *: phonetic alphabet that doesn't exists in original TL
+# Used by ipa_pair_to_tl_pair
 
-            # IPA consonants.
-            'd': ''  ,  #   TL "j" is pronounced as [dz] in Taiwanese Choân-chiu accent
-                        #   always followed by [z] or [ʑ]; just drop it
-            'z': 'j' ,  #   TL "j" is pronounced as [z] in Taiwanese Chiang-chiu accent
+_COMMON_TL_INITIAL_LIST = {
+    # *: Not in original TL
 
-            'ʈ': 't' ,  #   rhotic consonant; always followed by [ʂ]
-            'ʂ': 'sr',  # * rhotic consonant
-            'ʐ': 'jr',  # * rhotic consonant
+    # IPA consonants.
+    'd': '',  # TL "j" is pronounced as [dz] in Taiwanese Choân-chiu accent
+    #   Always followed by [z] or [ʑ]; just drop it
+    'z': 'j',  # TL "j" is pronounced as [z] in Taiwanese Chiang-chiu accent
 
-            'ɕ': 's' ,  #   an allophone of TL "s"
-            'ʑ': 'j' ,  #   an allophone of TL "j"
-            'x': 'h' ,  #   Taiwanese Mandarin "ㄏ" can be pronounced as either [x] or [h].
+    'ʈ': 't',  # Rhotic consonant; always followed by [ʂ]
+    'ʂ': 'sr',  # * Rhotic consonant
+    'ʐ': 'jr',  # * Rhotic consonant
 
-            'ȵ': 'gn',  #   used in Taiwanese Chiang-chiu accent.
-            'ŋ': 'ng',
+    'ɕ': 's',  # An allophone of TL "s"
+    'ʑ': 'j',  # An allophone of TL "j"
+    'x': 'h',  # Taiwanese Mandarin "ㄏ" is pronounced as either [x] or [h].
 
-            'ʰ': 'h' ,
+    'ȵ': 'gn',  # Used in Taiwanese Chiang-chiu accent.
+    'ŋ': 'ng',
 
-            'ʔ': 'h' ,  #   as coda; not used as initial for now.
+    'ʰ': 'h',
 
-            # Also IPA consonants. Semi-vowel part.
-            'j': 'i',
-            'w': 'u',
-            'ɥ': 'y',   # * Use only the vowel characters.
+    'ʔ': '',  # As initial
+}
 
-            # IPA vowels.
-            'ɨ': 'ir',  #   used in Taiwanese Choân-chiu accent
+_COMMON_TL_FINAL_LIST = {
+    # *: Not in original TL
 
-            'ɹ': 'ir',  #   Also writen as "ɯ" in IPA sometimes.
-            'ɻ': 'ir',  #   Also writen as "ɨ" in IPA sometimes.
-                        #   They are allophones. Let's use only one symbol for them.
+    # IPA consonants.
+    'ŋ': 'ng',
 
-            'ɘ': 'er',  #   used in Taiwanese Choân-chiu accent
+    'ʔ': 'h',  # As coda
 
-            'ɤ': useOr
-             and 'or'   #   for Taiwanese northern accent
-             or  'o' ,  #   for Taiwanese southern accent
-            'ə': useOr
-             and 'or'
-             or  'o' ,
-                        #   They are allophones. Let's use only one symbol for them.
+    # Also IPA consonants. Semi-vowel part.
+    'j': 'i',
+    'w': 'u',
+    'ɥ': 'y',   # * Use only the vowel characters.
 
-            'ʊ': useOr
-             and 'o'    #   more accurate transcription for Taiwanese northern accent
-             or  'oo',
+    # IPA vowels.
+    'ɨ': 'ir',  # Used in Taiwanese Choân-chiu accent
 
-            'ɔ': 'oo',
+    'ɹ': 'ir',  # Also writen as "ɯ" in IPA sometimes.
+    'ɻ': 'ir',  # Also writen as "ɨ" in IPA sometimes.
+                #   They are allophones.  Use only one symbol for them.
 
-            'ɛ': afterIY
-             and 'a'    #   produced by bopomofo finals "ㄧㄢ" and "ㄩㄢ"
-                        #   In TL, the "a" in "-ian", "-iat" also are pronounced as [ɛ].
-                        #   For now, just leave it as is.
-             or  'ee',  #   used in Taiwanese Chiang-chiu accent
+    'ɘ': 'er',  # Used in Taiwanese Choân-chiu accent
 
-            # Still IPA vowels. Erization-related part.
-            'ɚ': 'orr',  # * See u'\u02DE'.
-            'ɐ': 'a'  ,  #   produced by rhotic bopomofo finals "ㄧㄢㄦ" and "ㄩㄢㄦ"
+    'ɤ': (
+        'or',  # For Taiwanese northern accent
+        'o'),  # For Taiwanese southern accent
+    'ə': (
+        'or',
+        'o'),
+    #   They are allophones.  Use only one symbol for them.
 
-            # IPA symbols.
-            u'\u0303': 'nn',  #   ' ̃ '; vowel nasalization
-            u'\u02DE': 'rr',  # * ' ˞ '; erization
-                              #   Alternatives:
-                              #     rh:  from Wade–Giles Romanization system for Mandarin Chinese
-                              #          causes ambiguity, e.g., "orh" as either "o -rh" or "or -h".
-                              #     rr:  digraph
-                              #          doesn't cause ambiguity, e.g., "orr" as "o -rr".
-                              #          seems cumbersome sometimes, e.g., "orrr" as "or -rr".
+    'ʊ': (
+        'o',  # More accurate transcription for Taiwanese northern accent
+        'oo'),
 
-            u'\u031A': ''  ,  #   ' ̚ '; unreleased plosive, which is used in entering tones (入聲)
-                              #   Just drop it.
-        }.get(ipaPhone, ipaPhone)
+    'ɔ': 'oo',
 
-        if tlPhone == 'i' or tlPhone == 'y':
-            afterIY = True
+    'ɛ': 'ee',  # Used in Taiwanese Chiang-chiu accent
+    # 'a'    #   The "a" in TL "-ian" and "-iat"
+                #     And in the "ㄢ" of bopomofo finals "ㄧㄢ" and "ㄩㄢ"
+                #     Also are pronounced as [ɛ].
+                #   In these conditions, replace the 'ee' with 'a' later.
 
-        if tlPhone[-2:] == 'nn':
-            # merges multiple 'nn'
-            if lastNN != -1:
-                tl = tl[:lastNN] + tl[lastNN + 2:]
-                if lastRR > lastNN:  lastRR -= 2
-            lastNN = len(tl) + len(tlPhone) - 2
+    # Still IPA vowels. Erization-related part.
+    'ɚ': (
+        'orrr',    # * Rhotic vowel; see u'\u02DE'.
+        'orr'),
 
-            # 'rr' should comes after 'nn'
-            if lastRR != -1:
-                tl = tl[:lastRR] + 'nn' + tl[lastRR + 2:] + 'rr'
-                if lastNN > lastRR:  lastNN -= 2
-                lastRR = -1
-                continue
+    'ɐ': 'a',  # Produced by rhotic bopomofo finals "ㄧㄢㄦ" and "ㄩㄢㄦ"
 
-        # merges multiple 'rr'
-        if tlPhone[-2:] == 'rr':
-            if lastRR != -1:
-                tl = tl[:lastRR] + tl[lastRR + 2:]
-                if lastNN > lastRR:  lastNN -= 2
-            lastRR = len(tl) + len(tlPhone) - 2
+    # IPA symbols.
+    u'\u0303': 'nn',  # ' ̃ '; vowel nasalization
+    u'\u02DE': 'rr',  # * ' ˞ '; vowel erization
+    #  Alternatives:
+    # *  rh: From Wade–Giles Romanization system for Mandarin Chinese
+    #        Causes ambiguity, e.g., "orh" as either "o -rh" or "or -h".
+    # *  rr: Digraph
+    #        Does not cause ambiguity, e.g., "orr" as "o -rr".
+    #        Seems cumbersome sometimes, e.g., "orrr" as "or -rr".
+    # *  hr: Reversed version of 'rh'
+    #        Does not cause ambiguity, e.g., "ohr" as "o -hr".
+    #        Does not seem cumbersome, e.g., "orhr" as "or -hr".
 
-        tl += tlPhone
+    u'\u031A': '',  # ' ̚ '; unreleased plosive; used in entering tones
+                      #   Just drop it.
+}
 
-    return tl
 
-# 依照中文辭典檔轉成中文注音
-def chinese_to_zhuyin(word):
-    zhuyin = ''
+# Side effect: prev_pos_list (rw)
 
-    for item in enumerate(chinese):
-        if item[1] == word:
-            zhuyin = chinese_zhuyin[item[0]] + '\t'
-            break
+def _replace_symbol(src, prev_pos_list, prev_replace_pair,
+                    current_symbol, tail_replace_pair=None):
+    new_src = None
+    (symbol_to_remove, symbol_to_insert) = prev_replace_pair
+    (target_symbol, symbol_to_append) = tail_replace_pair or prev_replace_pair
 
-    return zhuyin[:-1].split('\t')
+    symbol_to_remove_len = len(symbol_to_remove)
+    symbol_to_insert_len = len(symbol_to_insert)
+    new_src_len = len(src)
+
+    if current_symbol.endswith(target_symbol):
+        if (symbol_to_remove in prev_pos_list
+                and prev_pos_list[symbol_to_remove] != -1):
+            new_src = (
+                f'{src[:prev_pos_list[symbol_to_remove]]}'
+                f'{symbol_to_insert}'
+                f'{src[prev_pos_list[symbol_to_remove] + symbol_to_remove_len:]}'
+                f'{symbol_to_append}')
+
+            new_src_len = len(new_src)
+
+            for (symbol, pos) in prev_pos_list.items():
+                if pos > prev_pos_list[symbol_to_remove]:
+                    prev_pos_list[symbol] += (
+                        symbol_to_insert_len - symbol_to_remove_len)
+
+            prev_pos_list[symbol_to_remove] = -1
+            if symbol_to_append:
+                prev_pos_list[symbol_to_append] = (
+                    new_src_len + len(current_symbol) - len(symbol_to_append))
+                return new_src
+
+        if target_symbol in prev_pos_list:
+            prev_pos_list[target_symbol] = (
+                new_src_len + len(current_symbol) - len(target_symbol))
+
+    return new_src
+
+
+# Convert an IPA syllable to commonized TL.
+
+def ipa_pair_to_tl_pair(ipa_pair, use_or=False):
+    (ipa_initial, ipa_final) = ipa_pair
+    (tl_initial, tl_final) = ('', '')
+    prev_symbol_pos = {
+        'nn': -1, 'rr': -1,
+        'ieen': -1, 'ieet': -1, 'yeen': -1, 'yeet': -1
+    }
+
+    for ipa_phone in ipa_initial:
+        tl_phone = _COMMON_TL_INITIAL_LIST.get(ipa_phone, ipa_phone)
+
+        tl_initial = f'{tl_initial}{tl_phone}'
+
+    for ipa_phone in ipa_final:
+        tl_phone = _COMMON_TL_FINAL_LIST.get(ipa_phone, ipa_phone)
+
+        if isinstance(tl_phone, tuple):
+            tl_phone = tl_phone[not use_or and 1 or 0]
+
+        # Replace 'ieen' with 'ian',     'yeen' with 'yan'
+        #         'ieet' with 'iat', and 'yeet' with 'yat'
+        for (medial, coda) in ((medial, coda)
+                               for medial in ('i', 'y') for coda in ('n', 't')):
+            _replace_symbol(tl_final[:-3], prev_symbol_pos,
+                            ('', ''),
+                            f'{tl_final[-3:]}{tl_phone}',
+                            (f'{medial}ee{coda}', ''))
+            new_tl_final = _replace_symbol(tl_final[:-3], prev_symbol_pos,
+                                           (f'{medial}ee{coda}',
+                                            f'{medial}a'),
+                                           f'{tl_final[-3:]}{tl_phone}',
+                                           (f'{medial}ee{coda}', ''))
+            if new_tl_final is not None:
+                tl_final = new_tl_final
+
+        # Merge multipel 'nn'
+        new_tl_final = _replace_symbol(
+            tl_final, prev_symbol_pos, ('nn', ''), tl_phone)
+        if new_tl_final is not None:
+            tl_final = new_tl_final
+
+        # 'rr' should comes after 'nn'
+        new_tl_final = _replace_symbol(
+            tl_final, prev_symbol_pos, ('rr', 'nn'), tl_phone, ('nn', 'rr'))
+        if new_tl_final is not None:
+            tl_final = new_tl_final
+            continue
+
+        # Merge multipel 'rr'
+        new_tl_final = _replace_symbol(
+            tl_final, prev_symbol_pos, ('rr', ''), tl_phone)
+        if new_tl_final is not None:
+            tl_final = new_tl_final
+
+        tl_final = f'{tl_final}{tl_phone}'
+
+    return (tl_initial, tl_final)
+
+
+# 依照中文詞典檔轉成中文注音
+# Convert a Chinese word into Zhuyin word with the dictionary.
+# Side effect: tl_dict.chinese_zhuyin (r)
+
+def chinese_word_to_zhuyin(word):
+    return tl_dict.chinese_zhuyin.get(word, [])
+
 
 # 將國際音標轉成台羅拼音
-def IPAPair_to_TL(ipaPair):
-    tl = []
-    for syllable in ipaPair:
-        tl.append((commonIPA_to_commonTL(syllable[0]), commonIPA_to_commonTL(syllable[1])))
+# Convert an IPA initial-final pair into commonized TL initial-final pair.
 
-    return tl
+def ipa_pair_to_tl(ipa_pair, use_or=False):
+    return [ipa_pair_to_tl_pair(syllable, use_or) for syllable in ipa_pair]
+
 
 # 將中文注音轉成國際音標
-def zhuyinWord_to_IPA(zhuyin):
-    if zhuyin == '':
-        return ''
+# Convert a Zhuyin word into IPA.
+# Side effect: zhuyin_syllable_to_ipa: IO (w)
 
-    ipa = []
-    zhuyinSyllables = zhuyin.replace('　', ' ').split(' ')
-    for syllable in zhuyinSyllables:
-        ipa.append(zhuyinWord_to_commonIPA(syllable))
+def zhuyin_word_to_ipa(zhuyin_word):
+    return [zhuyin_syllable_to_ipa(syllable) for syllable in zhuyin_word]
 
-    return ipa
+
+# Convert a Chinese sentence to Roman.
+# Side effect: tl_dict.set_dict: fileIO (rw), os (x), sys (x), pickle (x)
+#                                [tl_dict.set_dict] loaded_dict (rw),
+#                                chinese (rw), chinese_zhuyin (rw)
+#              tl_split.split_chinese_word: tl_dict.chinese_zhuyin (r)
+#              chinese_word_to_zhuyin: tl_dict.chinese_zhuyin (r)
+#              zhuyin_word_to_ipa: zhuyin_syllable_to_ipa: IO (w)
+
+def chinese_to_roman(sentence, dict_paths=['chinese_dict.txt'], use_or=False):
+    tl_dict.set_dict(dict_paths)
+
+    words_of_sentence = tl_split.split_chinese_word(sentence)
+
+    tl_pair_list = []
+    for word in words_of_sentence:
+        # Currently only use the first Zhuyin of candidate Zhuyins
+        candidate_zhuyin_word = chinese_word_to_zhuyin(word)[0:1]
+        for zhuyin_word in candidate_zhuyin_word:
+            ipa_pair_word = zhuyin_word_to_ipa(zhuyin_word)
+            tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_or)
+
+            tl_pair_list.append(tl_pair_word)
+
+    return tl_pair_list
+
+
+def _print_pairs(pairs):
+    return ' '.join((''.join(pair_item) for pair_item in pairs))
+
+
+# Side effect: IO (w)
+# Side effect: tl_dict.set_dict: fileIO (rw), os (x), sys (x), pickle (x)
+#                                [tl_dict.set_dict] loaded_dict (rw),
+#                                chinese (rw), chinese_zhuyin (rw)
+#              tl_split.split_chinese_word: tl_dict.chinese_zhuyin (r)
+#              chinese_word_to_zhuyin: tl_dict.chinese_zhuyin (r)
+#              zhuyin_word_to_ipa: zhuyin_syllable_to_ipa: IO (w)
+
+def main():
+    tl_dict.set_dict(['chinese_dict.txt'])
+    use_or = False
+
+    sentence = (
+        ' 測 試  這   兒 巴  陵郡  日zZㄈ=心  謗腹非 拔 了一 個 尖  兒八   面圓  通 '
+        '描  樣 兒  撥魚   兒打   通   兒  '
+    )
+    words_of_sentence = tl_split.split_chinese_word(sentence)
+
+    tl_pair_list = []
+    output = ''
+    for word in words_of_sentence:
+        output = f'{output}{word}\t'
+
+        # Currently only use the first Zhuyin of candidate Zhuyins
+        candidate_zhuyin_word = chinese_word_to_zhuyin(word)[0:1]
+        for zhuyin_word in candidate_zhuyin_word:
+            ipa_pair_word = zhuyin_word_to_ipa(zhuyin_word)
+            tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_or)
+            output = (
+                f'{output}'
+                f'{" ".join(zhuyin_word)}\t'
+                f'{_print_pairs(ipa_pair_word)}\t'
+                f'{_print_pairs(tl_pair_word)}\t')
+
+            tl_pair_list.append(tl_pair_word)
+        output = f'{output}\n'
+
+    print(output)
+    print(tl_pair_list)
+    print('main done!')
 
 
 if __name__ == '__main__':
-    TLseg.createDict('chinese_dict.txt_out')
-    sentence = '''
-測 試  這        兒 捧  日 心 拔 了 一 個 尖  兒 隔  牆 掠 見腔  兒 皮 靴 兒   沒番 正  不的 個   風 兒 就  雨兒 打   通 兒
-'''
-    wordsOfSentence = TLseg.taiwanese_split(sentence)
-
-    tlPairList = []
-    output = ''
-    for word in wordsOfSentence:
-        output += word + '\t'
-
-        candidateZhuyinWord = chinese_to_zhuyin(word)
-        for zhuyinWord in candidateZhuyinWord:
-            ipaWordPair = zhuyinWord_to_IPA(zhuyinWord)
-            # output += zhuyinWord + '\t'
-            # output += ipaWord + '\t'
-            output += str(IPAPair_to_TL(ipaWordPair)) + '\t'
-
-            tlPairList.append(IPAPair_to_TL(ipaWordPair))
-        output += '\n'
-
-    print(output[:-1])
-    print('main done!')
-    print(tlPairList)
+    main()
