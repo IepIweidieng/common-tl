@@ -1,28 +1,109 @@
+import hashlib
 import os
 import pickle
 import re
 import sys
+import unicodedata
+
+import tl_util
+
+# Dictionary format tokens
+WORD = 'word'
+ZHUYIN = 'zhuyin'
+TL = 'tl'
+PHONETIC = 'phonetic'
+ETC = 'ETC'
+DEFAULT_FORMAT = (WORD, ZHUYIN)
 
 # Data structure:
-#   chinese_zhuyin: {word: candidate_zhuyins, word2: candidate_zhuyins2, ...}
-#   candidate_zhuyins: [zhuyin1, zhuyin2, ...]
-#   zhuyin: [syllable1, syllable2, ...]
+#   chinese_phonetic: {word: candidate_phonetics, word2: candidate_phonetics2, ...}
+#   candidate_phonetics: [phonetic1, phonetic2, ...]
+#   phonetic: [syllable1, syllable2, ...]
 #   Overview: {word: [[syllable11, syllable12], [syllable21, syllable22]], ...}
-chinese_zhuyin = {}
+chinese_phonetic = {}
+max_word_length = 0
 
 
-# 中文詞典檔前處理
-# Do pre-process on a dictionary text file
-# Side effect: IO (w), fileIO (rw), sys (x), re (x)
+PROCESSED_SUFFIX = '_out'
+PICKLED_SUFFIX = '.pickle'
 
-def preprocess_dict(dict_path):
+
+def parse_line_in_format(line, format_):
+    """
+    Side effect: ValueError (x),
+        WORD (r), ZHUYIN (r), TL (r), PHONETIC (r), ETC (r)
+    """
+    etcs = []
+    splited = line.split('\t')
+
+    for (splited_item, parse_item) in zip(splited, format_):
+        if parse_item is WORD:
+            word = splited_item
+        elif parse_item is ZHUYIN or parse_item is TL or parse_item is PHONETIC:
+            phonetic = splited_item
+            phonetic_type = parse_item
+        elif parse_item is ETC:
+            etcs.append(splited_item)
+        else:
+            raise ValueError(
+                f'Invalid parse item \'{parse_item}\'.  '
+                f'Parse item must be WORD, ZHUYIN, TL, PHONETIC, or ETC')
+
+    return (word, phonetic, phonetic_type, etcs)
+
+
+def create_line_from_format(phrase_data, format_):
+    """Side effect: WORD (r), ZHUYIN (r), TL (r), PHONETIC (r), ETC (r)"""
+    (word, phonetic, *additional) = (phrase_data)
+    etcs = len(additional) > 1 and additional[1] or []
+    etcs_len = len(etcs)
+    etcs_index = 0
+    out_content = []
+
+    for parse_item in format_:
+        if parse_item is WORD:
+            out_content.append(word)
+        elif parse_item is ZHUYIN or parse_item is TL or parse_item is PHONETIC:
+            out_content.append(phonetic)
+        elif parse_item is ETC:
+            etcs_item = ''
+            if etcs_index < etcs_len:
+                etcs_item = etcs[etcs_index]
+                etcs_index += 1
+
+            out_content.append(etcs_item)
+
+    return '\t'.join(out_content)
+
+
+_PUNCTUATION_LIST = {'。', '，', '、', '；', '：', '「', '」',
+                     '『', '』', '？', '！', '─', '…', '《', '》',
+                     '〈', '〉', '．', '˙', '—', '～'}
+
+
+def preprocess_dict(dict_path, format_):
+    """
+    中文詞典檔前處理 \n
+    Do pre-process on a dictionary text file \n
+    Side effect: IO (w), fileIO (rw), os (x), sys (x), re (x)
+                 parse_line_in_format: ValueError (x),
+                                       WORD (r),
+                                       ZHUYIN (r), TL (r), PHONETIC (r),
+                                       ETC (r)
+                 create_line_from_format: WORD (r),
+                                          ZHUYIN (r), TL (r), PHONETIC (r),
+                                          ETC (r)
+    """
     # Read un-processed file
     with open(dict_path, 'r', encoding='utf8') as in_file:
         file_content = in_file.read().splitlines()
 
+    # Remove duplicated items
+    file_content = list(dict.fromkeys(file_content))
+
     # For processing file content
     out_content = []
-    file_ref_pattern = re.compile(r'^.*?&.+?\..+?;.*?$')
+    markup_ref_pattern = re.compile(r'^.*?&[^\t]+?;.*?$')
     multi_space_pattern = re.compile(r' {2,}')
     parenthesis_pattern = re.compile(r'[\(（].*?[\)）]')
 
@@ -30,17 +111,14 @@ def preprocess_dict(dict_path):
     invalid_word_warnings = []
     mismatched_syllable_count_warnings = []
 
-    # For warning of process-needing contents
-    duplicate_zhuyin_warnings = []
-
     # Process each line in the file
     for (pos, line) in enumerate(file_content):
         # Ensure there are no file references in Chinese word
-        if file_ref_pattern.fullmatch(line):
+        if markup_ref_pattern.fullmatch(line):
             warning = (
                 f'Warning: In \'{dict_path}\': at line {pos}:\n'
                 f'\t\'{line}\':\n'
-                f'\tContains non-word characters.  Skipped.\n').expandtabs()
+                f'\tContains non-word characters.  Skipped.\n')
             invalid_word_warnings.append(warning)
             print(warning, file=sys.stderr, flush=True)
             continue
@@ -50,78 +128,76 @@ def preprocess_dict(dict_path):
             '', multi_space_pattern.sub(' ', line.replace('　', ' ')))
 
         # Strip unnecessary spaces
-        (word, zhuyin) = new_line.split('\t')
+        (word, phonetic, phonetic_type, etcs) = (
+            parse_line_in_format(new_line, format_))
         new_word = word.strip()
-        zhuyin_syllables = zhuyin.strip().split(' ')
+        new_phonetic = phonetic.strip()
+
+        if phonetic_type is TL or phonetic_type is PHONETIC:
+            # Decompose precomposed characters
+            new_phonetic = unicodedata.normalize("NFD", new_phonetic)
+
+        phonetic_syllables = new_phonetic.split(' ')
 
         # Handle punctuations
         punctuation_count = 0
         for character in new_word:
-            if character in {'。', '，', '、', '；', '：', '「', '」',
-                             '『', '』', '？', '！', '─', '…', '《', '》',
-                             '〈', '〉', '．', '˙', '—', '～'}:
+            if character in _PUNCTUATION_LIST:
                 punctuation_count += 1
+
+        word_len = 0
+        is_prev_char_roman = False
+        for char in f'{new_word} ':
+            if tl_util.is_char_roman(char) and (char != ' ' and char != '-'):
+                is_prev_char_roman = True
+            else:
+                if is_prev_char_roman:
+                    word_len += 1
+                if not (char == ' ' or char == '-'):
+                    word_len += 1
+                is_prev_char_roman = False
+        word_len -= punctuation_count
 
         # Handle erization
         erization_count = 0
-        for syllable in zhuyin_syllables:
-            if len(syllable) > 1 and syllable.endswith('ㄦ'):
-                erization_count += 1
+        if phonetic_type is ZHUYIN:
+            for syllable in phonetic_syllables:
+                if len(syllable) > 1 and syllable.endswith('ㄦ'):
+                    erization_count += 1
 
-        word_len = len(new_word) - punctuation_count
-        zhuyin_len = len(zhuyin_syllables)
+        syllable_len = len(phonetic_syllables)
 
-        # If the Zhuyin duplicates, split the Zhuyin into two,
-        #   and associate each one to a copy of the Chinese word
-        if (not zhuyin_len % 2 and not erization_count % 2
-                and (zhuyin_len + erization_count) / 2 == word_len):
-            (splited_0, splited_1) = (
-                (f'{new_word}\t'
-                 f'{" ".join(zhuyin_syllables[: zhuyin_len // 2])}'),
-                (f'{new_word}\t'
-                 f'{" ".join(zhuyin_syllables[zhuyin_len // 2:])}'))
-            out_content.append(splited_0)
-            out_content.append(splited_1)
-
+        # Ensure the length of Chinese word match the phonetic syllables
+        if syllable_len + erization_count != word_len:
             warning = (
                 f'Warning: In \'{dict_path}\': at line {pos}:\n'
                 f'\t\'{line}\':\n'
-                f'\tZhuyin word duplicated.  Splited to\n'
-                f'\t\'{splited_0}\' and\n'
-                f'\t\'{splited_1}\'\n').expandtabs()
-            duplicate_zhuyin_warnings.append(warning)
-            print(warning, file=sys.stderr, flush=True)
-            continue
-
-        # Ensure the length of Chinese word match the Zhuyin syllables
-        if zhuyin_len + erization_count != word_len:
-            warning = (
-                f'Warning: In \'{dict_path}\': at line {pos}:\n'
-                f'\t\'{line}\':\n'
-                f'\tChinese word length and Zhuyin syllable count mismatched.'
+                f'\tChinese word length and phonetic syllable count mismatched.'
                 f'  Skipped.\n'
-            ).expandtabs()
+            )
             mismatched_syllable_count_warnings.append(warning)
             print(warning, file=sys.stderr, flush=True)
             continue
 
-        out_content.append(new_line)
+        out_content.append(create_line_from_format(
+            (new_word, new_phonetic, phonetic_type, etcs), format_))
 
     # Write processed dictionary to file
-    with open(f'{dict_path}_out', 'w', encoding='utf8') as out_file:
+    with open(f'{dict_path}{PROCESSED_SUFFIX}', 'w', encoding='utf8') as out_file:
         out_file.write('\n'.join(out_content))
 
     # Write Warnings to files
-
     for (warning, warning_name) in (
             (invalid_word_warnings, 'invalid_word_warnings'),
             (mismatched_syllable_count_warnings,
-             'mismatched_syllable_count_warnings'),
-            (duplicate_zhuyin_warnings, 'duplicate_zhuyin_warnings')):
+             'mismatched_syllable_count_warnings')):
+        warning_file = f'{dict_path}_{warning_name}'
         if warning:
-            with open(f'{dict_path}_{warning_name}',
+            with open(warning_file,
                       'w', encoding='utf8') as warn_file:
                 warn_file.write('\n'.join(warning))
+        elif os.path.isfile(warning_file):
+            os.remove(warning_file)
 
 
 # Used on set_dict
@@ -130,156 +206,352 @@ def preprocess_dict(dict_path):
 def _call(func, *arg, **kwarg): return func(*arg, **kwarg)
 
 
-# 載入詞典檔
-# Load the dictionary.
-# Side effect: IO (w), fileIO (rw), os (x), sys (x) re (x), pickle (x)
-#              [set_dict] loaded_dict (rw),
-#              chinese (rw), chinese_zhuyin (rw)
-
 @_call
 def set_dict(*arg, **kwarg):
+    """
+    載入詞典檔 \n
+    Load the dictionary. \n
+    Side effect: IO (w), fileIO (rw), os (x), sys (x) re (x), pickle (x)
+        [set_dict] loaded_dict (rw), [set_dict] dict_src(rw)
+        chinese_phonetic (rw)
+    """
     loaded_dict = []
+    dict_src = []
 
-    # A safer unpickler which forbids pickling every classes.
-    # Side effect: pickle (x)
+    # Public functions
+
+    global add_dict_src
+
+    def add_dict_src(path, format_=DEFAULT_FORMAT):
+        """
+        新增要讀取的詞典檔 \n
+        Add the dictionary file to the dictionary source. \n
+        Side effect: DEFAULT_FORMAT (r)
+                     [set_dict] dict_src (w)
+        """
+        dict_src.append((path, format_))
+    add_dict_src = add_dict_src
+
+    global reset_dict_src
+
+    def reset_dict_src():
+        """
+        重設要讀取的詞典檔 \n
+        Reset the dictionary source. \n
+        Side effect: [set_dict] dict_src (w)
+        """
+        dict_src.clear()
+    reset_dict_src = reset_dict_src
+
+    global set_dict_src
+
+    def set_dict_src(path_list):
+        """
+        指定要載入的詞典 \n
+        Specify the dictionaries to be loaded. \n
+        Side effect: [set_dict] dict_src (w)
+        """
+        nonlocal dict_src
+
+        dict_src = path_list
+
+        if isinstance(path_list, str):
+            dict_src = [path_list]
+        return
+    set_dict_src = set_dict_src
+
+    global create_dict
+
+    def create_dict(reprocess=False, recreate_dump=False):
+        """
+        載入詞典的對應傾印檔； \n
+          若無，則讀取已經過前處理之詞典檔，並生成傾印檔；
+          若無，則對詞典檔進行前處理
+        Load the dictionary data from the corresponding dumped data file. \n
+        Parse and create dictionary data from \n
+          the pre-processed dictionary text file if needed.
+        Pre-process the dictionary text file if needed. \n
+        Side effect: os (x), DEFAULT_FORMAT (r)
+            max_word_length (rw)
+            [set_dict] loaded_dict (r), [set_dict] dict_src (r)
+            preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
+                parse_line_in_format: ValueError (x),
+                    WORD (r),
+                    ZHUYIN (r), TL (r), PHONETIC (r),
+                    ETC (r)
+                create_line_from_format:
+                    WORD (r),
+                    ZHUYIN (r), TL (r), PHONETIC (r),
+                    ETC (r)
+            _get_dict_data_from_dump:
+                IO (w), fileIO (r), os.path (x), sys (x),
+                pickle.UnpicklingError (x)
+                BasicUnpickler:
+                        pickle.unpickler (x)
+                get_dict_set_file: hashlib (x)
+            _get_dict_data_from_text:
+                fileIO (r),
+                WORD (r), PHONETIC (r), ETC (r)
+            _create_dict_data_dump:
+                fileIO (w), pickle (x)
+                get_dict_set_file: hashlib (x)
+            _load_dict_data:
+                max_word_length (w),
+                [set_dict] loaded_dict (w),
+                chinese_phonetic (rw)
+        """
+        global max_word_length
+        loaded_dict.clear()
+        chinese_phonetic.clear()
+        max_word_length = 0
+
+        if not (reprocess or recreate_dump):
+            # Load the dumped data of the dictionaries to be loaded if exists
+            (dict_data, dict_data_file) = _get_dict_data_from_dump(dict_src)
+            if _check_dict_data(dict_data, dict_data_file, dict_src):
+                _load_dict_data(dict_data)
+                return
+
+        for path_item in dict_src:
+            if isinstance(path_item, str):
+                path = path_item
+                format_ = DEFAULT_FORMAT
+            else:
+                (path, format_) = path_item
+            dict_data_file = f'{path}{PICKLED_SUFFIX}'
+
+            # Keep path to refer the pre-processed dictionary text file
+            if not path.endswith(PROCESSED_SUFFIX):
+                path_unprocessed = path
+                path = f'{path}{PROCESSED_SUFFIX}'
+                dict_data_file = f'{path}{PICKLED_SUFFIX}'
+
+            # If the dictionary text file is un-processed,
+            #   do pre-processing on it
+            if not reprocess and os.path.isfile(path):
+                # If the dictionary dump data needs to be re-created,
+                # do not load it
+                if not recreate_dump:
+                    # If the dictionary is loaded,
+                    # do not load and do not create the dump data of it again
+                    if path in loaded_dict:
+                        continue
+                    # Load the dictionary dump data if exists
+                    if os.path.isfile(dict_data_file):
+                        (dict_data, _) = _get_dict_data_from_dump(
+                            dict_data_file)
+                        if _check_dict_data(dict_data, dict_data_file, path):
+                            _load_dict_data(dict_data)
+            else:
+                preprocess_dict(path_unprocessed, format_)
+
+            # Create the dictionary from scratch
+            dict_data = _get_dict_data_from_text(path, format_)
+            _create_dict_data_dump(dict_data, dict_data_file)
+            _load_dict_data(dict_data)
+
+        _create_dict_data_dump(
+            (dict_src, chinese_phonetic, max_word_length), dict_src)
+        return
+    create_dict = create_dict
+
+    def set_dict(path_list, *args, **kwargs):
+        """
+        載入指定詞典 \n
+        Load the specified dictionaries. \n
+        Side effect: set_dict_src: dict_src (w)
+            create_dict: os (x), DEFAULT_FORMAT (r)
+                max_word_length (w)
+                [set_dict] loaded_dict (r), [set_dict] dict_src (rw)
+            preprocess_dict:
+                IO (w), fileIO (rw), sys (x), re (x)
+            _get_dict_data_from_dump: IO (w), fileIO (r),
+                os.path (x), sys (x),
+                pickle (x)
+                BasicUnpickler:
+                        pickle (x)
+            _get_dict_data_from_text: fileIO (r),
+                WORD (r),
+                ZHUYIN (r), TL (r), PHONETIC (r),
+                ETC (r)
+            _create_dict_data_dump: fileIO (w), pickle (x)
+            _load_dict_data:
+                max_word_length (w),
+                [set_dict] loaded_dict (w),
+                chinese_phonetic (rw)
+        """
+        set_dict_src(path_list)
+        create_dict(*args, **kwargs)
+        return
+
+    # Private functions
 
     class _BasicUnpickler(pickle.Unpickler):
+        """
+        A safer unpickler which forbids pickling every classes. \n
+        Side effect: pickle (x)
+        """
+
         def find_class(self, module, name):
             raise pickle.UnpicklingError(
                 f'Global \'{module}.{name}\' is forbidden')
 
-    # 讀取詞典檔並建立詞典資料
-    # Parse and create dictionary data from a dictionary text file.
-    # Side effect: fileIO (r)
+    def _get_dict_set_file(path_list):
+        """Side effect: hashlib (x)"""
+        hashed_path_list = hashlib.md5(str(path_list).encode()).hexdigest()
+        return f'dict_set_{hashed_path_list}{PICKLED_SUFFIX}'
 
-    def _get_dict_data_from_text(path):
-        text_chinese_zhuyin = {}
+    def _get_src_path(dict_src_item):
+        if isinstance(dict_src_item, str):
+            return dict_src_item
 
-        with open(path, 'r', encoding='utf8') as dict_file:
+        (dict_src_item_path, _) = dict_src_item
+        return dict_src_item_path
+
+    def _get_dict_data_from_text(source, format_):
+        """
+        讀取詞典檔並建立詞典資料 \n
+        Parse and create dictionary data from a dictionary text file. \n
+        Side effect: fileIO (r),
+            parse_line_in_format: ValueError (x),
+                WORD (r),
+                ZHUYIN (r), TL (r), PHONETIC (r),
+                ETC (r)
+        """
+        text_chinese_phonetic = {}
+        text_max_word_length = 0
+
+        with open(source, 'r', encoding='utf8') as dict_file:
             dict_content = dict_file.read().splitlines()
 
         for phrase in dict_content:
-            (word, zhuyin) = phrase.split('\t')
-            zhuyin_syllables = zhuyin.split(' ')
-            if word in text_chinese_zhuyin:
-                text_chinese_zhuyin[word].append(zhuyin_syllables)
+            (word, phonetic, *_) = parse_line_in_format(phrase, format_)
+
+            phonetic_syllables = phonetic.split(' ')
+            if word in text_chinese_phonetic:
+                # Prevent duplicating
+                if not phonetic_syllables in text_chinese_phonetic[word]:
+                    text_chinese_phonetic[word].append(phonetic_syllables)
             else:
-                text_chinese_zhuyin.update({word: [zhuyin_syllables]})
+                text_max_word_length = max(len(word), text_max_word_length)
+                text_chinese_phonetic.update({word: [phonetic_syllables]})
 
-        return (path, text_chinese_zhuyin)
-
-    # 將詞典資料傾印到檔案
-    # Dump the content of a dictionary data to a file.
-    # Side effect: fileIO (w), pickle (x)
+        return (source, text_chinese_phonetic, text_max_word_length)
 
     def _create_dict_data_dump(dict_data, path):
-        with open(path, 'wb') as pickle_file:
+        """
+        將詞典資料傾印到檔案 \n
+        Dump the content of a dictionary data to a file. \n
+        Side effect: fileIO (w), pickle (x)
+            get_dict_set_file: hashlib (x)
+        """
+        out_path = path
+        if not isinstance(path, str):
+            out_path = _get_dict_set_file(path)
+        with open(out_path, 'wb') as pickle_file:
             pickler_ = pickle.Pickler(pickle_file, pickle.HIGHEST_PROTOCOL)
             pickler_.dump(dict_data)
 
-    # 從先前傾印出的檔案取得詞典資料
-    # Get directionary data from a dumped data file.
-    # Side effect: IO (w), fileIO (r), os.path (x), sys (x),
-    #              pickle.UnpicklingError (x)
-    #              BasicUnpickler: pickle.unpickler (x)
+    def _is_path_list_eq(lhs, rhs, lhs_suffix='', rhs_suffix=''):
+        """Side effect: os.path (x)"""
+        if not isinstance(lhs, str) and not isinstance(rhs, str):
+            lhs_src_paths = map(_get_src_path, lhs)
+            rhs_src_paths = map(_get_src_path, rhs)
+            return all(
+                os.path.realpath(f'{lhs_item}{lhs_suffix}')
+                == os.path.realpath(f'{rhs_item}{rhs_suffix}')
+                for (lhs_item, rhs_item) in zip(lhs_src_paths, rhs_src_paths)
+            )
+        return f'{lhs}{lhs_suffix}' == f'{rhs}{rhs_suffix}'
 
     def _get_dict_data_from_dump(path):
-        if os.path.isfile(path):
-            with open(path, 'rb') as pickle_file:
+        """
+        從先前傾印出的檔案取得詞典資料 \n
+        Get directionary data from a dumped data file. \n
+        Side effect: IO (w), fileIO (r), os.path (x), sys (x),
+            pickle.UnpicklingError (x)
+            BasicUnpickler: pickle.unpickler (x)
+            get_dict_set_file: hashlib (x)
+        """
+        src_path = path
+        if isinstance(path, str):
+            in_path = path
+            if PICKLED_SUFFIX and path.endswith(PICKLED_SUFFIX):
+                src_path = path[:-len(PICKLED_SUFFIX)]
+        else:
+            in_path = _get_dict_set_file(path)
+
+        if os.path.isfile(in_path):
+            with open(in_path, 'rb') as pickle_file:
                 unpickler_ = _BasicUnpickler(pickle_file)
                 try:
-                    (source, new_chinese_zhuyin) = unpickler_.load()
+                    (source, new_chinese_phonetic, new_max_word_length) = (
+                        unpickler_.load())
                 except pickle.UnpicklingError as e:
                     print(str(type(e))[8:-2], ': ', e, file=sys.stderr)
-                    return None
-                if (os.path.realpath(f'{source}.pickle')
-                        == os.path.realpath(path)):
-                    return (source, new_chinese_zhuyin)
-                return (source, None)
+                    return (None, in_path)
+                if (_is_path_list_eq(source, src_path)):
+                    return (
+                        (source, new_chinese_phonetic, new_max_word_length),
+                        in_path)
+                return ((source, None, None), in_path)
+        return (None, None)
 
-    # 載入詞典檔到詞典表中
-    # Load dictionary data into dictionary list.
-    # Side effect: [set_dict] loaded_dict (w),
-    #              chinese (w), chinese_zhuyin (w)
+    def _check_dict_data(dict_data, dict_data_path, dict_src):
+        if dict_data is None:
+            if dict_data_path is not None:
+                print('Warning: The dump file \'', dict_data_path,
+                      '\' can not be loaded.  Regenerated.',
+                      sep='', file=sys.stderr, flush=True)
+            return False
+
+        (data_source, data_chinese_phonetic, _) = dict_data
+
+        if data_chinese_phonetic is not None:
+            return True
+
+        if data_source is not None:
+            if isinstance(dict_src, str):
+                dict_src_text = dict_src
+            else:
+                dict_src_text = '\', \''.join(map(_get_src_path, dict_src))
+
+            if isinstance(dict_src, str):
+                data_source_text = data_source
+            else:
+                data_source_text = '\', \''.join(
+                    map(_get_src_path, data_source))
+
+            print('Warning: The dump file \'', dict_data_path,
+                  '\' is meant for \'', dict_src_text, '\',\n',
+                  '    but its source is \'', data_source_text, '\',\n',
+                  '    which mismatches.  Regenerated.',
+                  sep='', file=sys.stderr, flush=True)
+        return False
 
     def _load_dict_data(dict_data):
-        (path, new_chinese_zhuyin) = dict_data
+        """
+        載入詞典檔到詞典表中 \n
+        Load dictionary data into dictionary list. \n
+        Side effect: max_word_length (w),
+            [set_dict] loaded_dict (w),
+            chinese_phonetic (w)
+        """
+        global chinese_phonetic
+        global max_word_length
+        (path, new_chinese_phonetic, max_word_length) = dict_data
 
-        for (word, zhuyin) in new_chinese_zhuyin.items():
-            if word in chinese_zhuyin:
-                chinese_zhuyin[word].append(*zhuyin)
-            else:
-                chinese_zhuyin.update({word: zhuyin})
+        if loaded_dict:
+            for (word, phonetics) in new_chinese_phonetic.items():
+                if word in chinese_phonetic:
+                    # Prevent duplicating
+                    if not phonetics in chinese_phonetic[word]:
+                        chinese_phonetic[word].extend(phonetics)
+                else:
+                    chinese_phonetic.update({word: phonetics})
+        else:
+            chinese_phonetic = new_chinese_phonetic
 
         loaded_dict.append(path)
-
-    # 載入詞典的對應傾印檔；
-    #   若無，則讀取已經過前處理之詞典檔，並生成傾印檔；
-    #   若無，則對詞典檔進行前處理
-    # Load the dictionary data from the corresponding dumped data file.
-    # Parse and create dictionary data from
-    #   the pre-processed dictionary text file if needed.
-    # Pre-process the dictionary text file if needed.
-    # Side effect: os (x)
-    #              [set_dict] loaded_dict (r),
-    #              preprocess_dict: IO (w), fileIO (rw), sys (x), re (x)
-    #              _get_dict_data_from_dump: IO (w), fileIO (r),
-    #                                        os.path (x), sys (x),
-    #                                        pickle.UnpicklingError (x)
-    #                                        BasicUnpickler:
-    #                                               pickle.unpickler (x)
-    #              _get_dict_data_from_text: fileIO (r)
-    #              _create_dict_data_dump: fileIO (w), pickle (x)
-    #              _load_dict_data: [set_dict] loaded_dict (w),
-    #                               chinese (rw), chinese_zhuyin (rw)
-
-    def set_dict(path_list, recreate_dict=False):
-        loaded_dict.clear()
-        chinese_zhuyin.clear()
-
-        if isinstance(path_list, str):
-            path_list = [path_list]
-
-        for path in path_list:
-            # Prevent using root directory if path is an empty string
-            true_path = os.path.join(os.curdir, path)
-            dict_data_file = f'{true_path}.pickle'
-
-            # Keep true_path to refer the pre-processed dictionary text file
-            if not path.endswith('_out'):
-                true_path_unprocessed = true_path
-                true_path = f'{true_path}_out'
-                dict_data_file = f'{true_path}.pickle'
-
-            # If the dictionary text file is un-processed,
-            #   do pre-processing on it
-            if os.path.isfile(true_path):
-                # Do not load the dictionary if it needs to be re-created
-                if not recreate_dict:
-                    # Do not load and do not create the loaded dictionary again
-                    if true_path in loaded_dict:
-                        continue
-                    # Load the dictionary if exists
-                    if os.path.isfile(dict_data_file):
-                        dict_data = _get_dict_data_from_dump(dict_data_file)
-                        if dict_data is None:
-                            print('Warning: The dump file \'', dict_data_file,
-                                  '\' can not be loaded.  Regenerated.',
-                                  sep='', file=sys.stderr, flush=True)
-                        elif dict_data[1] is not None:
-                            _load_dict_data(dict_data)
-                            continue
-                        elif dict_data[0] is not None:
-                            print('Warning: The dump file \'', dict_data_file,
-                                  '\' and its source \'', dict_data[0], '\'',
-                                  ' mismatched.  Regenerated.',
-                                  sep='', file=sys.stderr, flush=True)
-            else:
-                preprocess_dict(true_path_unprocessed)
-
-            dict_data = _get_dict_data_from_text(true_path)
-            _create_dict_data_dump(dict_data, dict_data_file)
-            _load_dict_data(dict_data)
-        return
 
     return set_dict

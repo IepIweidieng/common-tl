@@ -1,0 +1,41 @@
+﻿N.: Common TL phonetic for north dialect
+S.: Common TL phonetic for south dialect
+To.: Taiwanese Choân-chiu accent
+Ci.: Taiwanese Chiang-chiu accent
+M.: Modern Standard Mandarin Chinese
+
+New phonetics:
+    [f]   "f"   : M."ㄈ"
+    [ʈʂ]  "tsr" : M."ㄓ"
+    [ʈʂʰ] "tsrh": M."ㄔ"
+    [ʂ]   "sr"  : M."ㄕ"
+    [ʐ]   "jr"  : M."ㄖ"
+    [ɥ/y] "y"   : M."ㄩ"
+    [◌˞ ]  "rr"  : M. suffix "ㄦ"
+    [ɚ]   N."orrr" or S."orr": M. vowel "ㄦ"
+
+
+Borrowed phonetics:
+    [x]   "h" (h): M."ㄏ"
+    [ɻ/ɹ] "ir" ([ɨ]): M."ㄭ" in syllables "ㄓ(ㄭ)/ㄗ(ㄭ)", "ㄔ(ㄭ)/ㄘ(ㄭ)", etc.
+    [ɤ]   "er" ([ə]): M."ㄜ"
+    [ʊ]    N."o" ([o]) or S."oo" ([ɔ]): "ㄨ" in M."-ㄨㄥ"
+    [i̯ʊ]   N."io" ([io]) or S."ioo" ([iɔ]): "ㄩ" in M."ㄩㄥ"
+
+Changed phonetics:
+    [iə̯ŋ] "ing" -> "ieng": Distinguished from M.[iŋ] "ing" "ㄧㄥ"
+    [iə̯k̚] "ik"  -> "iek"
+
+    [i̯ɔŋ] "iong" -> "ioong": Distinguished from M.[i̯ʊŋ] N."iong" "ㄩㄥ"
+    [i̯ɔk̚] "iok"  -> "iook"
+
+    [ɔ] "onn",  "om",  "ong",  "op",  "ok",  "onnh"
+    -> "oonn", "oom", "oong", "oop", "ook", "oonnh":
+        Distinguished from M.[ʊŋ] N."-ong" "-ㄨㄥ"
+
+    Let ◌ be any vowel:
+        [m◌̃ ] "m◌"  -> "m◌nn": Distinguished from M.[m◌] "m◌" "ㄇ◌"
+        [n◌̃ ] "n◌"  -> "n◌nn": Distinguished from M.[n◌] "n◌" "ㄋ◌"
+        [ŋ◌̃ ] "ng◌" -> "ng◌nn"
+
+    [d~ɾ~l; ᵈl] "l" -> "dl": Distinguished from M.[l] "l" "ㄌ"
