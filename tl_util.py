@@ -47,3 +47,34 @@ def linear_search_rightmost(first, last, eq_func):
         right -= 1
 
     return None
+
+
+def get_max_length(dict_):
+    result = 0
+    for key in dict_:
+        result = max(len(key), result)
+
+    return result
+
+
+def str_get_gready(str_, offset, source_dict, default_):
+    new_offset = offset
+    str_max_length = min(get_max_length(source_dict), max(len(str_) - offset, 0))
+    for length in range(str_max_length, 0, -1):
+        new_offset = offset + length
+        if str_[offset : new_offset] in source_dict:
+            matched_str = str_[offset : new_offset]
+            matched_item = source_dict[matched_str]
+            return (matched_str, new_offset, matched_item)
+
+    return (None, offset, default_)
+
+
+def str_get_tone(str_, tone_list, default_):
+    for length in range(len(str_), 0, -1):
+        (_, new_offset, tone) = str_get_gready(str_, length - 1, tone_list, None)
+        if tone:
+            str_no_tone = f'{str_[:length - 1]}{str_[new_offset:]}'
+            return (tone, str_no_tone)
+
+    return (default_, str_)

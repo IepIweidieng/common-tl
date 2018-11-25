@@ -4,10 +4,7 @@ import tl_split
 import tl_util
 from common_tl import ipa_pair_to_tl_pair
 from tl_zhuyin import zhuyin_syllable_to_ipa
-
-
-def tl_syllable_to_ipa(syllable):
-    return ('', syllable)
+from tl_tl import tl_syllable_to_ipa
 
 
 def chinese_word_to_phonetic(word):
@@ -19,7 +16,7 @@ def chinese_word_to_phonetic(word):
     return tl_dict.chinese_phonetic.get(word, [])
 
 
-def phonetic_word_to_ipa(phonetic_word):
+def phonetic_word_to_ipa(phonetic_word, use_north=False, use_choan=False):
     """
     將拼音轉成國際音標 \n
     Convert a phonetic word into IPA. \n
@@ -31,7 +28,7 @@ def phonetic_word_to_ipa(phonetic_word):
 
     for syllable in phonetic_word:
         if tl_util.find_first_non_roman(syllable) == len(syllable):
-            ipa_word.append(tl_syllable_to_ipa(syllable))
+            ipa_word.append(tl_syllable_to_ipa(syllable, use_north, use_choan))
         else:
             ipa_word.append(zhuyin_syllable_to_ipa(syllable))
 
@@ -46,7 +43,7 @@ def ipa_pair_to_tl(ipa_pair, use_north=False):
     return [ipa_pair_to_tl_pair(syllable, use_north) for syllable in ipa_pair]
 
 
-def chinese_to_roman(sentence, use_north=False):
+def chinese_to_roman(sentence, use_north=False, use_choan=False):
     """
     Convert a Chinese sentence to Roman. \n
     Side effect:
@@ -69,7 +66,7 @@ def chinese_to_roman(sentence, use_north=False):
         # Currently only use the first phonetic of candidate phonetics
         candidate_phonetic_word = chinese_word_to_phonetic(word)[0:1]
         for phonetic_word in candidate_phonetic_word:
-            ipa_pair_word = phonetic_word_to_ipa(phonetic_word)
+            ipa_pair_word = phonetic_word_to_ipa(phonetic_word, use_north, use_choan)
             tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_north)
 
             tl_pair_list.append(tl_pair_word)
@@ -162,8 +159,8 @@ if __name__ == '__main__':
 
     sentence = '這是個範例！'
 
-    tl_dict.add_dict_src('chinese_dict.txt', (WORD, ZHUYIN))
-    tl_dict.add_dict_src('Ch2TwRoman.txt', (TL, WORD, ETC))
+#    tl_dict.add_dict_src('chinese_dict.txt', (WORD, ZHUYIN))
+#    tl_dict.add_dict_src('Ch2TwRoman.txt', (TL, WORD, ETC))
     tl_dict.add_dict_src('dictionary_num.txt', (TL, WORD))
 
     tl_dict.create_dict()

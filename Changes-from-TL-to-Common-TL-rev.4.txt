@@ -13,7 +13,7 @@ New phonetics:
     [ɥ/y] "y"   : M."ㄩ"
     [◌˞ ]  "rr"  : M. suffix "ㄦ"
     [ɚ]   N."orrr" or S."orr": M. vowel "ㄦ"
-
+    [dz/dʑ] "dj": To."j"
 
 Borrowed phonetics:
     [x]   "h" (h): M."ㄏ"
@@ -23,6 +23,7 @@ Borrowed phonetics:
     [i̯ʊ]   N."io" ([io]) or S."ioo" ([iɔ]): "ㄩ" in M."ㄩㄥ"
 
 Changed phonetics:
+
     [iə̯ŋ] "ing" -> "ieng": Distinguished from M.[iŋ] "ing" "ㄧㄥ"
     [iə̯k̚] "ik"  -> "iek"
 
