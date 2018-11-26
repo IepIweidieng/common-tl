@@ -4,15 +4,28 @@ import pickle
 import re
 import sys
 import unicodedata
+from collections import UserString
 
 import tl_util
 
 # Dictionary format tokens
-WORD = 'word'
-ZHUYIN = 'zhuyin'
-TL = 'tl'
-PHONETIC = 'phonetic'
-ETC = 'ETC'
+class Word(UserString): pass
+class Phonetic(UserString): pass
+class RomanPhonetic(Phonetic): pass
+class Zhuyin(Phonetic): pass
+class TaiwaneseRomanization(RomanPhonetic): pass
+TL = TaiwaneseRomanization
+class ETC(UserString): pass
+
+_FORMAT_TYPE_LIST = {
+    'Word': Word,
+    'Phonetic': Phonetic,
+    'RomanPhonetic': RomanPhonetic,
+    'Zhuyin': Zhuyin,
+    'TaiwaneseRomanization': TaiwaneseRomanization,
+    'ETC': ETC
+}
+
 
 # Data structure:
 #   chinese_phonetic: {word: candidate_phonetics, word2: candidate_phonetics2, ...}
@@ -30,29 +43,29 @@ PICKLED_SUFFIX = '.pickle'
 def parse_line_in_format(line, format_):
     """
     Side effect: ValueError (x),
-        WORD (r), ZHUYIN (r), TL (r), PHONETIC (r), ETC (r)
+        Word (r), Zhuyin (r), TL (r), Phonetic (r), ETC (r)
     """
     etcs = []
     splited = line.split('\t')
 
     for (splited_item, parse_item) in zip(splited, format_):
-        if parse_item is WORD:
-            word = splited_item
-        elif parse_item is ZHUYIN or parse_item is TL or parse_item is PHONETIC:
-            phonetic = splited_item
+        if parse_item is Word:
+            word = Word(splited_item)
+        elif issubclass(parse_item, Phonetic):
             phonetic_type = parse_item
+            phonetic = phonetic_type(splited_item)
         elif parse_item is ETC:
-            etcs.append(splited_item)
+            etcs.append(ETC(splited_item))
         else:
             raise ValueError(
                 f'Invalid parse item \'{parse_item}\'.  '
-                f'Parse item must be WORD, ZHUYIN, TL, PHONETIC, or ETC')
+                f'Parse item must be Word, Zhuyin, TL, Phonetic, or ETC')
 
     return (word, phonetic, phonetic_type, etcs)
 
 
 def create_line_from_format(phrase_data, format_):
-    """Side effect: WORD (r), ZHUYIN (r), TL (r), PHONETIC (r), ETC (r)"""
+    """Side effect: Word (r), Zhuyin (r), TL (r), Phonetic (r), ETC (r)"""
     (word, phonetic, *additional) = (phrase_data)
     etcs = len(additional) > 1 and additional[1] or []
     etcs_len = len(etcs)
@@ -60,9 +73,9 @@ def create_line_from_format(phrase_data, format_):
     out_content = []
 
     for parse_item in format_:
-        if parse_item is WORD:
+        if parse_item is Word:
             out_content.append(word)
-        elif parse_item is ZHUYIN or parse_item is TL or parse_item is PHONETIC:
+        elif issubclass(parse_item, Phonetic):
             out_content.append(phonetic)
         elif parse_item is ETC:
             etcs_item = ''
@@ -72,7 +85,7 @@ def create_line_from_format(phrase_data, format_):
 
             out_content.append(etcs_item)
 
-    return '\t'.join(out_content)
+    return '\t'.join(map(str, out_content))
 
 
 _PUNCTUATION_LIST = {'。', '，', '、', '；', '：', '「', '」',
@@ -86,11 +99,11 @@ def preprocess_dict(dict_path, format_):
     Do pre-process on a dictionary text file \n
     Side effect: IO (w), fileIO (rw), os (x), sys (x), re (x)
                  parse_line_in_format: ValueError (x),
-                                       WORD (r),
-                                       ZHUYIN (r), TL (r), PHONETIC (r),
+                                       Word (r),
+                                       Zhuyin (r), TL (r), Phonetic (r),
                                        ETC (r)
-                 create_line_from_format: WORD (r),
-                                          ZHUYIN (r), TL (r), PHONETIC (r),
+                 create_line_from_format: Word (r),
+                                          Zhuyin (r), TL (r), Phonetic (r),
                                           ETC (r)
     """
     # Read un-processed file
@@ -128,10 +141,10 @@ def preprocess_dict(dict_path, format_):
         # Strip parentheses and unnecessary spaces
         (word, phonetic, phonetic_type, etcs) = (
             parse_line_in_format(new_line, format_))
-        new_word = parenthesis_pattern.sub('', word).strip()
-        new_phonetic = parenthesis_pattern.sub('', phonetic).strip()
+        new_word = parenthesis_pattern.sub('', str(word)).strip()
+        new_phonetic = parenthesis_pattern.sub('', str(phonetic)).strip()
 
-        if phonetic_type is TL or phonetic_type is PHONETIC:
+        if issubclass(phonetic_type, RomanPhonetic):
             # Decompose precomposed characters
             new_phonetic = unicodedata.normalize("NFD", new_phonetic)
 
@@ -158,7 +171,7 @@ def preprocess_dict(dict_path, format_):
 
         # Handle erization
         erization_count = 0
-        if phonetic_type is ZHUYIN:
+        if isinstance(phonetic_type, Zhuyin):
             for syllable in phonetic_syllables:
                 if len(syllable) > 1 and syllable.endswith('ㄦ'):
                     erization_count += 1
@@ -275,12 +288,12 @@ def set_dict(*arg, **kwarg):
             [set_dict] loaded_dict (r), [set_dict] dict_src (r)
             preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
                 parse_line_in_format: ValueError (x),
-                    WORD (r),
-                    ZHUYIN (r), TL (r), PHONETIC (r),
+                    Word (r),
+                    Zhuyin (r), TL (r), Phonetic (r),
                     ETC (r)
                 create_line_from_format:
-                    WORD (r),
-                    ZHUYIN (r), TL (r), PHONETIC (r),
+                    Word (r),
+                    Zhuyin (r), TL (r), Phonetic (r),
                     ETC (r)
             _get_dict_data_from_dump:
                 IO (w), fileIO (r), os.path (x), sys (x),
@@ -290,7 +303,7 @@ def set_dict(*arg, **kwarg):
                 get_dict_set_file: hashlib (x)
             _get_dict_data_from_text:
                 fileIO (r),
-                WORD (r), PHONETIC (r), ETC (r)
+                Word (r), Phonetic (r), ETC (r)
             _create_dict_data_dump:
                 fileIO (w), pickle (x)
                 get_dict_set_file: hashlib (x)
@@ -366,8 +379,8 @@ def set_dict(*arg, **kwarg):
                 BasicUnpickler:
                         pickle (x)
             _get_dict_data_from_text: fileIO (r),
-                WORD (r),
-                ZHUYIN (r), TL (r), PHONETIC (r),
+                Word (r),
+                Zhuyin (r), TL (r), Phonetic (r),
                 ETC (r)
             _create_dict_data_dump: fileIO (w), pickle (x)
             _load_dict_data:
@@ -383,11 +396,13 @@ def set_dict(*arg, **kwarg):
 
     class _BasicUnpickler(pickle.Unpickler):
         """
-        A safer unpickler which forbids pickling every classes. \n
+        A safer unpickler which allows pickling only the non format type classes. \n
         Side effect: pickle (x)
         """
 
         def find_class(self, module, name):
+            if module == 'tl_dict' and name in _FORMAT_TYPE_LIST:
+                return _FORMAT_TYPE_LIST[name]
             raise pickle.UnpicklingError(
                 f'Global \'{module}.{name}\' is forbidden')
 
@@ -409,8 +424,8 @@ def set_dict(*arg, **kwarg):
         Parse and create dictionary data from a dictionary text file. \n
         Side effect: fileIO (r),
             parse_line_in_format: ValueError (x),
-                WORD (r),
-                ZHUYIN (r), TL (r), PHONETIC (r),
+                Word (r),
+                Zhuyin (r), TL (r), Phonetic (r),
                 ETC (r)
         """
         text_chinese_phonetic = {}
@@ -420,16 +435,20 @@ def set_dict(*arg, **kwarg):
             dict_content = dict_file.read().splitlines()
 
         for phrase in dict_content:
-            (word, phonetic, *_) = parse_line_in_format(phrase, format_)
+            (word, phonetic, phonetic_type, _) = (
+                parse_line_in_format(phrase, format_))
 
             phonetic_syllables = phonetic.split(' ')
+            new_phonetic_syllables = [
+                phonetic_type(syllable) for syllable in phonetic_syllables]
+
             if word in text_chinese_phonetic:
                 # Prevent duplicating
                 if not phonetic_syllables in text_chinese_phonetic[word]:
-                    text_chinese_phonetic[word].append(phonetic_syllables)
+                    text_chinese_phonetic[word].append(new_phonetic_syllables)
             else:
                 text_max_word_length = max(len(word), text_max_word_length)
-                text_chinese_phonetic.update({word: [phonetic_syllables]})
+                text_chinese_phonetic.update({word: [new_phonetic_syllables]})
 
         return (source, text_chinese_phonetic, text_max_word_length)
 

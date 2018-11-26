@@ -27,9 +27,9 @@ def phonetic_word_to_ipa(phonetic_word, use_north=False, use_choan=False):
     ipa_word = []
 
     for syllable in phonetic_word:
-        if tl_util.find_first_non_roman(syllable) == len(syllable):
+        if isinstance(syllable, tl_dict.TL):
             ipa_word.append(tl_syllable_to_ipa(syllable, use_north, use_choan))
-        else:
+        elif isinstance(syllable, tl_dict.Zhuyin):
             ipa_word.append(zhuyin_syllable_to_ipa(syllable))
 
     return ipa_word
@@ -96,11 +96,11 @@ def demonstrate():
     import time
     time_loading_start = time.perf_counter()
 
-    tl_dict.add_dict_src('chinese_dict.txt')
+    tl_dict.add_dict_src('chinese_dict.txt', (tl_dict.Word, tl_dict.Zhuyin))
     tl_dict.add_dict_src(
-        'Ch2TwRoman.txt', (tl_dict.TL, tl_dict.WORD, tl_dict.ETC))
+        'Ch2TwRoman.txt', (tl_dict.TL, tl_dict.Word, tl_dict.ETC))
     tl_dict.add_dict_src(
-        'dictionary_num.txt', (tl_dict.TL, tl_dict.WORD))
+        'dictionary_num.txt', (tl_dict.TL, tl_dict.Word))
 
     tl_dict.create_dict()
 
@@ -109,6 +109,7 @@ def demonstrate():
           sep='', end='\n\n')
 
     use_north = False
+    use_choan = False
 
     sentence = (
         ' 測 試  這   兒 巴  陵郡  日zZㄈ=心  謗腹非 拔 了一 個 尖  兒八   面'
@@ -128,11 +129,11 @@ def demonstrate():
             # Currently only use the first phonetic of candidate phonetics
             candidate_phonetic_word = chinese_word_to_phonetic(word)[0:1]
             for phonetic_word in candidate_phonetic_word:
-                ipa_pair_word = phonetic_word_to_ipa(phonetic_word)
+                ipa_pair_word = phonetic_word_to_ipa(phonetic_word, use_north, use_choan)
                 tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_north)
                 output = (
                     f'{output}'
-                    f'{" ".join(phonetic_word)}\t'
+                    f'{" ".join(map(str, phonetic_word))}\t'
                     f'{_print_pairs(ipa_pair_word)}\t'
                     f'{_print_pairs(tl_pair_word)}\t')
 
@@ -155,13 +156,13 @@ def demonstrate():
 
 # Usage example
 if __name__ == '__main__':
-    from tl_dict import WORD, ZHUYIN, TL, PHONETIC, ETC
+    from tl_dict import Word, Zhuyin, TL, ETC
 
     sentence = '這是個範例！'
 
-#    tl_dict.add_dict_src('chinese_dict.txt', (WORD, ZHUYIN))
-#    tl_dict.add_dict_src('Ch2TwRoman.txt', (TL, WORD, ETC))
-    tl_dict.add_dict_src('dictionary_num.txt', (TL, WORD))
+    tl_dict.add_dict_src('chinese_dict.txt', (Word, Zhuyin))
+    tl_dict.add_dict_src('Ch2TwRoman.txt', (TL, Word, ETC))
+    tl_dict.add_dict_src('dictionary_num.txt', (TL, Word))
 
     tl_dict.create_dict()
 

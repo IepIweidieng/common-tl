@@ -150,9 +150,9 @@ def demonstrate():
     time_loading_start = time.perf_counter()
 
     tl_dict.set_dict([
-        'chinese_dict.txt',
-        ('Ch2TwRoman.txt', (tl_dict.TL, tl_dict.WORD, tl_dict.ETC)),
-        ('dictionary_num.txt', (tl_dict.TL, tl_dict.WORD))])
+        ('chinese_dict.txt', (tl_dict.Word, tl_dict.Zhuyin)),
+        ('Ch2TwRoman.txt', (tl_dict.TL, tl_dict.Word, tl_dict.ETC)),
+        ('dictionary_num.txt', (tl_dict.TL, tl_dict.Word))])
 
     time_loading_end = time.perf_counter()
     print('Loading time: ', time_loading_end - time_loading_start, ' s',
@@ -178,13 +178,13 @@ def demonstrate():
 
 # Usage example
 if __name__ == '__main__':
-    from tl_dict import WORD, ZHUYIN, TL, PHONETIC, ETC
+    from tl_dict import Word, Zhuyin, TL, ETC
 
     sentence = '這是個範例！'
 
     tl_dict.set_dict([
-        ('chinese_dict.txt', (WORD, ZHUYIN)),
-        ('Ch2TwRoman.txt', (TL, WORD, ETC)),
-        ('dictionary_num.txt', (TL, WORD))])
+        ('chinese_dict.txt', (Word, Zhuyin)),
+        ('Ch2TwRoman.txt', (TL, Word, ETC)),
+        ('dictionary_num.txt', (TL, Word))])
 
     print(split_chinese_word(sentence))
