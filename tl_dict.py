@@ -324,6 +324,7 @@ def set_dict(*arg, **kwarg):
                 _load_dict_data(dict_data)
                 return
 
+        will_create_dict_data_dump = True
         for path_item in dict_src:
             (path, format_) = path_item
             dict_data_file = f'{path}{PICKLED_SUFFIX}'
@@ -350,16 +351,19 @@ def set_dict(*arg, **kwarg):
                             dict_data_file)
                         if _check_dict_data(dict_data, dict_data_file, path):
                             _load_dict_data(dict_data)
-            else:
+            elif os.path.isfile(path_unprocessed):
                 preprocess_dict(path_unprocessed, format_)
 
-            # Create the dictionary from scratch
-            dict_data = _get_dict_data_from_text(path, format_)
-            _create_dict_data_dump(dict_data, dict_data_file)
-            _load_dict_data(dict_data)
+            if os.path.isfile(path):
+                # Create the dictionary from scratch
+                dict_data = _get_dict_data_from_text(path, format_)
+                _create_dict_data_dump(dict_data, dict_data_file)
+                _load_dict_data(dict_data)
+            else: will_create_dict_data_dump = False
 
-        _create_dict_data_dump(
-            (dict_src, chinese_phonetic, max_word_length), dict_src)
+        if will_create_dict_data_dump:
+            _create_dict_data_dump(
+                (dict_src, chinese_phonetic, max_word_length), dict_src)
         return
     create_dict = create_dict
 
