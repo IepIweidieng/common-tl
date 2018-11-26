@@ -102,3 +102,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+# Visual Studio Code
+.vscode/
+
+# Output files
+*.*_warnings
+*.*_out
+*.pickle
