@@ -400,7 +400,7 @@ def set_dict(*arg, **kwarg):
 
     class _BasicUnpickler(pickle.Unpickler):
         """
-        A safer unpickler which allows pickling only the non format type classes. \n
+        A safer unpickler which allows pickling only the format type classes. \n
         Side effect: pickle (x)
         """
 
