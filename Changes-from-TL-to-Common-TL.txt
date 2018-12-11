@@ -1,4 +1,4 @@
-﻿Changes from TL to Common TL, revision 4
+﻿Changes from TL to Common TL, revision 5
 
 N.: Common TL phonetic for north dialect
 S.: Common TL phonetic for south dialect
@@ -18,7 +18,7 @@ New phonetics:
     [dz/dʑ] "dj": To."j"
 
 Borrowed phonetics:
-    [x]   "h" (h): M."ㄏ"
+    [x]   "h" ([h]): M."ㄏ"
     [ɻ/ɹ] "ir" ([ɨ]): M."ㄭ" in syllables "ㄓ(ㄭ)/ㄗ(ㄭ)", "ㄔ(ㄭ)/ㄘ(ㄭ)", etc.
     [ɤ]   "er" ([ə]): M."ㄜ"
     [ʊ]    N."o" ([o]) or S."oo" ([ɔ]): "ㄨ" in M."-ㄨㄥ"
