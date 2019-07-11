@@ -557,7 +557,8 @@ def set_dict(*arg, **kwarg):
         """
         global chinese_phonetic
         global max_word_length
-        (path, new_chinese_phonetic, max_word_length) = dict_data
+        (path, new_chinese_phonetic, new_max_word_length) = dict_data
+        max_word_length = max(new_max_word_length, max_word_length)
 
         if loaded_dict:
             for (word, phonetics) in new_chinese_phonetic.items():
