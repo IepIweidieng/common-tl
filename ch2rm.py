@@ -96,11 +96,12 @@ def demonstrate():
     import time
     time_loading_start = time.perf_counter()
 
-    tl_dict.add_dict_src('chinese_dict.txt', (tl_dict.Word, tl_dict.Zhuyin))
     tl_dict.add_dict_src(
-        'Ch2TwRoman.txt', (tl_dict.TL, tl_dict.Word, tl_dict.ETC))
+        'dict_example/chinese_dict.txt', (tl_dict.Word, tl_dict.Zhuyin))
     tl_dict.add_dict_src(
-        'dictionary_num.txt', (tl_dict.TL, tl_dict.Word))
+        'dict_example/Ch2TwRoman.txt', (tl_dict.TL, tl_dict.Word, tl_dict.ETC))
+    tl_dict.add_dict_src(
+        'dict_example/dictionary_num.txt', (tl_dict.TL, tl_dict.Word))
 
     tl_dict.create_dict()
 
@@ -160,9 +161,9 @@ if __name__ == '__main__':
 
     sentence = '這是個範例！'
 
-    tl_dict.add_dict_src('chinese_dict.txt', (Word, Zhuyin))
-    tl_dict.add_dict_src('Ch2TwRoman.txt', (TL, Word, ETC))
-    tl_dict.add_dict_src('dictionary_num.txt', (TL, Word))
+    tl_dict.add_dict_src('dict_example/chinese_dict.txt', (Word, Zhuyin))
+    tl_dict.add_dict_src('dict_example/Ch2TwRoman.txt', (TL, Word, ETC))
+    tl_dict.add_dict_src('dict_example/dictionary_num.txt', (TL, Word))
 
     tl_dict.create_dict()
 
