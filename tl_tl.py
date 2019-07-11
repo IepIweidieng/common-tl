@@ -102,7 +102,8 @@ def _NULL_NUCLEUS_BRANCH_MEDIAL(tl_medial):
 
 def _NULL_NUCLEUS_BRANCH(tl_coda):
     return {
-        'ng': 'ŋ̍', 'm': 'm̩'
+        'ng': 'ŋ̍', 'ngh': 'ŋ̍',
+        'm': 'm̩', 'mh': 'm̩',
     }.get(tl_coda, _NULL_NUCLEUS_BRANCH_MEDIAL)
 
 
@@ -128,14 +129,26 @@ def _CODA_M_BRANCH(nucleus):
         'm̩': ''
     }.get(nucleus, 'm')
 
+def _CODA_MH_BRANCH(nucleus):
+    return {
+        'm̩': 'h'
+    }.get(nucleus, 'mh?')
+
 def _CODA_NG_BRANCH(nucleus):
     return {
         'ŋ̍': ''
     }.get(nucleus, 'ŋ')
 
+def _CODA_NGH_BRANCH(nucleus):
+    return {
+        'ŋ̍': 'h'
+    }.get(nucleus, 'ŋh?')
+
 
 _TL_CODA_LIST = {
-    'm': _CODA_M_BRANCH, 'n': 'n', 'ng': _CODA_NG_BRANCH,
+    'm': _CODA_M_BRANCH, 'mh': _CODA_MH_BRANCH,
+    'n': 'n',
+    'ng': _CODA_NG_BRANCH, 'ngh': _CODA_NGH_BRANCH,
     'p': 'p̚', 't': 't̚', 'k': 'k̚', 'h': 'ʔ',
     'nn': '',   # Nasalize the former vowels
     'nnh': 'ʔ'  # Nasalize the former vowels and then append a 'ʔ'
@@ -161,6 +174,8 @@ _FINAL_LIST = (
 [uai]	uai	uainn
 [ue]	ue								ueh
 [ui]	ui
+[m̩]	m								mh
+[ŋ̍]	ng								ngh
 )'''
 
 
@@ -238,9 +253,9 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
         nucleus0 = nasalization(nucleus0)
         nucleus1 = nasalization(nucleus1)
 
-    if offset != len(tl_no_tone):
+    if offset != len(tl_no_tone) or coda.endswith("?"):
         print('Warning: ', tl_, ' -> ', tl_no_tone,
               ' is an invalid TL.  Continued.',
               sep='', file=sys.stderr, flush=True)
-        return (initial, f'{medial}{nucleus0}{nucleus1}{coda}?{tone}')
+        return (initial, f'{medial}{nucleus0}{nucleus1}{coda.rstrip("?")}?{tone}')
     return (initial, f'{medial}{nucleus0}{nucleus1}{coda}{tone}')
