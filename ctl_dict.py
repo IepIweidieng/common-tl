@@ -27,19 +27,6 @@ _FORMAT_TYPE_LIST = {
 }
 
 
-# Data structure:
-#   chinese_phonetic: {word: candidate_phonetics, word2: candidate_phonetics2, ...}
-#   candidate_phonetics: [phonetic1, phonetic2, ...]
-#   phonetic: [syllable1, syllable2, ...]
-#   Overview: {word: [[syllable11, syllable12], [syllable21, syllable22]], ...}
-chinese_phonetic = {}
-max_word_length = 0
-
-
-PROCESSED_SUFFIX = '_out'
-PICKLED_SUFFIX = '.pickle'
-
-
 def parse_line_in_format(line, format_):
     """
     Side effect: ValueError (x),
@@ -212,6 +199,20 @@ def preprocess_dict(dict_path, format_):
             os.remove(warning_file)
 
 
+# Data structure:
+#   chinese_phonetic: {word: candidate_phonetics, word2: candidate_phonetics2, ...}
+#   candidate_phonetics: [phonetic1, phonetic2, ...]
+#   phonetic: [syllable1, syllable2, ...]
+#   Overview: {word: [[syllable11, syllable12], [syllable21, syllable22]], ...}
+class CtlDict:
+    def __init__(self):
+        self.chinese_phonetic = {}
+        self.max_word_length = 0
+
+PROCESSED_SUFFIX = '_out'
+PICKLED_SUFFIX = '.pickle'
+
+
 # Used on set_dict
 # Side effect: func (x)
 
@@ -225,7 +226,6 @@ def set_dict(*arg, **kwarg):
     Load the dictionary. \n
     Side effect: IO (w), fileIO (rw), os (x), sys (x) re (x), pickle (x)
         [set_dict] loaded_dict (rw), [set_dict] dict_src(rw)
-        chinese_phonetic (rw)
     """
     loaded_dict = []
     dict_src = []
@@ -284,7 +284,6 @@ def set_dict(*arg, **kwarg):
           the pre-processed dictionary text file if needed.
         Pre-process the dictionary text file if needed. \n
         Side effect: os (x), DEFAULT_FORMAT (r)
-            max_word_length (rw)
             [set_dict] loaded_dict (r), [set_dict] dict_src (r)
             preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
                 parse_line_in_format: ValueError (x),
@@ -307,22 +306,16 @@ def set_dict(*arg, **kwarg):
             _create_dict_data_dump:
                 fileIO (w), pickle (x)
                 get_dict_set_file: hashlib (x)
-            _load_dict_data:
-                max_word_length (w),
-                [set_dict] loaded_dict (w),
-                chinese_phonetic (rw)
+            _load_dict_data: [set_dict] loaded_dict (w)
         """
-        global max_word_length
-        loaded_dict.clear()
-        chinese_phonetic.clear()
-        max_word_length = 0
+        dict_ = CtlDict()
 
         if not (reprocess or recreate_dump):
             # Load the dumped data of the dictionaries to be loaded if exists
             (dict_data, dict_data_file) = _get_dict_data_from_dump(dict_src)
             if _check_dict_data(dict_data, dict_data_file, dict_src):
-                _load_dict_data(dict_data)
-                return
+                _load_dict_data(dict_, dict_data)
+                return dict_
 
         will_create_dict_data_dump = True
         for path_item in dict_src:
@@ -350,7 +343,7 @@ def set_dict(*arg, **kwarg):
                         (dict_data, _) = _get_dict_data_from_dump(
                             dict_data_file)
                         if _check_dict_data(dict_data, dict_data_file, path):
-                            _load_dict_data(dict_data)
+                            _load_dict_data(dict_, dict_data)
             elif os.path.isfile(path_unprocessed):
                 preprocess_dict(path_unprocessed, format_)
 
@@ -358,13 +351,13 @@ def set_dict(*arg, **kwarg):
                 # Create the dictionary from scratch
                 dict_data = _get_dict_data_from_text(path, format_)
                 _create_dict_data_dump(dict_data, dict_data_file)
-                _load_dict_data(dict_data)
+                _load_dict_data(dict_, dict_data)
             else: will_create_dict_data_dump = False
 
         if will_create_dict_data_dump:
             _create_dict_data_dump(
-                (dict_src, chinese_phonetic, max_word_length), dict_src)
-        return
+                (dict_src, dict_.chinese_phonetic, dict_.max_word_length), dict_src)
+        return dict_
     create_dict = create_dict
 
     def set_dict(path_list, *args, **kwargs):
@@ -373,7 +366,6 @@ def set_dict(*arg, **kwarg):
         Load the specified dictionaries. \n
         Side effect: set_dict_src: dict_src (w)
             create_dict: os (x), DEFAULT_FORMAT (r)
-                max_word_length (w)
                 [set_dict] loaded_dict (r), [set_dict] dict_src (rw)
             preprocess_dict:
                 IO (w), fileIO (rw), sys (x), re (x)
@@ -387,14 +379,11 @@ def set_dict(*arg, **kwarg):
                 Zhuyin (r), TL (r), Phonetic (r),
                 ETC (r)
             _create_dict_data_dump: fileIO (w), pickle (x)
-            _load_dict_data:
-                max_word_length (w),
-                [set_dict] loaded_dict (w),
-                chinese_phonetic (rw)
+            _load_dict_data: [set_dict] loaded_dict (w)
         """
         set_dict_src(path_list)
-        create_dict(*args, **kwargs)
-        return
+        return create_dict(*args, **kwargs)
+
 
     # Private functions
 
@@ -547,29 +536,25 @@ def set_dict(*arg, **kwarg):
                   sep='', file=sys.stderr, flush=True)
         return False
 
-    def _load_dict_data(dict_data):
+    def _load_dict_data(dict_, dict_data,):
         """
         載入詞典檔到詞典表中 \n
         Load dictionary data into dictionary list. \n
-        Side effect: max_word_length (w),
-            [set_dict] loaded_dict (w),
-            chinese_phonetic (w)
+        Side effect: [set_dict] loaded_dict (w)
         """
-        global chinese_phonetic
-        global max_word_length
         (path, new_chinese_phonetic, new_max_word_length) = dict_data
-        max_word_length = max(new_max_word_length, max_word_length)
+        dict_.max_word_length = max(new_max_word_length, dict_.max_word_length)
 
         if loaded_dict:
             for (word, phonetics) in new_chinese_phonetic.items():
-                if word in chinese_phonetic:
+                if word in dict_.chinese_phonetic:
                     # Prevent duplicating
-                    if not phonetics in chinese_phonetic[word]:
-                        chinese_phonetic[word].extend(phonetics)
+                    if not phonetics in dict_.chinese_phonetic[word]:
+                        dict_.chinese_phonetic[word].extend(phonetics)
                 else:
-                    chinese_phonetic.update({word: phonetics})
+                    dict_.chinese_phonetic.update({word: phonetics})
         else:
-            chinese_phonetic = new_chinese_phonetic
+            dict_.chinese_phonetic = new_chinese_phonetic
 
         loaded_dict.append(path)
 

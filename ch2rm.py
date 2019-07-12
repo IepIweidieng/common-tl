@@ -5,13 +5,12 @@ from phonetic.zhuyin import zhuyin_syllable_to_ipa
 from phonetic.tl import tl_syllable_to_ipa
 
 
-def chinese_word_to_phonetic(word):
+def chinese_word_to_phonetic(word, dict_):
     """
     依照中文詞典檔轉成拼音 \n
-    Convert a Chinese word into phonetic word with the dictionary. \n
-    Side effect: ctl_dict.chinese_phonetic (r) \n
+    Convert a Chinese word into phonetic word with the dictionary.
     """
-    return ctl_dict.chinese_phonetic.get(word, [])
+    return dict_.chinese_phonetic.get(word, [])
 
 
 def phonetic_word_to_ipa(phonetic_word, use_north=False, use_choan=False):
@@ -41,28 +40,22 @@ def ipa_pair_to_tl(ipa_pair, use_north=False):
     return [ipa_pair_to_tl_pair(syllable, use_north) for syllable in ipa_pair]
 
 
-def chinese_to_roman(sentence, use_north=False, use_choan=False):
+def chinese_to_roman(sentence, dict_, use_north=False, use_choan=False):
     """
     Convert a Chinese sentence to Roman. \n
     Side effect:
         ctl_dict.create_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-            [ctl_dict.set_dict] loaded_dict (rw),
-            ctl_dict.chinese_phonetic (rw)
-        ctl_segment.split_chinese_word:
-            ctl_dict.chinese_phonetic (r),
-            ctl_dict.max_word_length (r)
-        chinese_word_to_phonetic:
-            ctl_dict.chinese_phonetic (r)
+            [ctl_dict.set_dict] loaded_dict (rw)
         zhuyin_word_to_ipa:
             zhuyin_syllable_to_ipa: IO (w)
     """
-    words_of_sentence = ctl_segment.split_chinese_word(sentence)
+    words_of_sentence = ctl_segment.split_chinese_word(sentence, dict_)
 
     tl_pair_list = []
     for word in words_of_sentence:
         # Currently only use the first phonetic of candidate phonetics
-        candidate_phonetic_word = chinese_word_to_phonetic(word)[0:1]
+        candidate_phonetic_word = chinese_word_to_phonetic(word, dict_)[0:1]
         for phonetic_word in candidate_phonetic_word:
             ipa_pair_word = phonetic_word_to_ipa(phonetic_word, use_north, use_choan)
             tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_north)
@@ -81,13 +74,7 @@ def demonstrate():
     Side effect: IO (w), time (x)
         ctl_dict.set_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-            [ctl_dict.set_dict] loaded_dict (rw),
-            chinese_phonetic (rw)
-        ctl_segment.split_chinese_word:
-            ctl_dict.chinese_phonetic (r),
-            ctl_dict.max_word_length (r)
-        chinese_word_to_phonetic:
-            ctl_dict.chinese_phonetic (r)
+            [ctl_dict.set_dict] loaded_dict (rw)
         zhuyin_word_to_ipa:
             zhuyin_syllable_to_ipa: IO (w)
     """
@@ -101,7 +88,7 @@ def demonstrate():
     ctl_dict.add_dict_src(
         'dict_example/dictionary_num.txt', (ctl_dict.TL, ctl_dict.Word))
 
-    ctl_dict.create_dict()
+    dict_ = ctl_dict.create_dict()
 
     time_loading_end = time.perf_counter()
     print('Loading time: ', time_loading_end - time_loading_start, ' s',
@@ -118,7 +105,7 @@ def demonstrate():
     while sentence:
         time_converting_start = time.perf_counter()
 
-        words_of_sentence = ctl_segment.split_chinese_word(sentence)
+        words_of_sentence = ctl_segment.split_chinese_word(sentence, dict_)
 
         tl_pair_list = []
         output = ''
@@ -126,7 +113,7 @@ def demonstrate():
             output = f'{output}{word}\t'
 
             # Currently only use the first phonetic of candidate phonetics
-            candidate_phonetic_word = chinese_word_to_phonetic(word)[0:1]
+            candidate_phonetic_word = chinese_word_to_phonetic(word, dict_)[0:1]
             for phonetic_word in candidate_phonetic_word:
                 ipa_pair_word = phonetic_word_to_ipa(phonetic_word, use_north, use_choan)
                 tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_north)
@@ -163,7 +150,7 @@ if __name__ == '__main__':
     ctl_dict.add_dict_src('dict_example/Ch2TwRoman.txt', (TL, Word, ETC))
     ctl_dict.add_dict_src('dict_example/dictionary_num.txt', (TL, Word))
 
-    ctl_dict.create_dict()
+    dict_ = ctl_dict.create_dict()
 
-    print(chinese_to_roman(sentence))
-    print(chinese_to_roman(sentence, use_north=True))
+    print(chinese_to_roman(sentence, dict_))
+    print(chinese_to_roman(sentence, dict_, use_north=True))
