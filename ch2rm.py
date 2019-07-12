@@ -1,7 +1,5 @@
-import phonetic.common_tl as common_tl
 import ctl_dict
 import ctl_segment
-import phonetic.ctl_util as ctl_util
 from phonetic.common_tl import ipa_pair_to_tl_pair
 from phonetic.zhuyin import zhuyin_syllable_to_ipa
 from phonetic.tl import tl_syllable_to_ipa
