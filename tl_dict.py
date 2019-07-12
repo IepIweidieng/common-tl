@@ -171,7 +171,7 @@ def preprocess_dict(dict_path, format_):
 
         # Handle erization
         erization_count = 0
-        if isinstance(phonetic_type, Zhuyin):
+        if issubclass(phonetic_type, Zhuyin):
             for syllable in phonetic_syllables:
                 if len(syllable) > 1 and syllable.endswith('ㄦ'):
                     erization_count += 1
