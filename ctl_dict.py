@@ -6,7 +6,7 @@ import sys
 import unicodedata
 from collections import UserString
 
-import tl_util
+import phonetic.ctl_util as ctl_util
 
 # Dictionary format tokens
 class Word(UserString): pass
@@ -159,7 +159,7 @@ def preprocess_dict(dict_path, format_):
         word_len = 0
         is_prev_char_roman = False
         for char in f'{new_word} ':
-            if tl_util.is_char_roman(char) and (char != ' ' and char != '-'):
+            if ctl_util.is_char_roman(char) and (char != ' ' and char != '-'):
                 is_prev_char_roman = True
             else:
                 if is_prev_char_roman:
@@ -405,7 +405,7 @@ def set_dict(*arg, **kwarg):
         """
 
         def find_class(self, module, name):
-            if module == 'tl_dict' and name in _FORMAT_TYPE_LIST:
+            if module == 'ctl_dict' and name in _FORMAT_TYPE_LIST:
                 return _FORMAT_TYPE_LIST[name]
             raise pickle.UnpicklingError(
                 f'Global \'{module}.{name}\' is forbidden')

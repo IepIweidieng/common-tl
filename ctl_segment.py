@@ -1,8 +1,8 @@
 import os
 import shutil
 
-import tl_dict
-import tl_util
+import ctl_dict
+import phonetic.ctl_util as ctl_util
 
 
 def split_chinese_word(sentence):
@@ -13,8 +13,8 @@ def split_chinese_word(sentence):
     Merge the spaces in a sentence,
       and then split the merged sentence into words.
     Side effect:
-        tl_dict.chinese_phonetic (r),
-        tl_dict.max_word_length (r)
+        ctl_dict.chinese_phonetic (r),
+        ctl_dict.max_word_length (r)
     """
     spilted_words = []
     merged_sentence = merge(sentence)
@@ -25,20 +25,20 @@ def split_chinese_word(sentence):
         max_word_bound = str_len - current_offset
 
         # Find the longest word start from current_offset
-        word_bound = tl_util.linear_search_rightmost(
-            1, min(max_word_bound + 1, tl_dict.max_word_length + 1),
+        word_bound = ctl_util.linear_search_rightmost(
+            1, min(max_word_bound + 1, ctl_dict.max_word_length + 1),
             # Side effect: [split_chinese_word] sentence (r),
-            #              tl_dict.chinese_phonetic (r)
+            #              ctl_dict.chinese_phonetic (r)
             lambda new_bound:
                 (merged_sentence[current_offset: current_offset + new_bound]
-                    in tl_dict.chinese_phonetic)
+                    in ctl_dict.chinese_phonetic)
         )
 
         # If no word found,
         #   use the whole roman word from current_offset instead
         if word_bound is None:
             word_bound = (
-                tl_util.find_first_non_roman(merged_sentence[current_offset:])
+                ctl_util.find_first_non_roman(merged_sentence[current_offset:])
                 or 1)
 
         spilted_words.append(
@@ -64,7 +64,7 @@ def merge(sentence):
         if merge_unit_item:
             # 代表全羅馬字
             # Check whether the part of string is a Roman word
-            if tl_util.find_first_non_roman(merge_unit_item):
+            if ctl_util.find_first_non_roman(merge_unit_item):
                 # Led by Chinese characters
                 if not is_prev_merge_unit_roman:
                     merged_str = f'{merged_str}{merge_unit_item}'
@@ -89,8 +89,8 @@ def split_file(path):
     Split Chinese words for a .trn file. \n
     Side effect: os.path (x), fileIO (rw)
         split_chinese_word:
-            tl_dict.chinese_phonetic (r),
-            tl_dict.max_word_length (r)
+            ctl_dict.chinese_phonetic (r),
+            ctl_dict.max_word_length (r)
     """
     if os.path.isfile(path) and os.path.splitext(path) == '.trn':
         shutil.copy(path, f'{path}_bk')
@@ -115,14 +115,14 @@ def split_for_each_file(path=''):
     Example:
         split_for_each_file("/home/thh101u/Desktop/333_sentence_trn0629/")
     Side effect: os (x), IO (w)
-        tl_dict.create_dict:
+        ctl_dict.create_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-            [tl_dict.set_dict] loaded_dict (rw),
+            [ctl_dict.set_dict] loaded_dict (rw),
             chinese_phonetic (rw)
         split_file: fileIO (rw)
             split_chinese_word:
-                tl_dict.chinese_phonetic (r),
-                tl_dict.max_word_length (r)
+                ctl_dict.chinese_phonetic (r),
+                ctl_dict.max_word_length (r)
     """
     for subpath in os.listdir(path):
         standard_subpath = os.path.join(path, subpath)
@@ -138,21 +138,21 @@ def split_for_each_file(path=''):
 def demonstrate():
     """
     Side effect: IO (w), time (x)
-        tl_dict.set_dict:
+        ctl_dict.set_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-            [tl_dict.set_dict] loaded_dict (rw),
+            [ctl_dict.set_dict] loaded_dict (rw),
             chinese_phonetic (rw)
         split_chinese_word:
-            tl_dict.chinese_phonetic (r),
-            tl_dict.max_word_length (r)
+            ctl_dict.chinese_phonetic (r),
+            ctl_dict.max_word_length (r)
     """
     import time
     time_loading_start = time.perf_counter()
 
-    tl_dict.set_dict([
-        ('dict_example/chinese_dict.txt', (tl_dict.Word, tl_dict.Zhuyin)),
-        ('dict_example/Ch2TwRoman.txt', (tl_dict.TL, tl_dict.Word, tl_dict.ETC)),
-        ('dict_example/dictionary_num.txt', (tl_dict.TL, tl_dict.Word))])
+    ctl_dict.set_dict([
+        ('dict_example/chinese_dict.txt', (ctl_dict.Word, ctl_dict.Zhuyin)),
+        ('dict_example/Ch2TwRoman.txt', (ctl_dict.TL, ctl_dict.Word, ctl_dict.ETC)),
+        ('dict_example/dictionary_num.txt', (ctl_dict.TL, ctl_dict.Word))])
 
     time_loading_end = time.perf_counter()
     print('Loading time: ', time_loading_end - time_loading_start, ' s',
@@ -178,11 +178,11 @@ def demonstrate():
 
 # Usage example
 if __name__ == '__main__':
-    from tl_dict import Word, Zhuyin, TL, ETC
+    from ctl_dict import Word, Zhuyin, TL, ETC
 
     sentence = '這是個範例！'
 
-    tl_dict.set_dict([
+    ctl_dict.set_dict([
         ('dict_example/chinese_dict.txt', (Word, Zhuyin)),
         ('dict_example/Ch2TwRoman.txt', (TL, Word, ETC)),
         ('dict_example/dictionary_num.txt', (TL, Word))])

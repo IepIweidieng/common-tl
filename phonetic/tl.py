@@ -1,6 +1,6 @@
 import sys
 
-from tl_util import str_get_tone, str_get_gready
+from .ctl_util import str_get_tone, str_get_gready
 
 
 # Used by tl_syllable_to_ipa
