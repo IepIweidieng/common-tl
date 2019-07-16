@@ -69,7 +69,7 @@ def _print_pairs(pairs):
 def demonstrate():
     """
     Side effect: IO (w), time (x)
-        ctl_dict.DictSrc.set_dict:
+        ctl_dict.DictSrc.create_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
         zhuyin_word_to_ipa:
             zhuyin_syllable_to_ipa: IO (w)

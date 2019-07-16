@@ -125,13 +125,13 @@ def split_for_each_file(path, dict_):
 def demonstrate():
     """
     Side effect: IO (w), time (x)
-        ctl_dict.set_dict:
+        ctl_dict.create_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
     """
     import time
     time_loading_start = time.perf_counter()
 
-    dict_ = ctl_dict.set_dict([
+    dict_ = ctl_dict.create_dict([
         ('dict_example/chinese_dict.txt', (ctl_dict.Word, ctl_dict.Zhuyin)),
         ('dict_example/Ch2TwRoman.txt', (ctl_dict.TL, ctl_dict.Word, ctl_dict.ETC)),
         ('dict_example/dictionary_num.txt', (ctl_dict.TL, ctl_dict.Word))])
@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     sentence = '這是個範例！'
 
-    dict_ = ctl_dict.set_dict([
+    dict_ = ctl_dict.create_dict([
         ('dict_example/chinese_dict.txt', (Word, Zhuyin)),
         ('dict_example/Ch2TwRoman.txt', (TL, Word, ETC)),
         ('dict_example/dictionary_num.txt', (TL, Word))])

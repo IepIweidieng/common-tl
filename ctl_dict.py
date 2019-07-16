@@ -223,9 +223,9 @@ def _():
 
     # Public functions
 
-    global set_dict
+    global create_dict
 
-    def set_dict(path_list, *args, **kwargs):
+    def create_dict(path_list, *args, **kwargs):
         """
         載入指定詞典 \n
         Load the specified dictionaries. \n
@@ -247,7 +247,7 @@ def _():
         res = DictSrc()
         res.set_dict_src(path_list)
         return res.create_dict(*args, **kwargs)
-    set_dict = set_dict
+    create_dict = create_dict
 
     # Private functions
 
