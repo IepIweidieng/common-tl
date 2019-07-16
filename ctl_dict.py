@@ -213,160 +213,24 @@ PROCESSED_SUFFIX = '_out'
 PICKLED_SUFFIX = '.pickle'
 
 
-# Used on set_dict
+# Used on _
 # Side effect: func (x)
-
 def _call(func, *arg, **kwarg): return func(*arg, **kwarg)
 
-
 @_call
-def set_dict(*arg, **kwarg):
-    """
-    載入詞典檔 \n
-    Load the dictionary. \n
-    Side effect: IO (w), fileIO (rw), os (x), sys (x) re (x), pickle (x)
-        [set_dict] loaded_dict (rw), [set_dict] dict_src(rw)
-    """
-    loaded_dict = []
-    dict_src = []
+def _():
+    # Used by class SrcDict
 
     # Public functions
 
-    global add_dict_src
-
-    def add_dict_src(path, format_):
-        """
-        新增要讀取的詞典檔 \n
-        Add the dictionary file to the dictionary source. \n
-        Side effect: DEFAULT_FORMAT (r)
-                     [set_dict] dict_src (w)
-        """
-        dict_src.append((path, format_))
-    add_dict_src = add_dict_src
-
-    global reset_dict_src
-
-    def reset_dict_src():
-        """
-        重設要讀取的詞典檔 \n
-        Reset the dictionary source. \n
-        Side effect: [set_dict] dict_src (w)
-        """
-        dict_src.clear()
-    reset_dict_src = reset_dict_src
-
-    global set_dict_src
-
-    def set_dict_src(path_list):
-        """
-        指定要載入的詞典 \n
-        Specify the dictionaries to be loaded. \n
-        Side effect: [set_dict] dict_src (w)
-        """
-        nonlocal dict_src
-
-        dict_src = path_list
-
-        if isinstance(path_list, str):
-            dict_src = [path_list]
-        return
-    set_dict_src = set_dict_src
-
-    global create_dict
-
-    def create_dict(reprocess=False, recreate_dump=False):
-        """
-        載入詞典的對應傾印檔； \n
-          若無，則讀取已經過前處理之詞典檔，並生成傾印檔；
-          若無，則對詞典檔進行前處理
-        Load the dictionary data from the corresponding dumped data file. \n
-        Parse and create dictionary data from \n
-          the pre-processed dictionary text file if needed.
-        Pre-process the dictionary text file if needed. \n
-        Side effect: os (x), DEFAULT_FORMAT (r)
-            [set_dict] loaded_dict (r), [set_dict] dict_src (r)
-            preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
-                parse_line_in_format: ValueError (x),
-                    Word (r),
-                    Zhuyin (r), TL (r), Phonetic (r),
-                    ETC (r)
-                create_line_from_format:
-                    Word (r),
-                    Zhuyin (r), TL (r), Phonetic (r),
-                    ETC (r)
-            _get_dict_data_from_dump:
-                IO (w), fileIO (r), os.path (x), sys (x),
-                pickle.UnpicklingError (x)
-                BasicUnpickler:
-                        pickle.unpickler (x)
-                get_dict_set_file: hashlib (x)
-            _get_dict_data_from_text:
-                fileIO (r),
-                Word (r), Phonetic (r), ETC (r)
-            _create_dict_data_dump:
-                fileIO (w), pickle (x)
-                get_dict_set_file: hashlib (x)
-            _load_dict_data: [set_dict] loaded_dict (w)
-        """
-        dict_ = CtlDict()
-
-        if not (reprocess or recreate_dump):
-            # Load the dumped data of the dictionaries to be loaded if exists
-            (dict_data, dict_data_file) = _get_dict_data_from_dump(dict_src)
-            if _check_dict_data(dict_data, dict_data_file, dict_src):
-                _load_dict_data(dict_, dict_data)
-                return dict_
-
-        will_create_dict_data_dump = True
-        for path_item in dict_src:
-            (path, format_) = path_item
-            dict_data_file = f'{path}{PICKLED_SUFFIX}'
-
-            # Keep path to refer the pre-processed dictionary text file
-            if not path.endswith(PROCESSED_SUFFIX):
-                path_unprocessed = path
-                path = f'{path}{PROCESSED_SUFFIX}'
-                dict_data_file = f'{path}{PICKLED_SUFFIX}'
-
-            # If the dictionary text file is un-processed,
-            #   do pre-processing on it
-            if not reprocess and os.path.isfile(path):
-                # If the dictionary dump data needs to be re-created,
-                # do not load it
-                if not recreate_dump:
-                    # If the dictionary is loaded,
-                    # do not load and do not create the dump data of it again
-                    if path in loaded_dict:
-                        continue
-                    # Load the dictionary dump data if exists
-                    if os.path.isfile(dict_data_file):
-                        (dict_data, _) = _get_dict_data_from_dump(
-                            dict_data_file)
-                        if _check_dict_data(dict_data, dict_data_file, path):
-                            _load_dict_data(dict_, dict_data)
-            elif os.path.isfile(path_unprocessed):
-                preprocess_dict(path_unprocessed, format_)
-
-            if os.path.isfile(path):
-                # Create the dictionary from scratch
-                dict_data = _get_dict_data_from_text(path, format_)
-                _create_dict_data_dump(dict_data, dict_data_file)
-                _load_dict_data(dict_, dict_data)
-            else: will_create_dict_data_dump = False
-
-        if will_create_dict_data_dump:
-            _create_dict_data_dump(
-                (dict_src, dict_.chinese_phonetic, dict_.max_word_length), dict_src)
-        return dict_
-    create_dict = create_dict
+    global set_dict
 
     def set_dict(path_list, *args, **kwargs):
         """
         載入指定詞典 \n
         Load the specified dictionaries. \n
-        Side effect: set_dict_src: dict_src (w)
+        Side effect: set_dict_src: __dict_src (w)
             create_dict: os (x), DEFAULT_FORMAT (r)
-                [set_dict] loaded_dict (r), [set_dict] dict_src (rw)
             preprocess_dict:
                 IO (w), fileIO (rw), sys (x), re (x)
             _get_dict_data_from_dump: IO (w), fileIO (r),
@@ -379,11 +243,11 @@ def set_dict(*arg, **kwarg):
                 Zhuyin (r), TL (r), Phonetic (r),
                 ETC (r)
             _create_dict_data_dump: fileIO (w), pickle (x)
-            _load_dict_data: [set_dict] loaded_dict (w)
         """
-        set_dict_src(path_list)
-        return create_dict(*args, **kwargs)
-
+        res = DictSrc()
+        res.set_dict_src(path_list)
+        return res.create_dict(*args, **kwargs)
+    set_dict = set_dict
 
     # Private functions
 
@@ -504,12 +368,12 @@ def set_dict(*arg, **kwarg):
                 return ((source, None, None), in_path)
         return (None, None)
 
-    def _check_dict_data(dict_data, dict_data_path, dict_src):
+    def _check_dict_data(dict_data, dict_data_path, __dict_src):
         if dict_data is None:
             if dict_data_path is not None:
                 print('Warning: The dump file \'', dict_data_path,
-                      '\' can not be loaded.  Regenerated.',
-                      sep='', file=sys.stderr, flush=True)
+                        '\' can not be loaded.  Regenerated.',
+                        sep='', file=sys.stderr, flush=True)
             return False
 
         (data_source, data_chinese_phonetic, _) = dict_data
@@ -518,44 +382,170 @@ def set_dict(*arg, **kwarg):
             return True
 
         if data_source is not None:
-            if isinstance(dict_src, str):
-                dict_src_text = dict_src
+            if isinstance(__dict_src, str):
+                dict_src_text = __dict_src
             else:
-                dict_src_text = '\', \''.join(map(_get_src_path, dict_src))
+                dict_src_text = '\', \''.join(map(_get_src_path, __dict_src))
 
-            if isinstance(dict_src, str):
+            if isinstance(__dict_src, str):
                 data_source_text = data_source
             else:
                 data_source_text = '\', \''.join(
                     map(_get_src_path, data_source))
 
             print('Warning: The dump file \'', dict_data_path,
-                  '\' is meant for \'', dict_src_text, '\',\n',
-                  '    but its source is \'', data_source_text, '\',\n',
-                  '    which mismatches.  Regenerated.',
-                  sep='', file=sys.stderr, flush=True)
+                    '\' is meant for \'', dict_src_text, '\',\n',
+                    '    but its source is \'', data_source_text, '\',\n',
+                    '    which mismatches.  Regenerated.',
+                    sep='', file=sys.stderr, flush=True)
         return False
 
-    def _load_dict_data(dict_, dict_data,):
+    global DictSrc
+
+    class DictSrc:
         """
-        載入詞典檔到詞典表中 \n
-        Load dictionary data into dictionary list. \n
-        Side effect: [set_dict] loaded_dict (w)
+        詞典檔紀錄清單 \n
+        The dictionary entry list. \n
+        Side effect: IO (w), fileIO (rw), os (x), sys (x) re (x), pickle (x)
         """
-        (path, new_chinese_phonetic, new_max_word_length) = dict_data
-        dict_.max_word_length = max(new_max_word_length, dict_.max_word_length)
+        def __init__(self):
+            self.__loaded_dict = []
+            self.__dict_src = []
 
-        if loaded_dict:
-            for (word, phonetics) in new_chinese_phonetic.items():
-                if word in dict_.chinese_phonetic:
-                    # Prevent duplicating
-                    if not phonetics in dict_.chinese_phonetic[word]:
-                        dict_.chinese_phonetic[word].extend(phonetics)
-                else:
-                    dict_.chinese_phonetic.update({word: phonetics})
-        else:
-            dict_.chinese_phonetic = new_chinese_phonetic
+        # Public methods
 
-        loaded_dict.append(path)
+        def add_dict_src(self, path, format_):
+            """
+            新增要讀取的詞典檔 \n
+            Add the dictionary file to the dictionary source. \n
+            Side effect: DEFAULT_FORMAT (r)
+            """
+            self.__dict_src.append((path, format_))
+            return self
 
-    return set_dict
+        def reset_dict_src(self):
+            """
+            重設要讀取的詞典檔 \n
+            Reset the dictionary source. \n
+            """
+            self.__dict_src.clear()
+            return self
+
+        def set_dict_src(self, path_list):
+            """
+            指定要載入的詞典 \n
+            Specify the dictionaries to be loaded. \n
+            """
+            self.__dict_src = path_list
+
+            if isinstance(path_list, str):
+                self.__dict_src = [path_list]
+            return self
+
+        def create_dict(self, reprocess=False, recreate_dump=False):
+            """
+            載入詞典的對應傾印檔； \n
+            若無，則讀取已經過前處理之詞典檔，並生成傾印檔；
+            若無，則對詞典檔進行前處理
+            Load the dictionary data from the corresponding dumped data file. \n
+            Parse and create dictionary data from \n
+            the pre-processed dictionary text file if needed.
+            Pre-process the dictionary text file if needed. \n
+            Side effect: os (x), DEFAULT_FORMAT (r)
+                preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
+                    parse_line_in_format: ValueError (x),
+                        Word (r),
+                        Zhuyin (r), TL (r), Phonetic (r),
+                        ETC (r)
+                    create_line_from_format:
+                        Word (r),
+                        Zhuyin (r), TL (r), Phonetic (r),
+                        ETC (r)
+                _get_dict_data_from_dump:
+                    IO (w), fileIO (r), os.path (x), sys (x),
+                    pickle.UnpicklingError (x)
+                    BasicUnpickler:
+                            pickle.unpickler (x)
+                    get_dict_set_file: hashlib (x)
+                _get_dict_data_from_text:
+                    fileIO (r),
+                    Word (r), Phonetic (r), ETC (r)
+                _create_dict_data_dump:
+                    fileIO (w), pickle (x)
+                    get_dict_set_file: hashlib (x)
+            """
+            dict_ = CtlDict()
+
+            if not (reprocess or recreate_dump):
+                # Load the dumped data of the dictionaries to be loaded if exists
+                (dict_data, dict_data_file) = _get_dict_data_from_dump(self.__dict_src)
+                if _check_dict_data(dict_data, dict_data_file, self.__dict_src):
+                    self.__load_dict_data(dict_, dict_data)
+                    return dict_
+
+            will_create_dict_data_dump = True
+            for path_item in self.__dict_src:
+                (path, format_) = path_item
+                dict_data_file = f'{path}{PICKLED_SUFFIX}'
+
+                # Keep path to refer the pre-processed dictionary text file
+                if not path.endswith(PROCESSED_SUFFIX):
+                    path_unprocessed = path
+                    path = f'{path}{PROCESSED_SUFFIX}'
+                    dict_data_file = f'{path}{PICKLED_SUFFIX}'
+
+                # If the dictionary text file is un-processed,
+                #   do pre-processing on it
+                if not reprocess and os.path.isfile(path):
+                    # If the dictionary dump data needs to be re-created,
+                    # do not load it
+                    if not recreate_dump:
+                        # If the dictionary is loaded,
+                        # do not load and do not create the dump data of it again
+                        if path in self.__loaded_dict:
+                            continue
+                        # Load the dictionary dump data if exists
+                        if os.path.isfile(dict_data_file):
+                            (dict_data, _) = _get_dict_data_from_dump(
+                                dict_data_file)
+                            if _check_dict_data(dict_data, dict_data_file, path):
+                                self.__load_dict_data(dict_, dict_data)
+                elif os.path.isfile(path_unprocessed):
+                    preprocess_dict(path_unprocessed, format_)
+
+                if os.path.isfile(path):
+                    # Create the dictionary from scratch
+                    dict_data = _get_dict_data_from_text(path, format_)
+                    _create_dict_data_dump(dict_data, dict_data_file)
+                    self.__load_dict_data(dict_, dict_data)
+                else: will_create_dict_data_dump = False
+
+            if will_create_dict_data_dump:
+                _create_dict_data_dump(
+                    (self.__dict_src, dict_.chinese_phonetic, dict_.max_word_length), self.__dict_src)
+            return dict_
+
+        # Private methods
+
+        def __load_dict_data(self, dict_, dict_data,):
+            """
+            載入詞典檔到詞典表中 \n
+            Load dictionary data into dictionary list. \n
+            """
+            (path, new_chinese_phonetic, new_max_word_length) = dict_data
+            dict_.max_word_length = max(new_max_word_length, dict_.max_word_length)
+
+            if self.__loaded_dict:
+                for (word, phonetics) in new_chinese_phonetic.items():
+                    if word in dict_.chinese_phonetic:
+                        # Prevent duplicating
+                        if not phonetics in dict_.chinese_phonetic[word]:
+                            dict_.chinese_phonetic[word].extend(phonetics)
+                    else:
+                        dict_.chinese_phonetic.update({word: phonetics})
+            else:
+                dict_.chinese_phonetic = new_chinese_phonetic
+
+            self.__loaded_dict.append(path)
+
+    DictSrc = DictSrc

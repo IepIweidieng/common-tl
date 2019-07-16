@@ -109,9 +109,6 @@ def split_for_each_file(path, dict_):
     Example:
         split_for_each_file("/home/thh101u/Desktop/333_sentence_trn0629/")
     Side effect: os (x), IO (w)
-        ctl_dict.create_dict:
-            fileIO (rw), os (x), sys (x), pickle (x)
-            [ctl_dict.set_dict] loaded_dict (rw)
         split_file: fileIO (rw)
     """
     for subpath in os.listdir(path):
@@ -130,7 +127,6 @@ def demonstrate():
     Side effect: IO (w), time (x)
         ctl_dict.set_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-            [ctl_dict.set_dict] loaded_dict (rw)
     """
     import time
     time_loading_start = time.perf_counter()

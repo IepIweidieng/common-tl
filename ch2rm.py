@@ -44,9 +44,6 @@ def chinese_to_roman(sentence, dict_, use_north=False, use_choan=False):
     """
     Convert a Chinese sentence to Roman. \n
     Side effect:
-        ctl_dict.create_dict:
-            fileIO (rw), os (x), sys (x), pickle (x)
-            [ctl_dict.set_dict] loaded_dict (rw)
         zhuyin_word_to_ipa:
             zhuyin_syllable_to_ipa: IO (w)
     """
@@ -72,23 +69,23 @@ def _print_pairs(pairs):
 def demonstrate():
     """
     Side effect: IO (w), time (x)
-        ctl_dict.set_dict:
+        ctl_dict.DictSrc.set_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-            [ctl_dict.set_dict] loaded_dict (rw)
         zhuyin_word_to_ipa:
             zhuyin_syllable_to_ipa: IO (w)
     """
     import time
     time_loading_start = time.perf_counter()
 
-    ctl_dict.add_dict_src(
+    dict_src = ctl_dict.DictSrc()
+    dict_src.add_dict_src(
         'dict_example/chinese_dict.txt', (ctl_dict.Word, ctl_dict.Zhuyin))
-    ctl_dict.add_dict_src(
+    dict_src.add_dict_src(
         'dict_example/Ch2TwRoman.txt', (ctl_dict.TL, ctl_dict.Word, ctl_dict.ETC))
-    ctl_dict.add_dict_src(
+    dict_src.add_dict_src(
         'dict_example/dictionary_num.txt', (ctl_dict.TL, ctl_dict.Word))
 
-    dict_ = ctl_dict.create_dict()
+    dict_ = dict_src.create_dict()
 
     time_loading_end = time.perf_counter()
     print('Loading time: ', time_loading_end - time_loading_start, ' s',
@@ -146,11 +143,12 @@ if __name__ == '__main__':
 
     sentence = '這是個範例！'
 
-    ctl_dict.add_dict_src('dict_example/chinese_dict.txt', (Word, Zhuyin))
-    ctl_dict.add_dict_src('dict_example/Ch2TwRoman.txt', (TL, Word, ETC))
-    ctl_dict.add_dict_src('dict_example/dictionary_num.txt', (TL, Word))
+    dict_src = (ctl_dict.DictSrc()
+          .add_dict_src('dict_example/chinese_dict.txt', (Word, Zhuyin))
+          .add_dict_src('dict_example/Ch2TwRoman.txt', (TL, Word, ETC))
+          .add_dict_src('dict_example/dictionary_num.txt', (TL, Word)))
 
-    dict_ = ctl_dict.create_dict()
+    dict_ = dict_src.create_dict()
 
     print(chinese_to_roman(sentence, dict_))
     print(chinese_to_roman(sentence, dict_, use_north=True))
