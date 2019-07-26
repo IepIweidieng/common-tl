@@ -6,14 +6,15 @@ import sys
 def _str_get(str_, pos):
     return len(str_) > pos and str_[pos] or ''
 
+_TONE_PREFIX = '0'
 
 _BOPOMOFO_TONE_LIST = {
-    '': "01",
-    u'\u02C9': '01',  # 'ˉ'
-    u'\u02CA': '02',  # 'ˊ'
-    u'\u02C7': '03',  # 'ˇ'
-    u'\u02CB': '04',  # 'ˋ'
-    u'\u02D9': '05',  # '˙'
+    '': "1",
+    u'\u02C9': '1',  # 'ˉ'
+    u'\u02CA': '2',  # 'ˊ'
+    u'\u02C7': '3',  # 'ˇ'
+    u'\u02CB': '4',  # 'ˋ'
+    u'\u02D9': '5',  # '˙'
 }
 
 _BOPOMOFO_INITIAL_LIST = {
@@ -113,8 +114,8 @@ def zhuyin_syllable_to_ipa(zhuyin):
     # Handle neutral tone
     tone = _BOPOMOFO_TONE_LIST.get(_str_get(zhuyin, offset), '')
     if tone:
-        if tone == '05':
-            tone = '00'
+        if tone == '5':
+            tone = '0'
 
         offset = 1
 
@@ -174,5 +175,5 @@ def zhuyin_syllable_to_ipa(zhuyin):
         print('Warning: ', bopomofo_medial, bopomofo_rhyme,
               ' is invalid final bopomofo combination.  Continued.',
               sep='', file=sys.stderr, flush=True)
-        return (initial, f'?{tone}')
-    return (initial, f'{final}{tone}')
+        return (initial, f'?{_TONE_PREFIX}{tone}')
+    return (initial, f'{final}{_TONE_PREFIX}{tone}')

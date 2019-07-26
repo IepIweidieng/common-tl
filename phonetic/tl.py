@@ -5,6 +5,10 @@ from .ctl_util import str_get_tone, str_get_gready
 
 # Used by tl_syllable_to_ipa
 
+_PHONE_NAME = 'TL'
+
+_TONE_PREFIX = ''
+
 def _NULL_TONE_BRANCH(tl_coda):
     return {
         'p': '4', 't': '4', 'k': '4', 'h': '4', 'nnh': '4',
@@ -66,7 +70,7 @@ _TL_INITIAL_LIST = {
                 's': [_s],                     'h': 'h',
 }
 
-_TL_MEDIAL_LIST = {'i': 1, 'u': 2, 'er': 3, 'ir': 4}
+_TL_MEDIAL_LIST = {'i', 'u', 'er', 'ir'}
 
 def _A_BRANCH_MEDIAL(tl_medial):
     return {
@@ -195,23 +199,16 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
     (tl_initial, offset, initial) = str_get_gready(
         tl_no_tone, offset, _TL_INITIAL_LIST, '')
 
-    (tl_medial, offset, medial) = str_get_gready(
-        tl_no_tone, offset, _TL_MEDIAL_LIST, 0)
-    medial = _TL_NUCLEUS_LIST.get(tl_medial, '')
-    if callable(initial):
-        initial = initial(tl_medial)
-    if isinstance(initial, list):
-        new_initial = []
-        for ipa_part in initial:
-            if isinstance(ipa_part, tuple):
-                ipa_part = ipa_part[use_choan and 0 or 1]
-            if callable(ipa_part):
-                ipa_part = ipa_part(tl_medial)
-            new_initial.append(ipa_part)
-        initial = ''.join(new_initial)
-
+    (tl_medial, medial) = (None, '')
     (tl_nucleus0, offset, nucleus0) = str_get_gready(
-        tl_no_tone, offset, _TL_NUCLEUS_LIST, _NULL_NUCLEUS_BRANCH)
+        tl_no_tone, offset, _TL_NUCLEUS_LIST, '')
+    if tl_medial in _TL_MEDIAL_LIST:
+        ((tl_medial, medial), (tl_nucleus0, nucleus0)) = (
+            (tl_nucleus0, nucleus0), (None, ''))
+
+    if tl_nucleus0 is None:
+        (tl_nucleus0, offset, nucleus0) = str_get_gready(
+            tl_no_tone, offset, _TL_NUCLEUS_LIST, _NULL_NUCLEUS_BRANCH)
     (tl_nucleus1, offset, nucleus1) = str_get_gready(
         tl_no_tone, offset, _TL_NUCLEUS_LIST, '')
     if tl_nucleus0 == None and tl_medial != None:
@@ -223,16 +220,25 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
     (tl_coda, offset, coda) = str_get_gready(
         tl_no_tone, offset, _TL_CODA_LIST, '')
 
-    def get_vowel(vowel):
-        result = vowel
-        if callable(result):
-            result = result(tl_coda)
-        if callable(result):
-            result = result(tl_medial)
-        if callable(result):
-            result = result(tl_initial)
-        if isinstance(result, tuple):
-            result = result[use_north and 0 or 1]
+    def get_patched(ipa, is_initial=False):
+        result = ipa
+        if is_initial:
+            if callable(result):
+                result = result(tl_medial or tl_nucleus0)
+            if isinstance(result, tuple):
+                result = result[use_choan and 0 or 1]
+        else:
+            if callable(result):
+                result = result(tl_coda)
+            if callable(result):
+                result = result(tl_medial)
+            if callable(result):
+                result = result(tl_initial)
+            if isinstance(result, tuple):
+                result = result[use_north and 0 or 1]
+        if isinstance(result, list):
+            new_result = [get_patched(ipa_part, is_initial) for ipa_part in result]
+            result = ''.join(new_result)
         return result
 
     def nasalization(vowels):
@@ -242,10 +248,11 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
             new_vowels.append(_IPA_NASALIZATION)
         return ''.join(new_vowels)
 
-    medial = get_vowel(medial)
-    nucleus0 = get_vowel(nucleus0)
-    nucleus1 = get_vowel(nucleus1)
-    tone = get_vowel(tone)
+    initial = get_patched(initial, is_initial=True)
+    medial = get_patched(medial)
+    nucleus0 = get_patched(nucleus0)
+    nucleus1 = get_patched(nucleus1)
+    tone = get_patched(tone)
 
     if callable(initial):
         initial = initial(nucleus0)
@@ -259,7 +266,7 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
 
     if offset != len(tl_no_tone) or coda.endswith("?"):
         print('Warning: ', tl_, ' -> ', tl_no_tone,
-              ' is an invalid TL.  Continued.',
+              ' is an invalid ', _PHONE_NAME, '.  Continued.',
               sep='', file=sys.stderr, flush=True)
-        return (initial, f'{medial}{nucleus0}{nucleus1}{coda.rstrip("?")}?{tone}')
-    return (initial, f'{medial}{nucleus0}{nucleus1}{coda}{tone}')
+        return (initial, f'{medial}{nucleus0}{nucleus1}{coda.rstrip("?")}?{_TONE_PREFIX}{tone}')
+    return (initial, f'{medial}{nucleus0}{nucleus1}{coda}{_TONE_PREFIX}{tone}')
