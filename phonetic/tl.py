@@ -5,24 +5,22 @@ from .ctl_util import str_get_tone, str_get_gready
 
 # Used by tl_syllable_to_ipa
 
+def _NULL_TONE_BRANCH(tl_coda):
+    return {
+        'p': '4', 't': '4', 'k': '4', 'h': '4', 'nnh': '4',
+    }.get(tl_coda, '1')
+
 _TL_TONE_LIST = {
-    '0': '0',
-    '1': '1',
-    '2': '2',
-    '3': '3',
-    '4': '4',
-    '5': '5',
-    '6': '6',
-    '7': '7',
-    '8': '8',
-    '9': '9',
-    u'\u0301': '2',  # ' ́ '
-    u'\u0300': '3',  # ' ̀ '
-    u'\u0302': '5',  # ' ̂ '
-    u'\u030C': '6',  # ' ̌ '
-    u'\u0304': '7',  # ' ̄ '
-    u'\u030d': '8',  # ' ̍ '
-    u'\u030B': '9',  # ' ̋ '
+    '0': '0', '--': '0',
+    '1': '1',  # '': _NULL_TONE_BRANCH,
+    '2': '2', u'\u0301': '2',  # ' ́ '
+    '3': '3', u'\u0300': '3',  # ' ̀ '
+    '4': '4',  # '': _NULL_TONE_BRANCH,
+    '5': '5', u'\u0302': '5',  # ' ̂ '
+    '6': '6', u'\u030C': '6',  # ' ̌ '
+    '7': '7', u'\u0304': '7',  # ' ̄ '
+    '8': '8', u'\u030d': '8',  # ' ̍ '
+    '9': '9', u'\u030B': '9',  # ' ̋ '
 }
 
 def _s(tl_medial):
@@ -190,7 +188,7 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
     Side effect: IO (w)
     """
 
-    (tone, tl_no_tone) = str_get_tone(tl_, _TL_TONE_LIST, 1)
+    (tone, tl_no_tone) = str_get_tone(tl_, _TL_TONE_LIST, _NULL_TONE_BRANCH)
 
     offset = 0
 
@@ -247,6 +245,7 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
     medial = get_vowel(medial)
     nucleus0 = get_vowel(nucleus0)
     nucleus1 = get_vowel(nucleus1)
+    tone = get_vowel(tone)
 
     if callable(initial):
         initial = initial(nucleus0)
