@@ -208,7 +208,12 @@ def tl_syllable_to_ipa(tl_, dialect='chiang', variant='southern'):
     dialect = dialect and dialect.replace("'", '_').lower()
     variant = variant and variant.replace("'", '_').lower()
 
-    (tone, tl_no_tone) = str_get_tone(tl_, _TL_TONE_LIST, _NULL_TONE_BRANCH)
+    tone_list = _TL_TONE_LIST
+    if isinstance(tone_list, Dialect):
+        tone_list = getattr(tone_list, dialect)
+    if isinstance(tone_list, Variant):
+        tone_list = getattr(tone_list, variant)
+    (tone, tl_no_tone) = str_get_tone(tl_, tone_list, _NULL_TONE_BRANCH)
 
     offset = 0
 
