@@ -1,8 +1,14 @@
 import ctl_dict
 import ctl_segment
+from phonetic import ctl_util
 from phonetic.common_tl import ipa_pair_to_tl_pair
 from phonetic.zhuyin import zhuyin_syllable_to_ipa
 from phonetic.tl import tl_syllable_to_ipa
+
+lang_opt = ctl_util.lang_opt
+Lang = ctl_util.def_lang(
+      ['hokkien', 'mandarin', 'common_tl'])
+lang = ctl_util.namedtuple_ctor(Lang, default=lang_opt())
 
 
 def chinese_word_to_phonetic(word, dict_):
@@ -13,7 +19,7 @@ def chinese_word_to_phonetic(word, dict_):
     return dict_.chinese_phonetic.get(word, [])
 
 
-def phonetic_word_to_ipa(phonetic_word, use_north=False, use_choan=False):
+def phonetic_word_to_ipa(phonetic_word, dialects=lang()):
     """
     將拼音轉成國際音標 \n
     Convert a phonetic word into IPA. \n
@@ -25,22 +31,24 @@ def phonetic_word_to_ipa(phonetic_word, use_north=False, use_choan=False):
 
     for syllable in phonetic_word:
         if isinstance(syllable, ctl_dict.TL):
-            ipa_word.append(tl_syllable_to_ipa(syllable, use_north, use_choan))
+            ipa_word.append(
+                tl_syllable_to_ipa(syllable, **getattr(dialects, 'hokkien')._asdict()))
         elif isinstance(syllable, ctl_dict.Zhuyin):
-            ipa_word.append(zhuyin_syllable_to_ipa(syllable))
+            ipa_word.append(
+                zhuyin_syllable_to_ipa(syllable, **getattr(dialects, 'mandarin')._asdict()))
 
     return ipa_word
 
 
-def ipa_pair_to_tl(ipa_pair, use_north=False):
+def ipa_pair_to_tl(ipa_pair, *args, **kwargs):
     """
     將國際音標轉成廣義臺羅拼音 \n
     Convert an IPA initial-final pair into common TL initial-final pair. \n
     """
-    return [ipa_pair_to_tl_pair(syllable, use_north) for syllable in ipa_pair]
+    return [ipa_pair_to_tl_pair(syllable, *args, **kwargs) for syllable in ipa_pair]
 
 
-def chinese_to_roman(sentence, dict_, use_north=False, use_choan=False):
+def chinese_to_roman(sentence, dict_, dialects=lang()):
     """
     Convert a Chinese sentence to Roman. \n
     Side effect:
@@ -54,8 +62,10 @@ def chinese_to_roman(sentence, dict_, use_north=False, use_choan=False):
         # Currently only use the first phonetic of candidate phonetics
         candidate_phonetic_word = chinese_word_to_phonetic(word, dict_)[0:1]
         for phonetic_word in candidate_phonetic_word:
-            ipa_pair_word = phonetic_word_to_ipa(phonetic_word, use_north, use_choan)
-            tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_north)
+            ipa_pair_word = phonetic_word_to_ipa(phonetic_word, dialects)
+            tl_pair_word = ipa_pair_to_tl(ipa_pair_word,
+                **(getattr(dialects, 'common_tl')._asdict()
+                    or getattr(dialects, 'hokkien')._asdict()))
 
             tl_pair_list.append(tl_pair_word)
 
@@ -91,8 +101,8 @@ def demonstrate():
     print('Loading time: ', time_loading_end - time_loading_start, ' s',
           sep='', end='\n\n')
 
-    use_north = False
-    use_choan = False
+    dialect = 'chiang'
+    variant = 'southern'
 
     sentence = (
         ' 測 試  這   兒 巴  陵郡  日zZㄈ=心  謗腹非 拔 了一 個 尖  兒八   面'
@@ -112,8 +122,9 @@ def demonstrate():
             # Currently only use the first phonetic of candidate phonetics
             candidate_phonetic_word = chinese_word_to_phonetic(word, dict_)[0:1]
             for phonetic_word in candidate_phonetic_word:
-                ipa_pair_word = phonetic_word_to_ipa(phonetic_word, use_north, use_choan)
-                tl_pair_word = ipa_pair_to_tl(ipa_pair_word, use_north)
+                ipa_pair_word = phonetic_word_to_ipa(
+                    phonetic_word, lang(hokkien=lang_opt(dialect, variant)))
+                tl_pair_word = ipa_pair_to_tl(ipa_pair_word, dialect, variant)
                 output = (
                     f'{output}'
                     f'{" ".join(map(str, phonetic_word))}\t'
@@ -151,4 +162,5 @@ if __name__ == '__main__':
     dict_ = dict_src.create_dict()
 
     print(chinese_to_roman(sentence, dict_))
-    print(chinese_to_roman(sentence, dict_, use_north=True))
+    print(chinese_to_roman(sentence, dict_,
+        dialects=lang(hokkien=lang_opt(variant='northern'))))

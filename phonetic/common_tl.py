@@ -1,4 +1,15 @@
+from . import ctl_util
+
 # Used by ipa_pair_to_tl_pair
+
+Dialect = ctl_util.def_dialect([])
+dialect = ctl_util.namedtuple_ctor(Dialect)
+
+GENERAL_VARIANT_LIST = ['southern', 'northern']
+VARIANT_LIST = Dialect()
+
+Variant = ctl_util.def_variant(GENERAL_VARIANT_LIST, VARIANT_LIST)
+variant = ctl_util.namedtuple_ctor(Variant)
 
 _COMMON_TL_INITIAL_LIST = {
     # *: Not in original TL
@@ -47,17 +58,17 @@ _COMMON_TL_FINAL_LIST = {
 
     'ɘ': 'er',  # Used in Taiwanese Choân-chiu accent
 
-    'ɤ': (
-        'or',  # For Taiwanese northern accent
-        'o'),  # For Taiwanese southern accent
-    'ə': (
-        'or',
-        'o'),
+    'ɤ': variant(
+        northern='or',  # For Taiwanese northern accent
+        southern='o'),  # For Taiwanese southern accent
+    'ə': variant(
+        northern='or',
+        southern='o'),
     #   They are allophones.  Use only one symbol for them.
 
-    'ʊ': (
-        'o',  # More accurate transcription for Taiwanese northern accent
-        'oo'),
+    'ʊ': variant(
+        northern='o',  # More accurate transcription for Taiwanese northern accent
+        southern='oo'),
 
     'ɔ': 'oo',
 
@@ -68,9 +79,9 @@ _COMMON_TL_FINAL_LIST = {
                 #   In these conditions, replace the 'ee' with 'a' later.
 
     # Still IPA vowels. Erization-related part.
-    'ɚ': (
-        'orrr',    # * Rhotic vowel; see u'\u02DE' ' ˞ '.
-        'orr'),
+    'ɚ': variant(
+        northern='orrr',    # * Rhotic vowel; see u'\u02DE' ' ˞ '.
+        southern='orr'),
 
     'ɐ': 'a',  # Produced by rhotic bopomofo finals "ㄧㄢㄦ" and "ㄩㄢㄦ"
 
@@ -134,7 +145,7 @@ def _replace_symbol(src, prev_pos_list, prev_replace_pair,
     return new_src
 
 
-def ipa_pair_to_tl_pair(ipa_pair, use_north=False):
+def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
     """Convert an IPA syllable to common TL."""
     (ipa_initial, ipa_final) = ipa_pair
     (tl_initial, tl_final) = ('', '')
@@ -151,8 +162,8 @@ def ipa_pair_to_tl_pair(ipa_pair, use_north=False):
     for ipa_phone in ipa_final:
         tl_phone = _COMMON_TL_FINAL_LIST.get(ipa_phone, ipa_phone)
 
-        if isinstance(tl_phone, tuple):
-            tl_phone = tl_phone[not use_north and 1 or 0]
+        if isinstance(tl_phone, Variant):
+            tl_phone = getattr(tl_phone, variant)
 
         # Replace 'ieen' with 'ian',     'yeen' with 'yan'
         #         'ieet' with 'iat', and 'yeet' with 'yat'

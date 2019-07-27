@@ -1,3 +1,22 @@
+from collections import namedtuple
+
+def namedtuple_ctor(Tuple, default=None):
+    return (lambda *args, **kwargs:
+        Tuple(*([*args] + [default]*(len(Tuple._fields)-len(args))))._replace(**kwargs))
+
+def def_lang(lang_list):
+    return namedtuple('Lang', lang_list)
+def def_dialect(dialect_list):
+    return namedtuple('Dialect', dialect_list)
+def def_variant(general_variant_list, variant_list):
+    return namedtuple('Variant', sum(variant_list, general_variant_list))
+
+class Lang_opt(namedtuple('Lang_opt', ['dialect', 'variant'])):
+    def _asdict(self):
+        res = super()._asdict()
+        return {k: res[k] for k in res if res[k] is not None}
+lang_opt = namedtuple_ctor(Lang_opt)
+
 def find_first_non_roman(text):
     """
     Usage & result:

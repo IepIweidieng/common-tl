@@ -1,11 +1,26 @@
 import sys
 
+from . import ctl_util
 from .ctl_util import str_get_tone, str_get_gready
 
 
 # Used by tl_syllable_to_ipa
 
 _PHONE_NAME = 'TL'
+
+Dialect = ctl_util.def_dialect(
+      ['chiang', 'choan'])
+#       漳        泉
+dialect = ctl_util.namedtuple_ctor(Dialect)
+
+GENERAL_VARIANT_LIST = ['southern', 'northern']
+VARIANT_LIST = Dialect(
+    chiang=[],
+    choan=[],
+)
+
+Variant = ctl_util.def_variant(GENERAL_VARIANT_LIST, VARIANT_LIST)
+variant = ctl_util.namedtuple_ctor(Variant)
 
 _TONE_PREFIX = ''
 
@@ -65,8 +80,8 @@ _TL_INITIAL_LIST = {
                 'tsh': ['t', _s, 'ʰ'],
                 'ch': ['t', _s],
                 'chh': ['t', _s, 'ʰ'],
-                'dj': [('d', ''), _z],  # For Taiwanese Choân-chiu accent
-                'j': [('d', ''), _z],   # For Taiwanese Chiang-chiu accent
+                'dj': [Dialect('d', ''), _z],  # For Taiwanese Choân-chiu accent
+                'j': [Dialect('d', ''), _z],   # For Taiwanese Chiang-chiu accent
                 's': [_s],                     'h': 'h',
 }
 
@@ -86,8 +101,7 @@ def _O_BRANCH(tl_coda):
     return {
         'ng': 'ɔ', 'm': 'ɔ', 'p': 'ɔ', 'k': 'ɔ',
         'nn': 'ɔ', 'ⁿ': 'ɔ'
-    }.get(tl_coda, ('o',    # For Taiwanese northern accent
-                    'ə' ))  # For Taiwanese southern accent
+    }.get(tl_coda, variant(northern='o', southern='ə'))
 
 def _E_BRANCH(tl_coda):
     return {
@@ -186,11 +200,13 @@ _FINAL_LIST = (
 )'''
 
 
-def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
+def tl_syllable_to_ipa(tl_, dialect='chiang', variant='southern'):
     """
     Convert a TL syllable to IPA. \n
     Side effect: IO (w)
     """
+    dialect = dialect and dialect.replace("'", '_').lower()
+    variant = variant and variant.replace("'", '_').lower()
 
     (tone, tl_no_tone) = str_get_tone(tl_, _TL_TONE_LIST, _NULL_TONE_BRANCH)
 
@@ -225,8 +241,6 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
         if is_initial:
             if callable(result):
                 result = result(tl_medial or tl_nucleus0)
-            if isinstance(result, tuple):
-                result = result[use_choan and 0 or 1]
         else:
             if callable(result):
                 result = result(tl_coda)
@@ -234,8 +248,10 @@ def tl_syllable_to_ipa(tl_, use_north=False, use_choan=False):
                 result = result(tl_medial)
             if callable(result):
                 result = result(tl_initial)
-            if isinstance(result, tuple):
-                result = result[use_north and 0 or 1]
+        if isinstance(result, Dialect):
+            result = getattr(result, dialect)
+        if isinstance(result, Variant):
+            result = getattr(result, variant)
         if isinstance(result, list):
             new_result = [get_patched(ipa_part, is_initial) for ipa_part in result]
             result = ''.join(new_result)
