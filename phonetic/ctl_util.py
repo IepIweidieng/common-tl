@@ -71,10 +71,16 @@ def str_get_gready(str_, offset, source_dict, default_):
 
 
 def str_get_tone(str_, tone_list, default_):
-    for length in range(len(str_), 0, -1):
-        (_, new_offset, tone) = str_get_gready(str_, length - 1, tone_list, None)
-        if tone:
-            str_no_tone = f'{str_[:length - 1]}{str_[new_offset:]}'
-            return (tone, str_no_tone)
-
+    tone = None
+    str_tone_len = 0
+    str_max_length = min(get_max_length(tone_list), len(str_))
+    for offset in range(0, len(str_), 1):
+        (_, new_offset, tone_k) = str_get_gready(str_, offset, tone_list, None)
+        if tone_k and new_offset - offset >= str_tone_len:
+            tone = tone_k
+            str_tone_len = new_offset - offset
+            str_no_tone = f'{str_[:offset]}{str_[new_offset:]}'
+            if len(tone) == str_max_length: break
+    if tone:
+        return (tone, str_no_tone)
     return (default_, str_)
