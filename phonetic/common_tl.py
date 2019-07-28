@@ -23,6 +23,10 @@ _COMMON_TL_INITIAL_LIST = {
     'ʂ': 'sr',  # * Rhotic consonant
     'ʐ': 'jr',  # * Rhotic consonant
 
+    'ʃ': 'sr',  # * As a rhotic consonant; used in Taiwanese Hakka
+    'ʒ': 'jr',  # * As a rhotic consonant; used in Taiwanese Hakka
+    'ɹ': '',  # An allophone of the zero consonant in Southern Sixian dialect of Taiwanese Hakka
+
     'ɕ': 's',  # An allophone of TL "s"
     'ʑ': 'j',  # An allophone of TL "j"
     'x': 'h',  # Taiwanese Mandarin "ㄏ" is pronounced as either [x] or [h].
@@ -34,6 +38,8 @@ _COMMON_TL_INITIAL_LIST = {
     'ʰ': 'h',
 
     'ʔ': '',  # As initial
+
+    u'\u0320': '',  # ' ̠ '; retracted; used in Southern Sixian dialect of Taiwanese Hakka
 }
 
 _COMMON_TL_FINAL_LIST = {

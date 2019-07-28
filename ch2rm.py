@@ -4,10 +4,11 @@ from phonetic import ctl_util
 from phonetic.common_tl import ipa_pair_to_tl_pair
 from phonetic.zhuyin import zhuyin_syllable_to_ipa
 from phonetic.tl import tl_syllable_to_ipa
+from phonetic.thrs import thrs_syllable_to_ipa
 
 lang_opt = ctl_util.lang_opt
 Lang = ctl_util.def_lang(
-      ['hokkien', 'mandarin', 'common_tl'])
+      ['hokkien', 'mandarin', 'hakka', 'common_tl'])
 lang = ctl_util.namedtuple_ctor(Lang, default=lang_opt())
 
 
@@ -26,6 +27,7 @@ def phonetic_word_to_ipa(phonetic_word, dialects=lang()):
     Side effect:
         tl_word_to_ipa: tl_syllable_to_ipa: IO (w)
         zhuyin_word_to_ipa: zhuyin_syllable_to_ipa: IO (w)
+        thrs_word_to_ipa: thrs_syllable_to_ipa: IO (w)
     """
     ipa_word = []
 
@@ -36,6 +38,9 @@ def phonetic_word_to_ipa(phonetic_word, dialects=lang()):
         elif isinstance(syllable, ctl_dict.Zhuyin):
             ipa_word.append(
                 zhuyin_syllable_to_ipa(syllable, **getattr(dialects, 'mandarin')._asdict()))
+        elif isinstance(syllable, ctl_dict.THRS):
+            ipa_word.append(
+                thrs_syllable_to_ipa(syllable, **getattr(dialects, 'hakka')._asdict()))
 
     return ipa_word
 
@@ -150,7 +155,7 @@ def demonstrate():
 
 # Usage example
 if __name__ == '__main__':
-    from ctl_dict import Word, Zhuyin, TL, ETC
+    from ctl_dict import Word, Zhuyin, TL, THRS, ETC
 
     sentence = '這是個範例！'
 

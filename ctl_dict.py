@@ -15,6 +15,8 @@ class RomanPhonetic(Phonetic): pass
 class Zhuyin(Phonetic): pass
 class TaiwaneseRomanization(RomanPhonetic): pass
 TL = TaiwaneseRomanization
+class TaiwaneseHakkaRomanization(RomanPhonetic): pass
+THRS = TaiwaneseHakkaRomanization
 class ETC(UserString): pass
 
 _FORMAT_TYPE_LIST = {
@@ -23,6 +25,7 @@ _FORMAT_TYPE_LIST = {
     'RomanPhonetic': RomanPhonetic,
     'Zhuyin': Zhuyin,
     'TaiwaneseRomanization': TaiwaneseRomanization,
+    'TaiwaneseHakkaRomanization': TaiwaneseHakkaRomanization,
     'ETC': ETC
 }
 
@@ -30,7 +33,7 @@ _FORMAT_TYPE_LIST = {
 def parse_line_in_format(line, format_):
     """
     Side effect: ValueError (x),
-        Word (r), Zhuyin (r), TL (r), Phonetic (r), ETC (r)
+        Word (r), Zhuyin (r), TL (r), THRS (r), Phonetic (r), ETC (r)
     """
     etcs = []
     splited = line.split('\t')
@@ -46,13 +49,13 @@ def parse_line_in_format(line, format_):
         else:
             raise ValueError(
                 f'Invalid parse item \'{parse_item}\'.  '
-                f'Parse item must be Word, Zhuyin, TL, Phonetic, or ETC')
+                f'Parse item must be Word, Zhuyin, TL, THRS, Phonetic, or ETC')
 
     return (word, phonetic, phonetic_type, etcs)
 
 
 def create_line_from_format(phrase_data, format_):
-    """Side effect: Word (r), Zhuyin (r), TL (r), Phonetic (r), ETC (r)"""
+    """Side effect: Word (r), Zhuyin (r), TL (r), THRS (r), Phonetic (r), ETC (r)"""
     (word, phonetic, *additional) = (phrase_data)
     etcs = len(additional) > 1 and additional[1] or []
     etcs_len = len(etcs)
@@ -87,10 +90,10 @@ def preprocess_dict(dict_path, format_):
     Side effect: IO (w), fileIO (rw), os (x), sys (x), re (x)
                  parse_line_in_format: ValueError (x),
                                        Word (r),
-                                       Zhuyin (r), TL (r), Phonetic (r),
+                                       Zhuyin (r), TL (r), THRS (r), Phonetic (r),
                                        ETC (r)
                  create_line_from_format: Word (r),
-                                          Zhuyin (r), TL (r), Phonetic (r),
+                                          Zhuyin (r), TL (r), THRS (r), Phonetic (r),
                                           ETC (r)
     """
     # Read un-processed file
@@ -240,7 +243,7 @@ def _():
                         pickle (x)
             _get_dict_data_from_text: fileIO (r),
                 Word (r),
-                Zhuyin (r), TL (r), Phonetic (r),
+                Zhuyin (r), TL (r), THRS (r), Phonetic (r),
                 ETC (r)
             _create_dict_data_dump: fileIO (w), pickle (x)
         """
@@ -282,7 +285,7 @@ def _():
         Side effect: fileIO (r),
             parse_line_in_format: ValueError (x),
                 Word (r),
-                Zhuyin (r), TL (r), Phonetic (r),
+                Zhuyin (r), TL (r), THRS (r), Phonetic (r),
                 ETC (r)
         """
         text_chinese_phonetic = {}
@@ -455,11 +458,11 @@ def _():
                 preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
                     parse_line_in_format: ValueError (x),
                         Word (r),
-                        Zhuyin (r), TL (r), Phonetic (r),
+                        Zhuyin (r), TL (r), THRS (r), Phonetic (r),
                         ETC (r)
                     create_line_from_format:
                         Word (r),
-                        Zhuyin (r), TL (r), Phonetic (r),
+                        Zhuyin (r), TL (r), THRS (r), Phonetic (r),
                         ETC (r)
                 _get_dict_data_from_dump:
                     IO (w), fileIO (r), os.path (x), sys (x),
