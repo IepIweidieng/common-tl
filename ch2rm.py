@@ -20,18 +20,17 @@ def chinese_word_to_phonetic(word, dict_):
     return dict_.chinese_phonetic.get(word, [])
 
 
-def phonetic_word_to_ipa(phonetic_word, dialects=lang()):
+def phonetic_word_to_ipa(phonetic_word, dialects=lang(), phonetic=None):
     """
     將拼音轉成國際音標 \n
     Convert a phonetic word into IPA. \n
-    Side effect:
-        tl_word_to_ipa: tl_syllable_to_ipa: IO (w)
-        zhuyin_word_to_ipa: zhuyin_syllable_to_ipa: IO (w)
-        thrs_word_to_ipa: thrs_syllable_to_ipa: IO (w)
+    Side effect: *_syllable_to_ipa: IO (w)
     """
     ipa_word = []
 
     for syllable in phonetic_word:
+        if isinstance(syllable, str):
+            syllable = phonetic(syllable)
         if isinstance(syllable, ctl_dict.TL):
             ipa_word.append(
                 tl_syllable_to_ipa(syllable, **getattr(dialects, 'hokkien')._asdict()))
@@ -52,13 +51,21 @@ def ipa_pair_to_tl(ipa_pair, *args, **kwargs):
     """
     return [ipa_pair_to_tl_pair(syllable, *args, **kwargs) for syllable in ipa_pair]
 
+def phonetic_word_to_tl(phonetic_word, dialects=lang(), phonetic=None):
+    """
+    Convert a word in phonetic notation to Common TL. \n
+    Side effect: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
+    """
+    ipa_pair_word = phonetic_word_to_ipa(phonetic_word, dialects, phonetic)
+    return ipa_pair_to_tl(ipa_pair_word,
+        **(getattr(dialects, 'common_tl')._asdict()
+            or getattr(dialects, 'hokkien')._asdict()))
+
 
 def chinese_to_roman(sentence, dict_, dialects=lang()):
     """
     Convert a Chinese sentence to Roman. \n
-    Side effect:
-        zhuyin_word_to_ipa:
-            zhuyin_syllable_to_ipa: IO (w)
+    Side effect: phonetic_word_to_tl: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
     """
     words_of_sentence = ctl_segment.split_chinese_word(sentence, dict_)
 
@@ -67,12 +74,7 @@ def chinese_to_roman(sentence, dict_, dialects=lang()):
         # Currently only use the first phonetic of candidate phonetics
         candidate_phonetic_word = chinese_word_to_phonetic(word, dict_)[0:1]
         for phonetic_word in candidate_phonetic_word:
-            ipa_pair_word = phonetic_word_to_ipa(phonetic_word, dialects)
-            tl_pair_word = ipa_pair_to_tl(ipa_pair_word,
-                **(getattr(dialects, 'common_tl')._asdict()
-                    or getattr(dialects, 'hokkien')._asdict()))
-
-            tl_pair_list.append(tl_pair_word)
+            tl_pair_list.append(phonetic_word_to_tl(phonetic_word, dialects))
 
     return tl_pair_list
 
@@ -86,8 +88,7 @@ def demonstrate():
     Side effect: IO (w), time (x)
         ctl_dict.DictSrc.create_dict:
             fileIO (rw), os (x), sys (x), pickle (x)
-        zhuyin_word_to_ipa:
-            zhuyin_syllable_to_ipa: IO (w)
+        phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
     """
     import time
     time_loading_start = time.perf_counter()
