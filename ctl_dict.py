@@ -10,22 +10,28 @@ import phonetic.ctl_util as ctl_util
 
 # Dictionary format tokens
 class Word(UserString): pass
-class Phonetic(UserString): pass
-class RomanPhonetic(Phonetic): pass
-class Zhuyin(Phonetic): pass
-class TaiwaneseRomanization(RomanPhonetic): pass
+class _Phonetic(UserString): pass
+class _RomanPhonetic(_Phonetic): pass
+class Zhuyin(_Phonetic): pass
+class TaiwaneseRomanization(_RomanPhonetic): pass
 TL = TaiwaneseRomanization
-class TaiwaneseHakkaRomanization(RomanPhonetic): pass
+class TaiwaneseHakkaRomanization(_RomanPhonetic): pass
 THRS = TaiwaneseHakkaRomanization
 class ETC(UserString): pass
 
 _FORMAT_TYPE_LIST = {
     'Word': Word,
-    'Phonetic': Phonetic,
-    'RomanPhonetic': RomanPhonetic,
     'Zhuyin': Zhuyin,
     'TaiwaneseRomanization': TaiwaneseRomanization,
     'TaiwaneseHakkaRomanization': TaiwaneseHakkaRomanization,
+    'ETC': ETC
+}
+
+_FORMAT_TYPE_ABBRV_LIST = {
+    'Word': Word,
+    'Zhuyin': Zhuyin,
+    'TL': TaiwaneseRomanization,
+    'THRS': TaiwaneseHakkaRomanization,
     'ETC': ETC
 }
 
@@ -33,29 +39,29 @@ _FORMAT_TYPE_LIST = {
 def parse_line_in_format(line, format_):
     """
     Side effect: ValueError (x),
-        Word (r), Zhuyin (r), TL (r), THRS (r), Phonetic (r), ETC (r)
+        Word (r), Zhuyin (r), TL (r), THRS (r), _Phonetic (r), ETC (r)
     """
     etcs = []
     splited = line.split('\t')
 
     for (splited_item, parse_item) in zip(splited, format_):
-        if parse_item is Word:
+        if parse_item not in _FORMAT_TYPE_LIST.values():
+            raise ValueError(
+                f'Invalid parse item \'{parse_item}\'.  '
+                f'Parse item must be one of {", ".join(_FORMAT_TYPE_ABBRV_LIST.keys())}')
+        elif parse_item is Word:
             word = Word(splited_item)
-        elif issubclass(parse_item, Phonetic):
+        elif issubclass(parse_item, _Phonetic):
             phonetic_type = parse_item
             phonetic = phonetic_type(splited_item)
         elif parse_item is ETC:
             etcs.append(ETC(splited_item))
-        else:
-            raise ValueError(
-                f'Invalid parse item \'{parse_item}\'.  '
-                f'Parse item must be Word, Zhuyin, TL, THRS, Phonetic, or ETC')
 
     return (word, phonetic, phonetic_type, etcs)
 
 
 def create_line_from_format(phrase_data, format_):
-    """Side effect: Word (r), Zhuyin (r), TL (r), THRS (r), Phonetic (r), ETC (r)"""
+    """Side effect: Word (r), Zhuyin (r), TL (r), THRS (r), _Phonetic (r), ETC (r)"""
     (word, phonetic, *additional) = (phrase_data)
     etcs = len(additional) > 1 and additional[1] or []
     etcs_len = len(etcs)
@@ -65,7 +71,7 @@ def create_line_from_format(phrase_data, format_):
     for parse_item in format_:
         if parse_item is Word:
             out_content.append(word)
-        elif issubclass(parse_item, Phonetic):
+        elif issubclass(parse_item, _Phonetic):
             out_content.append(phonetic)
         elif parse_item is ETC:
             etcs_item = ''
@@ -90,10 +96,10 @@ def preprocess_dict(dict_path, format_):
     Side effect: IO (w), fileIO (rw), os (x), sys (x), re (x)
                  parse_line_in_format: ValueError (x),
                                        Word (r),
-                                       Zhuyin (r), TL (r), THRS (r), Phonetic (r),
+                                       Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
                                        ETC (r)
                  create_line_from_format: Word (r),
-                                          Zhuyin (r), TL (r), THRS (r), Phonetic (r),
+                                          Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
                                           ETC (r)
     """
     # Read un-processed file
@@ -134,7 +140,7 @@ def preprocess_dict(dict_path, format_):
         new_word = parenthesis_pattern.sub('', str(word)).strip()
         new_phonetic = parenthesis_pattern.sub('', str(phonetic)).strip()
 
-        if issubclass(phonetic_type, RomanPhonetic):
+        if issubclass(phonetic_type, _RomanPhonetic):
             # Decompose precomposed characters
             new_phonetic = unicodedata.normalize("NFD", new_phonetic)
 
@@ -243,7 +249,7 @@ def _():
                         pickle (x)
             _get_dict_data_from_text: fileIO (r),
                 Word (r),
-                Zhuyin (r), TL (r), THRS (r), Phonetic (r),
+                Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
                 ETC (r)
             _create_dict_data_dump: fileIO (w), pickle (x)
         """
@@ -285,7 +291,7 @@ def _():
         Side effect: fileIO (r),
             parse_line_in_format: ValueError (x),
                 Word (r),
-                Zhuyin (r), TL (r), THRS (r), Phonetic (r),
+                Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
                 ETC (r)
         """
         text_chinese_phonetic = {}
@@ -458,11 +464,11 @@ def _():
                 preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
                     parse_line_in_format: ValueError (x),
                         Word (r),
-                        Zhuyin (r), TL (r), THRS (r), Phonetic (r),
+                        Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
                         ETC (r)
                     create_line_from_format:
                         Word (r),
-                        Zhuyin (r), TL (r), THRS (r), Phonetic (r),
+                        Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
                         ETC (r)
                 _get_dict_data_from_dump:
                     IO (w), fileIO (r), os.path (x), sys (x),
@@ -472,7 +478,7 @@ def _():
                     get_dict_set_file: hashlib (x)
                 _get_dict_data_from_text:
                     fileIO (r),
-                    Word (r), Phonetic (r), ETC (r)
+                    Word (r), _Phonetic (r), ETC (r)
                 _create_dict_data_dump:
                     fileIO (w), pickle (x)
                     get_dict_set_file: hashlib (x)
