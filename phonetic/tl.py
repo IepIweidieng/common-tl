@@ -1,10 +1,9 @@
-import sys
+'''Phonetic notation definition
+TL - Taiwanese Romanization System (臺灣閩南語羅馬字拼音方案)
+'''
 
 from . import ctl_util
-from .ctl_util import str_get_tone, str_get_gready
-
-
-# Used by tl_syllable_to_ipa
+from . import phonetic
 
 _PHONE_NAME = 'TL'
 
@@ -143,8 +142,6 @@ _TL_NUCLEUS_LIST = {
 }
 
 
-_IPA_NASALIZATION = u'\u0303'  # ' ̃ '
-
 def _CODA_M_BRANCH(nucleus):
     return {
         'm̩': ''
@@ -199,95 +196,15 @@ _FINAL_LIST = (
 [ŋ̍]	ng								ngh
 )'''
 
+TL = phonetic.def_phonetic(
+    _PHONE_NAME, Dialect, Variant, _TONE_PREFIX,
+    ('', '', _NULL_NUCLEUS_BRANCH, '', _NULL_TONE_BRANCH),
+    (_TL_INITIAL_LIST, _TL_MEDIAL_LIST, _TL_NUCLEUS_LIST, _TL_CODA_LIST, _TL_TONE_LIST)
+)
 
 def tl_syllable_to_ipa(tl_, dialect='chiang', variant='southern'):
     """
     Convert a TL syllable to IPA. \n
     Side effect: IO (w)
     """
-    dialect = dialect and dialect.replace("'", '_').lower()
-    variant = variant and variant.replace("'", '_').lower()
-
-    tone_list = _TL_TONE_LIST
-    if isinstance(tone_list, Dialect):
-        tone_list = getattr(tone_list, dialect)
-    if isinstance(tone_list, Variant):
-        tone_list = getattr(tone_list, variant)
-    (tone, tl_no_tone) = str_get_tone(tl_, tone_list, _NULL_TONE_BRANCH)
-
-    offset = 0
-
-    (tl_initial, offset, initial) = str_get_gready(
-        tl_no_tone, offset, _TL_INITIAL_LIST, '')
-
-    (tl_medial, medial) = (None, '')
-    (tl_nucleus0, offset, nucleus0) = str_get_gready(
-        tl_no_tone, offset, _TL_NUCLEUS_LIST, '')
-    if tl_medial in _TL_MEDIAL_LIST:
-        ((tl_medial, medial), (tl_nucleus0, nucleus0)) = (
-            (tl_nucleus0, nucleus0), (None, ''))
-
-    if tl_nucleus0 is None:
-        (tl_nucleus0, offset, nucleus0) = str_get_gready(
-            tl_no_tone, offset, _TL_NUCLEUS_LIST, _NULL_NUCLEUS_BRANCH)
-    (tl_nucleus1, offset, nucleus1) = str_get_gready(
-        tl_no_tone, offset, _TL_NUCLEUS_LIST, '')
-    if tl_nucleus0 == None and tl_medial != None:
-        tl_nucleus0 = tl_medial
-        tl_medial = ''
-        nucleus0 = medial
-        medial = ''
-
-    (tl_coda, offset, coda) = str_get_gready(
-        tl_no_tone, offset, _TL_CODA_LIST, '')
-
-    def get_patched(ipa, is_initial=False):
-        result = ipa
-        if is_initial:
-            if callable(result):
-                result = result(tl_medial or tl_nucleus0)
-        else:
-            if callable(result):
-                result = result(tl_coda)
-            if callable(result):
-                result = result(tl_medial)
-            if callable(result):
-                result = result(tl_initial)
-        if isinstance(result, Dialect):
-            result = getattr(result, dialect)
-        if isinstance(result, Variant):
-            result = getattr(result, variant)
-        if isinstance(result, list):
-            new_result = [get_patched(ipa_part, is_initial) for ipa_part in result]
-            result = ''.join(new_result)
-        return result
-
-    def nasalization(vowels):
-        new_vowels = []
-        for vowel_item in vowels:
-            new_vowels.append(vowel_item)
-            new_vowels.append(_IPA_NASALIZATION)
-        return ''.join(new_vowels)
-
-    initial = get_patched(initial, is_initial=True)
-    medial = get_patched(medial)
-    nucleus0 = get_patched(nucleus0)
-    nucleus1 = get_patched(nucleus1)
-    tone = get_patched(tone)
-
-    if callable(initial):
-        initial = initial(nucleus0)
-    if callable(coda):
-        coda = coda(nucleus0)
-
-    if tl_coda != None and tl_coda.startswith('nn'):
-        medial = nasalization(medial)
-        nucleus0 = nasalization(nucleus0)
-        nucleus1 = nasalization(nucleus1)
-
-    if offset != len(tl_no_tone) or coda.endswith("?"):
-        print('Warning: ', tl_, ' -> ', tl_no_tone,
-              ' is an invalid ', _PHONE_NAME, '.  Continued.',
-              sep='', file=sys.stderr, flush=True)
-        return (initial, f'{medial}{nucleus0}{nucleus1}{coda.rstrip("?")}?{_TONE_PREFIX}{tone}')
-    return (initial, f'{medial}{nucleus0}{nucleus1}{coda}{_TONE_PREFIX}{tone}')
+    return phonetic.phonetic_syllable_to_ipa(TL, tl_, dialect, variant)
