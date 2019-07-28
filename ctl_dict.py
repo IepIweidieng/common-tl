@@ -3,7 +3,6 @@ import os
 import pickle
 import re
 import sys
-import unicodedata
 from collections import UserString
 
 import phonetic.ctl_util as ctl_util
@@ -142,7 +141,7 @@ def preprocess_dict(dict_path, format_):
 
         if issubclass(phonetic_type, _RomanPhonetic):
             # Decompose precomposed characters
-            new_phonetic = unicodedata.normalize("NFD", new_phonetic)
+            new_phonetic = ctl_util.normalize(new_phonetic)
 
         phonetic_syllables = new_phonetic.split(' ')
 

@@ -3,7 +3,7 @@ Common definition for Latin phonetic alphabets
 '''
 
 import sys
-from .ctl_util import str_get_gready, str_get_tone
+from .ctl_util import normalize, str_get_gready, str_get_tone
 
 _IPA_NASALIZATION = u'\u0303'  # ' ̃ '
 
@@ -24,6 +24,7 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
     Convert a syllable in a phonetic notation to IPA. \n
     Side effect: IO (w)
     """
+    syll = normalize(syll)
     dialect = dialect and dialect.replace("'", '_').lower()
     variant = variant and variant.replace("'", '_').lower()
 

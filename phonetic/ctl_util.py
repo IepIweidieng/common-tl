@@ -1,4 +1,5 @@
 from collections import namedtuple
+import unicodedata
 
 def namedtuple_ctor(Tuple, default=None):
     return (lambda *args, **kwargs:
@@ -16,6 +17,10 @@ class Lang_opt(namedtuple('Lang_opt', ['dialect', 'variant'])):
         res = super()._asdict()
         return {k: res[k] for k in res if res[k] is not None}
 lang_opt = namedtuple_ctor(Lang_opt)
+
+def normalize(str_):
+    '''Decompose precomposed characters'''
+    return type(str_)(unicodedata.normalize("NFD", str(str_)))
 
 def find_first_non_roman(text):
     """
