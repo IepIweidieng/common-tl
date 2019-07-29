@@ -99,7 +99,7 @@ def _A_BRANCH(tl_coda):
 def _O_BRANCH(tl_coda):
     return {
         'ng': 'ɔ', 'm': 'ɔ', 'p': 'ɔ', 'k': 'ɔ',
-        'nn': 'ɔ', 'ⁿ': 'ɔ'
+        'nn': 'ɔ', 'ⁿ': 'ɔ', 'nnh': 'ɔ', 'ⁿh': 'ɔ',
     }.get(tl_coda, variant(northern='o', southern='ə'))
 
 def _E_BRANCH(tl_coda):
@@ -168,8 +168,8 @@ _TL_CODA_LIST = {
     'n': 'n',
     'ng': _CODA_NG_BRANCH, 'ngh': _CODA_NGH_BRANCH,
     'p': 'p̚', 't': 't̚', 'k': 'k̚', 'h': 'ʔ',
-    'nn': '',   # Nasalize the former vowels
-    'nnh': 'ʔ'  # Nasalize the former vowels and then append a 'ʔ'
+    'nn': '', 'ⁿ': '',   # Nasalize the former vowels
+    'nnh': 'ʔ', 'ⁿh': 'ʔ',  # Nasalize the former vowels and then append a 'ʔ'
 }
 
 '''
