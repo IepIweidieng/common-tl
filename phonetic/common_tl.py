@@ -27,8 +27,8 @@ _COMMON_TL_INITIAL_LIST = {
     'ʒ': 'jr',  # * As a rhotic consonant; used in Taiwanese Hakka
     'ɹ': '',  # An allophone of the zero consonant in Southern Sixian dialect of Taiwanese Hakka
 
-    'ɕ': 's',  # An allophone of TL "s"
-    'ʑ': 'j',  # An allophone of TL "j"
+    'ɕ': 'sc',  # * TL: "s" before an "i"
+    'ʑ': 'jz',  # * TL: "j" before an "i"
     'x': 'h',  # Taiwanese Mandarin "ㄏ" is pronounced as either [x] or [h].
 
     'ȵ': 'gn',  # Used in Taiwanese Chiang-chiu accent.
@@ -157,7 +157,6 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
     (tl_initial, tl_final) = ('', '')
     prev_symbol_pos = {
         'nn': -1, 'rr': -1,
-        'ieen': -1, 'ieet': -1, 'yeen': -1, 'yeet': -1
     }
 
     for ipa_phone in ipa_initial:
@@ -170,22 +169,6 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
 
         if isinstance(tl_phone, Variant):
             tl_phone = getattr(tl_phone, variant)
-
-        # Replace 'ieen' with 'ian',     'yeen' with 'yan'
-        #         'ieet' with 'iat', and 'yeet' with 'yat'
-        for (medial, coda) in ((medial, coda)
-                               for medial in ('i', 'y') for coda in ('n', 't')):
-            _replace_symbol(tl_final[:-3], prev_symbol_pos,
-                            ('', ''),
-                            f'{tl_final[-3:]}{tl_phone}',
-                            (f'{medial}ee{coda}', ''))
-            new_tl_final = _replace_symbol(tl_final[:-3], prev_symbol_pos,
-                                           (f'{medial}ee{coda}',
-                                            f'{medial}a'),
-                                           f'{tl_final[-3:]}{tl_phone}',
-                                           (f'{medial}ee{coda}', ''))
-            if new_tl_final is not None:
-                tl_final = new_tl_final
 
         # Merge multipel 'nn'
         new_tl_final = _replace_symbol(
