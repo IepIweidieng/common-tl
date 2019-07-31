@@ -155,7 +155,7 @@ def demonstrate():
 
 
 # Usage example
-if __name__ == '__main__':
+def main():
     from ctl_dict import Word, Zhuyin, TL, THRS, ETC
 
     sentence = '這是個範例！'
@@ -170,3 +170,5 @@ if __name__ == '__main__':
     print(chinese_to_roman(sentence, dict_))
     print(chinese_to_roman(sentence, dict_,
         dialects=lang(hokkien=lang_opt(variant='northern'))))
+
+if __name__ == '__main__': main()

@@ -159,7 +159,7 @@ def demonstrate():
 
 
 # Usage example
-if __name__ == '__main__':
+def main():
     from ctl_dict import Word, Zhuyin, TL, ETC
 
     sentence = '這是個範例！'
@@ -170,3 +170,5 @@ if __name__ == '__main__':
         ('dict_example/dictionary_num.txt', (TL, Word))])
 
     print(split_chinese_word(sentence, dict_))
+
+if __name__ == '__main__': main()
