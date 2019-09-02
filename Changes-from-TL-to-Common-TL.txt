@@ -1,13 +1,18 @@
-﻿Changes from TL to Common TL, revision 5
+﻿Changes from TL to Common TL, revision 6
 
-N.: Common TL phonetic for north dialect
-S.: Common TL phonetic for south dialect
-To.: Taiwanese Choân-chiu accent
-Ci.: Taiwanese Chiang-chiu accent
-M.: Modern Standard Mandarin Chinese
+CTL.: Common TL phonetic notation system
+N.: Common TL phonetic for north dialect (in Common TL)
+S.: Common TL phonetic for south dialect (in Common TL)
+TL.: Taiwanese Romanization System
+To.: Taiwanese Hokkien Choân-chiu accent (in TL)
+Ci.: Taiwanese Hokkien Chiang-chiu accent (in TL)
+M.: Modern Standard Mandarin Chinese (in Zhuyin)
+Hk.: Taiwanese Hakka (in THRS)
 
 New phonetics:
+    IPA   CTL     Usage
     [f]   "f"   : M."ㄈ"
+    [v]   "v"   : Hk."v"
     [ʈʂ]  "tsr" : M."ㄓ"
     [ʈʂʰ] "tsrh": M."ㄔ"
     [ʂ]   "sr"  : M."ㄕ"
@@ -15,30 +20,50 @@ New phonetics:
     [ɥ/y] "y"   : M."ㄩ"
     [◌˞ ]  "rr"  : M. suffix "ㄦ"
     [ɚ]   N."orrr" or S."orr": M. vowel "ㄦ"
-    [dz/dʑ] "dj": To."j"
+    [dz]  "dj"  : To."j"
 
 Borrowed phonetics:
-    [x]   "h" ([h]): M."ㄏ"
-    [ɻ/ɹ] "ir" ([ɨ]): M."ㄭ" in syllables "ㄓ(ㄭ)/ㄗ(ㄭ)", "ㄔ(ㄭ)/ㄘ(ㄭ)", etc.
-    [ɤ]   "er" ([ə]): M."ㄜ"
-    [ʊ]    N."o" ([o]) or S."oo" ([ɔ]): "ㄨ" in M."-ㄨㄥ"
-    [i̯ʊ]   N."io" ([io]) or S."ioo" ([iɔ]): "ㄩ" in M."ㄩㄥ"
+    IPA   CTL  IPA(TL)  Usage
+    [x]   "h"    ([h]): M."ㄏ"
+    [ɻ/ɹ] "ir"   ([ɨ]): M."ㄭ" in syllables "ㄓ(ㄭ)/ㄗ(ㄭ)", "ㄔ(ㄭ)/ㄘ(ㄭ)", etc.
+    [j]   "i"    ([i]): M. medial "ㄧ"
+    [w]   "u"    ([u]): M. medial "ㄨ"
+    [ɤ]   N."or" or S."o" ([ə]): M."ㄜ"
+    [ʊ]   N."o"  ([o])  or S."oo"  ([ɔ]) : "ㄨ" in M."-ㄨㄥ"
+    [i̯ʊ]  N."io" ([io]) or S."ioo" ([iɔ]): "ㄩ" in M."ㄩㄥ"
+    [n̩]   "n"    ([n]): Hk. syllabic "n"
 
 Changed phonetics:
-
-    [iə̯ŋ] "ing" -> "ieng": Distinguished from M.[iŋ] "ing" "ㄧㄥ"
+    IPA   TL       CTL     Reason             IPA  Usage    CTL
+    [iə̯ŋ] "ing" -> "ieng": Distinguished from [iŋ] M."ㄧㄥ" (CTL."ing")
     [iə̯k̚] "ik"  -> "iek"
 
-    [i̯ɔŋ] "iong" -> "ioong": Distinguished from M.[i̯ʊŋ] N."iong" "ㄩㄥ"
-    [i̯ɔk̚] "iok"  -> "iook"
+    [i̯ɛŋ] Co."ieng" -> "ieeng": Distinguished from [iə̯ŋ] CTL."ieng"
+    [i̯ɛk̚] Co."iek"  -> "ieek" : Distinguished from [iə̯k̚] CTL."iek"
+    [ɛŋ]  "eng"     -> "eeng"
+    [ɛk̚]  "ek"      -> "eek"
+
+    [i̯ɔŋ] "iong"  -> "ioong": Distinguished from [i̯ʊŋ] M."ㄩㄥ" (N."iong")
+    [i̯ɔk̚] "iok"   -> "iook"
+    [ĩ̯ɔ̃]  "ionn"  -> "ioonn"
+    [ĩ̯ɔ̃ʔ] "ionnh" -> "ioonnh"
 
     [ɔ] "onn",  "om",  "ong",  "op",  "ok",  "onnh"
     -> "oonn", "oom", "oong", "oop", "ook", "oonnh":
-        Distinguished from M.[ʊŋ] N."-ong" "-ㄨㄥ"
+        Distinguished from [ʊŋ] M."-ㄨㄥ" (N."-ong")
+
+    [i̯ɛn] "ian" -> "ieen": Distinguished from [i̯an] Hk."ian" (CTL."ian")
+    [i̯ɛt̚] "iat" -> "ieet": Distinguished from [i̯at̚] Hk."iad" (CTL."iat")
 
     Let ◌ be any vowel:
-        [m◌̃ ] "m◌"  -> "m◌nn": Distinguished from M.[m◌] "m◌" "ㄇ◌"
-        [n◌̃ ] "n◌"  -> "n◌nn": Distinguished from M.[n◌] "n◌" "ㄋ◌"
+        [m◌̃ ] "m◌"  -> "m◌nn": Distinguished from [m◌] M."ㄇ◌" (CTL."m◌")
+        [n◌̃ ] "n◌"  -> "n◌nn": Distinguished from [n◌] M."ㄋ◌" (CTL."n◌")
         [ŋ◌̃ ] "ng◌" -> "ng◌nn"
 
-    [d~ɾ~l; ᵈl] "l" -> "dl": Distinguished from M.[l] "l" "ㄌ"
+    [d~ɾ~l; ᵈl] "l" -> "dl": Distinguished from [l] M."ㄌ" (CTL."l")
+
+    [tɕ]  "ts(i)"   -> "tsc" : Distinguished from [tsi]  Hk."zi" (CTL."tsi")
+    [tɕʰ] "tsh(i)"  -> "tsch": Distinguished from [tsʰi] Hk."ci" (CTL."tshi")
+    [ɕ]   "s(i)"    -> "sc"  : Distinguished from [si]   Hk."si" (CTL."si")
+    [dʑ]  To."j(i)" -> "djz"
+    [ʑ]   Ci."j(i)" -> "jz"
