@@ -104,7 +104,7 @@ def str_get_tone(str_, tone_list, default_):
             tone = tone_k
             str_tone_len = new_offset - offset
             str_no_tone = f'{str_[:offset]}{str_[new_offset:]}'
-            if len(tone) == str_max_length: break
+            if str_tone_len == str_max_length: break
     if tone:
         return (tone, str_no_tone)
     return (default_, str_)
