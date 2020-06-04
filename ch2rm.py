@@ -82,6 +82,23 @@ def chinese_to_roman(sentence, dict_, dialects=lang()):
 def _print_pairs(pairs):
     return ' '.join((''.join(pair_item) for pair_item in pairs))
 
+def phonetic_to_tl(sentence, dialects=lang(), phonetic=ctl_dict.TL):
+    """
+    Convert a TL-like phonetic sentence to Common TL. \n
+    Side effect: phonetic_word_to_tl: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
+    """
+    # Handle capitalization before splitting
+    words_of_sentence = sentence.lower().split()
+
+    tl_pair_list = []
+    for word in words_of_sentence:
+        # Handle neutral tone before splitting
+        word = word.replace('--', ' 0').replace('-', ' ').replace(' 0', ' --')
+        phonetic_word = word.split()
+        tl_pair_list.append(phonetic_word_to_tl(phonetic_word, dialects, phonetic))
+
+    return tl_pair_list
+
 
 def demonstrate():
     """
