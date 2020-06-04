@@ -149,8 +149,8 @@ def _CODA_M_BRANCH(nucleus):
 
 def _CODA_MH_BRANCH(nucleus):
     return {
-        'm̩': 'h'
-    }.get(nucleus, 'mh?')
+        'm̩': 'ʔ'
+    }.get(nucleus, 'mʔ?')
 
 def _CODA_NG_BRANCH(nucleus):
     return {
@@ -159,8 +159,8 @@ def _CODA_NG_BRANCH(nucleus):
 
 def _CODA_NGH_BRANCH(nucleus):
     return {
-        'ŋ̍': 'h'
-    }.get(nucleus, 'ŋh?')
+        'ŋ̍': 'ʔ'
+    }.get(nucleus, 'ŋʔ?')
 
 
 _TL_CODA_LIST = {
