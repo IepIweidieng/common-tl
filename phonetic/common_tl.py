@@ -111,42 +111,42 @@ _COMMON_TL_FINAL_LIST = {
 }
 
 
-def _replace_symbol(src, prev_pos_list, prev_replace_pair,
-                    current_symbol, tail_replace_pair=None):
+def _compare_and_replace_append(src, prev_pos_list, current_symbol,
+                                replace_append_list, target=None):
     """Side effect: prev_pos_list (rw)"""
     new_src = None
-    (symbol_to_remove, symbol_to_insert) = prev_replace_pair
-    (target_symbol, symbol_to_append) = tail_replace_pair or prev_replace_pair
+    (str_replaced, str_replacer, str_append) = replace_append_list
+    target = target if target is not None else str_replaced
 
-    symbol_to_remove_len = len(symbol_to_remove)
-    symbol_to_insert_len = len(symbol_to_insert)
+    str_replaced_len = len(str_replaced)
+    str_replacer_len = len(str_replacer)
     new_src_len = len(src)
 
-    if current_symbol.endswith(target_symbol):
-        if (symbol_to_remove in prev_pos_list
-                and prev_pos_list[symbol_to_remove] != -1):
+    if current_symbol.endswith(target):
+        if (str_replaced in prev_pos_list
+                and prev_pos_list[str_replaced] != -1):
             new_src = (
-                f'{src[:prev_pos_list[symbol_to_remove]]}'
-                f'{symbol_to_insert}'
-                f'{src[prev_pos_list[symbol_to_remove] + symbol_to_remove_len:]}'
-                f'{symbol_to_append}')
+                f'{src[:prev_pos_list[str_replaced]]}'
+                f'{str_replacer}'
+                f'{src[prev_pos_list[str_replaced] + str_replaced_len:]}'
+                f'{str_append}')
 
             new_src_len = len(new_src)
 
             for (symbol, pos) in prev_pos_list.items():
-                if pos > prev_pos_list[symbol_to_remove]:
+                if pos > prev_pos_list[str_replaced]:
                     prev_pos_list[symbol] += (
-                        symbol_to_insert_len - symbol_to_remove_len)
+                        str_replacer_len - str_replaced_len)
 
-            prev_pos_list[symbol_to_remove] = -1
-            if symbol_to_append:
-                prev_pos_list[symbol_to_append] = (
-                    new_src_len + len(current_symbol) - len(symbol_to_append))
+            prev_pos_list[str_replaced] = -1
+            if str_append:
+                prev_pos_list[str_append] = (
+                    new_src_len + len(current_symbol) - len(str_append))
                 return new_src
 
-        if target_symbol in prev_pos_list:
-            prev_pos_list[target_symbol] = (
-                new_src_len + len(current_symbol) - len(target_symbol))
+        if target in prev_pos_list:
+            prev_pos_list[target] = (
+                new_src_len + len(current_symbol) - len(target))
 
     return new_src
 
@@ -171,21 +171,21 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
             tl_phone = getattr(tl_phone, variant)
 
         # Merge multiple 'nn'
-        new_tl_final = _replace_symbol(
-            tl_final, prev_symbol_pos, ('nn', ''), tl_phone)
+        new_tl_final = _compare_and_replace_append(
+            tl_final, prev_symbol_pos, tl_phone, ('nn', '', ''))
         if new_tl_final is not None:
             tl_final = new_tl_final
 
         # 'rr' should comes after 'nn'
-        new_tl_final = _replace_symbol(
-            tl_final, prev_symbol_pos, ('rr', 'nn'), tl_phone, ('nn', 'rr'))
+        new_tl_final = _compare_and_replace_append(
+            tl_final, prev_symbol_pos, tl_phone, ('rr', 'nn', 'rr'), target='nn')
         if new_tl_final is not None:
             tl_final = new_tl_final
             continue
 
         # Merge multiple 'rr'
-        new_tl_final = _replace_symbol(
-            tl_final, prev_symbol_pos, ('rr', ''), tl_phone)
+        new_tl_final = _compare_and_replace_append(
+            tl_final, prev_symbol_pos, tl_phone, ('rr', '', ''))
         if new_tl_final is not None:
             tl_final = new_tl_final
 
