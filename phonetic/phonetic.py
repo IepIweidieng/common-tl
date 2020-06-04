@@ -51,7 +51,7 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
     (phone_medial, medial) = (None, '')
     (phone_nucleus0, offset, nucleus0) = str_get_greedy(
         phone_no_tone, offset, phone.NUCLEUS_LIST, phone.NULL_MEDIAL)
-    if phone_medial in phone.MEDIAL_LIST:
+    if phone_nucleus0 in phone.MEDIAL_LIST:
         ((phone_medial, medial), (phone_nucleus0, nucleus0)) = (
             (phone_nucleus0, nucleus0), (None, ''))
 
