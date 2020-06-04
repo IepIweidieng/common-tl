@@ -47,7 +47,7 @@ def phonetic_word_to_ipa(phonetic_word, dialects=lang(), phonetic=None):
 def ipa_pair_to_tl(ipa_pair, *args, **kwargs):
     """
     將國際音標轉成廣義臺羅拼音 \n
-    Convert an IPA initial-final pair into common TL initial-final pair. \n
+    Convert an IPA initial-final pair into Common TL initial-final pair. \n
     """
     return [ipa_pair_to_tl_pair(syllable, *args, **kwargs) for syllable in ipa_pair]
 
@@ -64,7 +64,7 @@ def phonetic_word_to_tl(phonetic_word, dialects=lang(), phonetic=None):
 
 def chinese_to_roman(sentence, dict_, dialects=lang()):
     """
-    Convert a Chinese sentence to Roman. \n
+    Convert a Chinese sentence to Common TL. \n
     Side effect: phonetic_word_to_tl: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
     """
     words_of_sentence = ctl_segment.split_chinese_word(sentence, dict_)

@@ -19,9 +19,17 @@ def def_phonetic(name, dialect, variant, tone_prefix,
             NUCLEUS_LIST=nucleus_list, CODA_LIST=coda_list, TONE_LIST=tone_list,
     ))
 
+
+
 def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
     """
     Convert a syllable in a phonetic notation to IPA. \n
+    Input syllable: f'{initial}{medial}{nucleus0}{nucleus1}{coda}' \n
+    Output syllable: (initial, f'{medial}{nucleus0}{nucleus1}{coda}{phone.TONE_PREFIX}{tone}') \n
+
+    The tone can appear at any position. \n
+    A vowel becomes a medial if it is in the medial list and another vowel presents. \n
+
     Side effect: IO (w)
     """
     syll = normalize(syll)

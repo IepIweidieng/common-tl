@@ -170,7 +170,7 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
         if isinstance(tl_phone, Variant):
             tl_phone = getattr(tl_phone, variant)
 
-        # Merge multipel 'nn'
+        # Merge multiple 'nn'
         new_tl_final = _replace_symbol(
             tl_final, prev_symbol_pos, ('nn', ''), tl_phone)
         if new_tl_final is not None:
@@ -183,7 +183,7 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
             tl_final = new_tl_final
             continue
 
-        # Merge multipel 'rr'
+        # Merge multiple 'rr'
         new_tl_final = _replace_symbol(
             tl_final, prev_symbol_pos, ('rr', ''), tl_phone)
         if new_tl_final is not None:
