@@ -1,4 +1,5 @@
 from . import ctl_util
+from .ctl_util import str_get_greedy
 
 # Used by ipa_pair_to_tl_pair
 
@@ -159,13 +160,22 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
         'nn': -1, 'rr': -1,
     }
 
-    for ipa_phone in ipa_initial:
-        tl_phone = _COMMON_TL_INITIAL_LIST.get(ipa_phone, ipa_phone)
-
+    offset = 0
+    while offset < len(ipa_initial):
+        (_, offset, tl_phone) = str_get_greedy(
+            ipa_initial, offset, _COMMON_TL_INITIAL_LIST, None)
+        if not tl_phone:
+            tl_phone = ipa_initial[offset]
+            offset = offset + 1
         tl_initial = f'{tl_initial}{tl_phone}'
 
-    for ipa_phone in ipa_final:
-        tl_phone = _COMMON_TL_FINAL_LIST.get(ipa_phone, ipa_phone)
+    offset = 0
+    while offset < len(ipa_final):
+        (phone, offset, tl_phone) = str_get_greedy(
+            ipa_final, offset, _COMMON_TL_FINAL_LIST, None)
+        if not tl_phone:
+            phone = tl_phone = ipa_final[offset]
+            offset = offset + 1
 
         if isinstance(tl_phone, Variant):
             tl_phone = getattr(tl_phone, variant)
