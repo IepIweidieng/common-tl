@@ -87,7 +87,9 @@ def phonetic_to_tl(sentence, dialects=lang(), phonetic=ctl_dict.TL):
     Convert a TL-like phonetic sentence to Common TL. \n
     Side effect: phonetic_word_to_tl: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
     """
-    # Handle capitalization before splitting
+    # Handle punctuation and capitalization before splitting
+    for punc in {'.', ',', ';', ':', '"', "'", '?', '!', '─', '—'}:
+        sentence = sentence.replace(punc, '')
     words_of_sentence = sentence.lower().split()
 
     tl_pair_list = []
