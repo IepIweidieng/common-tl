@@ -99,12 +99,13 @@ def str_get_tone(str_, tone_list, default_):
     str_tone_len = 0
     str_tone_max_length = get_max_length(tone_list)
     for offset in range(0, len(str_), 1):
-        (_, new_offset, tone_k) = str_get_greedy(str_, offset, tone_list, None)
+        (matched_str, new_offset, tone_k) = str_get_greedy(str_, offset, tone_list, None)
         if tone_k and new_offset - offset >= str_tone_len:
             tone = tone_k
             str_tone_len = new_offset - offset
             str_no_tone = f'{str_[:offset]}{str_[new_offset:]}'
-            if str_tone_len == max(min(str_tone_max_length, len(str_) - offset), 1): break
+            if str_tone_len == max(min(str_tone_max_length, len(str_) - offset), 1):
+                break
     if tone:
-        return (tone, str_no_tone)
-    return (default_, str_)
+        return (matched_str, tone, str_no_tone)
+    return (None, default_, str_)

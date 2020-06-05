@@ -31,26 +31,32 @@ _TONE_PREFIX = '2'
 
 # For 'ˋ'
 _vdf = Dialect('4', '8', '8', '4', '8', '4')
-def _FALLING_TONE_BRANCH(thrs_coda):
-    return {
-        'b': _vdf, 'd': _vdf, 'nnd': _vdf, 'g': _vdf,
-        'p': _vdf, 't': _vdf, 'nnt': _vdf, 'k': _vdf,  # From Tongyong Pinyin for Taiwanese Hakka
-    }.get(thrs_coda, Dialect('2', '1', '3', Variant(hsinchu='3', zhuolan='5'), '5', '2'))
+def _FALLING_TONE_BRANCH(self_type, thrs_coda, branch_type):
+    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+        return {
+            'b': _vdf, 'd': _vdf, 'nnd': _vdf, 'g': _vdf,
+            'p': _vdf, 't': _vdf, 'nnt': _vdf, 'k': _vdf,  # From Tongyong Pinyin for Taiwanese Hakka
+        }.get(thrs_coda, Dialect('2', '1', '3', Variant(hsinchu='3', zhuolan='5'), '5', '2'))
+    return _FALLING_TONE_BRANCH
 
 # For '^'
 _vdlf = dialect(dabu='4')
-def _LOW_FALLING_TONE_BRANCH(thrs_coda):
-    return {
-        'b': _vdlf, 'd': _vdlf, 'nnd': _vdlf, 'g': _vdlf,
-        'p': _vdlf, 't': _vdlf, 'nnt': _vdlf, 'k': _vdlf,  # From Tongyong Pinyin for Taiwanese Hakka
-    }.get(thrs_coda, dialect(dabu='2'))
+def _LOW_FALLING_TONE_BRANCH(self_type, thrs_coda, branch_type):
+    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+        return {
+            'b': _vdlf, 'd': _vdlf, 'nnd': _vdlf, 'g': _vdlf,
+            'p': _vdlf, 't': _vdlf, 'nnt': _vdlf, 'k': _vdlf,  # From Tongyong Pinyin for Taiwanese Hakka
+        }.get(thrs_coda, dialect(dabu='2'))
+    return _LOW_FALLING_TONE_BRANCH
 
 _vd0 = Dialect('8', '4', None, '8', None, '8')
-def _NULL_TONE_BRANCH(thrs_coda):
-    return {
-        'b': _vd0, 'd': _vd0, 'nnd': _vd0, 'g': _vd0,
-        'p': _vd0, 't': _vd0, 'nnt': _vd0, 'k': _vd0,  # From Tongyong Pinyin for Taiwanese Hakka
-    }.get(thrs_coda, Dialect('3', '5', None, Variant(hsinchu='5', zhuolan='7'), '7', '3'))
+def _NULL_TONE_BRANCH(self_type, thrs_coda, branch_type):
+    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+        return {
+            'b': _vd0, 'd': _vd0, 'nnd': _vd0, 'g': _vd0,
+            'p': _vd0, 't': _vd0, 'nnt': _vd0, 'k': _vd0,  # From Tongyong Pinyin for Taiwanese Hakka
+        }.get(thrs_coda, Dialect('3', '5', None, Variant(hsinchu='5', zhuolan='7'), '7', '3'))
+    return _NULL_TONE_BRANCH
 
 _THRS_TONE_LIST = Dialect(
     sixian={
@@ -117,36 +123,40 @@ _THRS_TONE_LIST = Dialect(
     },
 )
 
-def _s(thrs_medial):
-    return {
-        'i': Dialect('ɕ', 's', 's', 's', 's', 'ɕ'),
-    }.get(thrs_medial, 's')
+def _s(self_type, medial, branch_type):
+    if branch_type == phonetic.MEDIAL_IPA and self_type == phonetic.INITIAL:
+        return {
+            'i': Dialect('ɕ', 's', 's', 's', 's', 'ɕ'),
+        }.get(medial and medial[:1], 's')
+    return _s
 
-def _INITIAL_M_BRANCH(nucleus):
-    return {
-        'm̩': ''
-    }.get(nucleus, 'm')
+def _m(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+        return {
+            'm̩': ''
+        }.get(nucleus, 'm')
+    return _m
 
-def _m(thrs_medial):
-    return _INITIAL_M_BRANCH
+def _n(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+        return {
+            'n̩': ''
+        }.get(nucleus, 'n')
+    return _n
 
-def _INITIAL_N_BRANCH(nucleus):
-    return {
-        'n̩': ''
-    }.get(nucleus, 'n')
+def _INITIAL_NG_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+        return {
+            'ŋ̍': ''
+        }.get(nucleus, 'ŋ')
+    return _INITIAL_NG_BRANCH
 
-def _n(thrs_medial):
-    return _INITIAL_N_BRANCH
-
-def _INITIAL_NG_BRANCH(nucleus):
-    return {
-        'ŋ̍': ''
-    }.get(nucleus, 'ŋ')
-
-def _ng(thrs_medial):
-    return {
-        'i': 'ȵ',
-    }.get(thrs_medial, _INITIAL_NG_BRANCH)
+def _ng(self_type, medial, branch_type):
+    if branch_type == phonetic.MEDIAL_IPA and self_type == phonetic.INITIAL:
+        return {
+            'i': 'ȵ',
+        }.get(medial and medial[:1], _INITIAL_NG_BRANCH)
+    return _ng
 
 
 _THRS_INITIAL_LIST = {
@@ -163,18 +173,21 @@ _THRS_INITIAL_LIST = {
 
 _THRS_MEDIAL_LIST = {'i', 'u'}
 
-def _NULL_NUCLEUS_BRANCH_INITIAL(thrs_initial):
-    return {
-        'ng': 'ŋ̍', 'n': 'n̩', 'm': 'm̩'
-    }.get(thrs_initial, '')
-
-def _NULL_NUCLEUS_BRANCH_MEDIAL(thrs_medial):
+def _NULL_NUCLEUS_BRANCH_INITIAL(self_type, thrs_initial, branch_type):
+    if (branch_type == phonetic.INITIAL
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'ng': 'ŋ̍', 'n': 'n̩', 'm': 'm̩',
+        }.get(thrs_initial, '')
     return _NULL_NUCLEUS_BRANCH_INITIAL
 
-def _NULL_NUCLEUS_BRANCH(thrs_coda):
-    return {
-        'ng': 'ŋ̍', 'n': 'n̩', 'm': 'm̩',
-    }.get(thrs_coda, _NULL_NUCLEUS_BRANCH_MEDIAL)
+def _NULL_NUCLEUS_BRANCH(self_type, thrs_coda, branch_type):
+    if (branch_type == phonetic.CODA
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'ng': 'ŋ̍', 'n': 'n̩', 'm': 'm̩',
+        }.get(thrs_coda, _NULL_NUCLEUS_BRANCH_INITIAL)
+    return _NULL_NUCLEUS_BRANCH
 
 
 _THRS_NUCLEUS_LIST = {
@@ -190,20 +203,26 @@ _THRS_NUCLEUS_LIST = {
 }
 
 
-def _CODA_M_BRANCH(nucleus):
-    return {
-        'm̩': ''
-    }.get(nucleus, 'm')
+def _CODA_M_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'm̩': ''
+        }.get(nucleus, 'm')
+    return _CODA_M_BRANCH
 
-def _CODA_N_BRANCH(nucleus):
-    return {
-        'n̩': ''
-    }.get(nucleus, 'n')
+def _CODA_N_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'n̩': ''
+        }.get(nucleus, 'n')
+    return _CODA_N_BRANCH
 
-def _CODA_NG_BRANCH(nucleus):
-    return {
-        'ŋ̍': ''
-    }.get(nucleus, 'ŋ')
+def _CODA_NG_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'ŋ̍': ''
+        }.get(nucleus, 'ŋ')
+    return _CODA_NG_BRANCH
 
 
 _THRS_CODA_LIST = {
@@ -216,6 +235,7 @@ _THRS_CODA_LIST = {
     'nnd': 't̚',  # Nasalize the former vowels and then append a 't̚'; used in Zhao'an dialect
     'nnt': 't̚',
 }
+_THRS_NASALIZATION = 'nn'
 
 '''
 _FINAL_LIST = (
@@ -253,7 +273,8 @@ _FINAL_LIST = (
 THRS = phonetic.def_phonetic(
     _PHONE_NAME, Dialect, Variant, _TONE_PREFIX,
     ('', '', _NULL_NUCLEUS_BRANCH, '', _NULL_TONE_BRANCH),
-    (_THRS_INITIAL_LIST, _THRS_MEDIAL_LIST, _THRS_NUCLEUS_LIST, _THRS_CODA_LIST, _THRS_TONE_LIST)
+    (_THRS_INITIAL_LIST, _THRS_MEDIAL_LIST, _THRS_NUCLEUS_LIST, _THRS_CODA_LIST, _THRS_TONE_LIST),
+    _THRS_NASALIZATION
 )
 
 def thrs_syllable_to_ipa(thrs_, dialect='sixian', variant=None):

@@ -23,10 +23,12 @@ variant = ctl_util.namedtuple_ctor(Variant)
 
 _TONE_PREFIX = ''
 
-def _NULL_TONE_BRANCH(tl_coda):
-    return {
-        'p': '4', 't': '4', 'k': '4', 'h': '4', 'nnh': '4',
-    }.get(tl_coda, '1')
+def _NULL_TONE_BRANCH(self_type, tl_coda, branch_type):
+    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+        return {
+            'p': '4', 't': '4', 'k': '4', 'h': '4', 'nnh': '4',
+        }.get(tl_coda, '1')
+    return _NULL_TONE_BRANCH
 
 _TL_TONE_LIST = {
     '0': '0', '--': '0',
@@ -41,32 +43,34 @@ _TL_TONE_LIST = {
     '9': '9', u'\u030B': '9',  # ' ̋ '
 }
 
-def _s(tl_medial):
-    return {
-        'i': 'ɕ',
-    }.get(tl_medial, 's')
+def _s(self_type, medial, branch_type):
+    if branch_type == phonetic.MEDIAL_IPA and self_type == phonetic.INITIAL:
+        return {
+            'i': 'ɕ',
+        }.get(medial and medial[:1], 's')
+    return _s
 
-def _z(tl_medial):
-    return {
-        'i': 'ʑ',
-    }.get(tl_medial, 'z')
+def _z(self_type, medial, branch_type):
+    if branch_type == phonetic.MEDIAL_IPA and self_type == phonetic.INITIAL:
+        return {
+            'i': 'ʑ',
+        }.get(medial and medial[:1], 'z')
+    return _z
 
 
-def _INITIAL_M_BRANCH(nucleus):
-    return {
-        'm̩': ''
-    }.get(nucleus, 'm')
+def _m(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+        return {
+            'm̩': ''
+        }.get(nucleus, 'm')
+    return _m
 
-def _m(tl_medial):
-    return _INITIAL_M_BRANCH
-
-def _INITIAL_NG_BRANCH(nucleus):
-    return {
-        'ŋ̍': ''
-    }.get(nucleus, 'ŋ')
-
-def _ng(tl_medial):
-    return _INITIAL_NG_BRANCH
+def _ng(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+        return {
+            'ŋ̍': ''
+        }.get(nucleus, 'ŋ')
+    return _ng
 
 
 _TL_INITIAL_LIST = {
@@ -86,45 +90,66 @@ _TL_INITIAL_LIST = {
 
 _TL_MEDIAL_LIST = {'i', 'u', 'er', 'ir'}
 
-def _A_BRANCH_MEDIAL(tl_medial):
-    return {
-        'i': 'ɛ'
-    }.get(tl_medial, 'a')
+def _A_BRANCH_MEDIAL(self_type, tl_medial, branch_type):
+    if (branch_type == phonetic.MEDIAL
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'i': 'ɛ'
+        }.get(tl_medial, 'a')
+    return _A_BRANCH_MEDIAL
 
-def _A_BRANCH(tl_coda):
-    return {
-        'n': _A_BRANCH_MEDIAL, 't': _A_BRANCH_MEDIAL
-    }.get(tl_coda, 'a')
+def _A_BRANCH(self_type, tl_coda, branch_type):
+    if (branch_type == phonetic.CODA
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'n': _A_BRANCH_MEDIAL, 't': _A_BRANCH_MEDIAL
+        }.get(tl_coda, 'a')
+    return _A_BRANCH
 
-def _O_BRANCH(tl_coda):
-    return {
-        'ng': 'ɔ', 'm': 'ɔ', 'p': 'ɔ', 'k': 'ɔ',
-        'nn': 'ɔ', 'ⁿ': 'ɔ', 'nnh': 'ɔ', 'ⁿh': 'ɔ',
-    }.get(tl_coda, variant(northern='o', southern='ə'))
+def _O_BRANCH(self_type, tl_coda, branch_type):
+    if (branch_type == phonetic.CODA
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'ng': 'ɔ', 'm': 'ɔ', 'p': 'ɔ', 'k': 'ɔ',
+            'nn': 'ɔ', 'ⁿ': 'ɔ', 'nnh': 'ɔ', 'ⁿh': 'ɔ',
+        }.get(tl_coda, variant(northern='o', southern='ə'))
+    return _O_BRANCH
 
-def _E_BRANCH(tl_coda):
-    return {
-        'ng': 'ɛ', 'k': 'ɛ'
-    }.get(tl_coda, 'e')
+def _E_BRANCH(self_type, tl_coda, branch_type):
+    if (branch_type == phonetic.CODA
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'ng': 'ɛ', 'k': 'ɛ'
+        }.get(tl_coda, 'e')
+    return _E_BRANCH
 
-def _I_BRANCH(tl_coda):
-    return {
-        'ng': 'iə', 'k': 'iə'
-    }.get(tl_coda, 'i')
+def _I_BRANCH(self_type, tl_coda, branch_type):
+    if branch_type == phonetic.CODA:
+        if (self_type == phonetic.MEDIAL
+                or self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_F):
+            return 'i'
+        if self_type == phonetic.NUCLEUS_IF:
+            return {
+                'ng': 'iə', 'k': 'iə'
+            }.get(tl_coda, 'i')
+    return _I_BRANCH
 
-def _NULL_NUCLEUS_BRANCH_INITIAL(tl_initial):
-    return {
-        'ng': 'ŋ̍', 'm': 'm̩'
-    }.get(tl_initial, '')
-
-def _NULL_NUCLEUS_BRANCH_MEDIAL(tl_medial):
+def _NULL_NUCLEUS_BRANCH_INITIAL(self_type, tl_initial, branch_type):
+    if (branch_type == phonetic.INITIAL
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'ng': 'ŋ̍', 'm': 'm̩',
+        }.get(tl_initial, '')
     return _NULL_NUCLEUS_BRANCH_INITIAL
 
-def _NULL_NUCLEUS_BRANCH(tl_coda):
-    return {
-        'ng': 'ŋ̍', 'ngh': 'ŋ̍',
-        'm': 'm̩', 'mh': 'm̩',
-    }.get(tl_coda, _NULL_NUCLEUS_BRANCH_MEDIAL)
+def _NULL_NUCLEUS_BRANCH(self_type, tl_coda, branch_type):
+    if (branch_type == phonetic.CODA
+            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            'ng': 'ŋ̍', 'ngh': 'ŋ̍',
+            'm': 'm̩', 'mh': 'm̩',
+        }.get(tl_coda, _NULL_NUCLEUS_BRANCH_INITIAL)
+    return _NULL_NUCLEUS_BRANCH
 
 
 _TL_NUCLEUS_LIST = {
@@ -142,25 +167,33 @@ _TL_NUCLEUS_LIST = {
 }
 
 
-def _CODA_M_BRANCH(nucleus):
-    return {
-        'm̩': ''
-    }.get(nucleus, 'm')
+def _CODA_M_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'm̩': ''
+        }.get(nucleus, 'm')
+    return _CODA_M_BRANCH
 
-def _CODA_MH_BRANCH(nucleus):
-    return {
-        'm̩': 'ʔ'
-    }.get(nucleus, 'mʔ?')
+def _CODA_MH_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'm̩': 'ʔ'
+        }.get(nucleus, 'mʔ?')  # Invalid combination
+    return _CODA_MH_BRANCH
 
-def _CODA_NG_BRANCH(nucleus):
-    return {
-        'ŋ̍': ''
-    }.get(nucleus, 'ŋ')
+def _CODA_NG_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'ŋ̍': ''
+        }.get(nucleus, 'ŋ')
+    return _CODA_NG_BRANCH
 
-def _CODA_NGH_BRANCH(nucleus):
-    return {
-        'ŋ̍': 'ʔ'
-    }.get(nucleus, 'ŋʔ?')
+def _CODA_NGH_BRANCH(self_type, nucleus, branch_type):
+    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+        return {
+            'ŋ̍': 'ʔ'
+        }.get(nucleus, 'ŋʔ?')  # Invalid combination
+    return _CODA_NGH_BRANCH
 
 
 _TL_CODA_LIST = {
@@ -171,6 +204,7 @@ _TL_CODA_LIST = {
     'nn': '', 'ⁿ': '',   # Nasalize the former vowels
     'nnh': 'ʔ', 'ⁿh': 'ʔ',  # Nasalize the former vowels and then append a 'ʔ'
 }
+_TL_NASALIZATION = 'nn'
 
 '''
 _FINAL_LIST = (
@@ -199,7 +233,8 @@ _FINAL_LIST = (
 TL = phonetic.def_phonetic(
     _PHONE_NAME, Dialect, Variant, _TONE_PREFIX,
     ('', '', _NULL_NUCLEUS_BRANCH, '', _NULL_TONE_BRANCH),
-    (_TL_INITIAL_LIST, _TL_MEDIAL_LIST, _TL_NUCLEUS_LIST, _TL_CODA_LIST, _TL_TONE_LIST)
+    (_TL_INITIAL_LIST, _TL_MEDIAL_LIST, _TL_NUCLEUS_LIST, _TL_CODA_LIST, _TL_TONE_LIST),
+    _TL_NASALIZATION
 )
 
 def tl_syllable_to_ipa(tl_, dialect='chiang', variant='southern'):
