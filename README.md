@@ -1,5 +1,9 @@
 # Common TL
 
+## Prerequisite
+
+- Python >= 3.6
+
 ## Usage examples
 
 ### Convert a sentence written in Chinese characters to Common TL
