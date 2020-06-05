@@ -77,6 +77,10 @@ _COMMON_TL_FINAL_LIST = {
         northern='o',  # More accurate transcription for Taiwanese northern accent
         southern='oo'),
 
+    'o': variant(
+        northern='o',
+        southern='oo'),  # "ɔ" is not differentiated from "o" in Taiwanese southern accent
+
     'ɔ': 'oo',
 
     'ɛ': 'ee',  # Used in Taiwanese Chiang-chiu accent
