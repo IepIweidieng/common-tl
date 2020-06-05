@@ -39,11 +39,11 @@ def is_char_roman(char):
     if not (('A' <= char <= 'Z') or ('a' <= char <= 'z')
             or ('0' <= char <= '9') or (char == '#') or (char == '*')
             or (char == '-') or (char == ' ')
-            or (u'\u00C0' <= char <= u'\u1EFF')  # Latin-1 Supplement - Latin Extended Additional
-            or (u'\u2C60' <= char <= u'\u2C7D')  # Latin Extended-C
-            or (u'\uA720' <= char <= u'\uA78C')  # Latin Extended-D
-            or (u'\uA7FB' <= char <= u'\uA7FF')  # Latin Extended-D
-            or (u'\uFB00' <= char <= u'\uFB06')):  # Alphabetic Presentation Forms: Latin
+            or ('\u00C0' <= char <= '\u1EFF')  # Latin-1 Supplement - Latin Extended Additional
+            or ('\u2C60' <= char <= '\u2C7D')  # Latin Extended-C
+            or ('\uA720' <= char <= '\uA78C')  # Latin Extended-D
+            or ('\uA7FB' <= char <= '\uA7FF')  # Latin Extended-D
+            or ('\uFB00' <= char <= '\uFB06')):  # Alphabetic Presentation Forms: Latin
         return False
 
     return True

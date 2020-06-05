@@ -20,7 +20,7 @@ NUCLEUS_IF_IPA = "nucleus_if_ipa"
 CODA = "coda"
 TONE = "tone"
 
-_IPA_NASALIZATION = u'\u0303'  # ' ̃ '
+_IPA_NASALIZATION = '\u0303'  # ' ̃ '
 
 def def_phonetic(name, dialect, variant, tone_prefix,
         null_phones, phone_lists, nasalization):

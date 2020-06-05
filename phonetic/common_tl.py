@@ -40,7 +40,7 @@ _COMMON_TL_INITIAL_LIST = {
 
     'ʔ': '',  # As initial
 
-    u'\u0320': '',  # ' ̠ '; retracted; used in Southern Sixian dialect of Taiwanese Hakka
+    '\u0320': '',  # ' ̠ '; retracted; used in Southern Sixian dialect of Taiwanese Hakka
 }
 
 _COMMON_TL_FINAL_LIST = {
@@ -91,14 +91,14 @@ _COMMON_TL_FINAL_LIST = {
 
     # Still IPA vowels. Erization-related part.
     'ɚ': variant(
-        northern='orrr',    # * Rhotic vowel; see u'\u02DE' ' ˞ '.
+        northern='orrr',    # * Rhotic vowel; see '\u02DE' ' ˞ '.
         southern='orr'),
 
     'ɐ': 'a',  # Produced by rhotic bopomofo finals "ㄧㄢㄦ" and "ㄩㄢㄦ"
 
     # IPA symbols.
-    u'\u0303': 'nn',  # ' ̃ '; vowel nasalization
-    u'\u02DE': 'rr',  # * ' ˞ '; vowel erization
+    '\u0303': 'nn',  # ' ̃ '; vowel nasalization
+    '\u02DE': 'rr',  # * ' ˞ '; vowel erization
     #  Alternatives:
     # *  rh: From Wade–Giles Romanization system for Mandarin Chinese
     #        Causes ambiguity, e.g., "orh" as either "o -rh" or "or -h".
@@ -109,9 +109,9 @@ _COMMON_TL_FINAL_LIST = {
     #        Does not cause ambiguity, e.g., "ohr" as "o -hr".
     #        Does not seem cumbersome, e.g., "orhr" as "or -hr".
 
-    u'\u031A': '',  # ' ̚ '; unreleased plosive; used in entering tones
-    u'\u030D': '',  # ' ̍ '; syllabic consonant
-    u'\u0329': '',  # ' ̩ '; syllabic consonant
+    '\u031A': '',  # ' ̚ '; unreleased plosive; used in entering tones
+    '\u030D': '',  # ' ̍ '; syllabic consonant
+    '\u0329': '',  # ' ̩ '; syllabic consonant
                       #   Just drop all of them.
 }
 
