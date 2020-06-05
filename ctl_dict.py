@@ -44,6 +44,11 @@ def parse_line_in_format(line, format_):
     splited = line.split('\t')
 
     for (splited_item, parse_item) in zip(splited, format_):
+        if parse_item in _FORMAT_TYPE_LIST:
+            parse_item = _FORMAT_TYPE_LIST[parse_item]
+        elif parse_item in _FORMAT_TYPE_ABBRV_LIST:
+            parse_item = _FORMAT_TYPE_ABBRV_LIST[parse_item]
+
         if parse_item not in _FORMAT_TYPE_LIST.values():
             raise ValueError(
                 f'Invalid parse item \'{parse_item}\'.  '
@@ -68,6 +73,11 @@ def create_line_from_format(phrase_data, format_):
     out_content = []
 
     for parse_item in format_:
+        if parse_item in _FORMAT_TYPE_LIST:
+            parse_item = _FORMAT_TYPE_LIST[parse_item]
+        elif parse_item in _FORMAT_TYPE_ABBRV_LIST:
+            parse_item = _FORMAT_TYPE_ABBRV_LIST[parse_item]
+
         if parse_item is Word:
             out_content.append(word)
         elif issubclass(parse_item, _Phonetic):
