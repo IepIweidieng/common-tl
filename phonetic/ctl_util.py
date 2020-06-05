@@ -81,7 +81,7 @@ def get_max_length(dict_):
     return result
 
 
-def str_get_gready(str_, offset, source_dict, default_):
+def str_get_greedy(str_, offset, source_dict, default_):
     new_offset = offset
     str_max_length = min(get_max_length(source_dict), max(len(str_) - offset, 0))
     for length in range(str_max_length, 0, -1):
@@ -99,7 +99,7 @@ def str_get_tone(str_, tone_list, default_):
     str_tone_len = 0
     str_tone_max_length = get_max_length(tone_list)
     for offset in range(0, len(str_), 1):
-        (_, new_offset, tone_k) = str_get_gready(str_, offset, tone_list, None)
+        (_, new_offset, tone_k) = str_get_greedy(str_, offset, tone_list, None)
         if tone_k and new_offset - offset >= str_tone_len:
             tone = tone_k
             str_tone_len = new_offset - offset

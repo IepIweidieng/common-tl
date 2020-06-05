@@ -3,7 +3,7 @@ Common definition for Latin phonetic alphabets
 '''
 
 import sys
-from .ctl_util import normalize, str_get_gready, str_get_tone
+from .ctl_util import normalize, str_get_greedy, str_get_tone
 
 _IPA_NASALIZATION = u'\u0303'  # ' ̃ '
 
@@ -45,20 +45,20 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
 
     offset = 0
 
-    (phone_initial, offset, initial) = str_get_gready(
+    (phone_initial, offset, initial) = str_get_greedy(
         phone_no_tone, offset, phone.INITIAL_LIST, phone.NULL_INITIAL)
 
     (phone_medial, medial) = (None, '')
-    (phone_nucleus0, offset, nucleus0) = str_get_gready(
+    (phone_nucleus0, offset, nucleus0) = str_get_greedy(
         phone_no_tone, offset, phone.NUCLEUS_LIST, phone.NULL_MEDIAL)
     if phone_medial in phone.MEDIAL_LIST:
         ((phone_medial, medial), (phone_nucleus0, nucleus0)) = (
             (phone_nucleus0, nucleus0), (None, ''))
 
     if phone_nucleus0 is None:
-        (phone_nucleus0, offset, nucleus0) = str_get_gready(
+        (phone_nucleus0, offset, nucleus0) = str_get_greedy(
             phone_no_tone, offset, phone.NUCLEUS_LIST, phone.NULL_NUCLEUS)
-    (phone_nucleus1, offset, nucleus1) = str_get_gready(
+    (phone_nucleus1, offset, nucleus1) = str_get_greedy(
         phone_no_tone, offset, phone.NUCLEUS_LIST, '')
     if phone_nucleus0 == None and phone_medial != None:
         phone_nucleus0 = phone_medial
@@ -66,7 +66,7 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
         nucleus0 = medial
         medial = phone.NULL_MEDIAL
 
-    (phone_coda, offset, coda) = str_get_gready(
+    (phone_coda, offset, coda) = str_get_greedy(
         phone_no_tone, offset, phone.CODA_LIST, phone.NULL_CODA)
 
     def get_patched(vowel, is_initial=False):
