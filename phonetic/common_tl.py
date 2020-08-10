@@ -118,7 +118,6 @@ _COMMON_TL_FINAL_LIST = {
 
 def _compare_and_replace_append(src, prev_pos_list, current_symbol,
                                 replace_append_list, target=None):
-    """Side effect: prev_pos_list (rw)"""
     new_src = None
     (str_replaced, str_replacer, str_append) = replace_append_list
     target = target if target is not None else str_replaced
@@ -157,7 +156,9 @@ def _compare_and_replace_append(src, prev_pos_list, current_symbol,
 
 
 def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
-    """Convert an IPA syllable to common TL."""
+    """
+    Convert an IPA syllable to common TL.
+    """
     (ipa_initial, ipa_final) = ipa_pair
     (tl_initial, tl_final) = ('', '')
     prev_symbol_pos = {

@@ -36,10 +36,6 @@ _FORMAT_TYPE_ABBRV_LIST = {
 
 
 def parse_line_in_format(line, format_):
-    """
-    Side effect: ValueError (x),
-        Word (r), Zhuyin (r), TL (r), THRS (r), _Phonetic (r), ETC (r)
-    """
     etcs = []
     splited = line.split('\t')
 
@@ -65,7 +61,6 @@ def parse_line_in_format(line, format_):
 
 
 def create_line_from_format(phrase_data, format_):
-    """Side effect: Word (r), Zhuyin (r), TL (r), THRS (r), _Phonetic (r), ETC (r)"""
     (word, phonetic, *additional) = (phrase_data)
     etcs = len(additional) > 1 and additional[1] or []
     etcs_len = len(etcs)
@@ -101,15 +96,7 @@ _PUNCTUATION_LIST = {'。', '，', '、', '；', '：', '「', '」',
 def preprocess_dict(dict_path, format_):
     """
     中文詞典檔前處理 \n
-    Do pre-process on a dictionary text file \n
-    Side effect: IO (w), fileIO (rw), os (x), sys (x), re (x)
-                 parse_line_in_format: ValueError (x),
-                                       Word (r),
-                                       Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
-                                       ETC (r)
-                 create_line_from_format: Word (r),
-                                          Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
-                                          ETC (r)
+    Do pre-process on a dictionary text file
     """
     # Read un-processed file
     with open(dict_path, 'r', encoding='utf8') as in_file:
@@ -232,7 +219,6 @@ PICKLED_SUFFIX = '.pickle'
 
 
 # Used on _
-# Side effect: func (x)
 def _call(func, *arg, **kwarg): return func(*arg, **kwarg)
 
 @_call
@@ -246,21 +232,7 @@ def _():
     def create_dict(path_list, *args, **kwargs):
         """
         載入指定詞典 \n
-        Load the specified dictionaries. \n
-        Side effect: set_dict_src: __dict_src (w)
-            create_dict: os (x), DEFAULT_FORMAT (r)
-            preprocess_dict:
-                IO (w), fileIO (rw), sys (x), re (x)
-            _get_dict_data_from_dump: IO (w), fileIO (r),
-                os.path (x), sys (x),
-                pickle (x)
-                BasicUnpickler:
-                        pickle (x)
-            _get_dict_data_from_text: fileIO (r),
-                Word (r),
-                Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
-                ETC (r)
-            _create_dict_data_dump: fileIO (w), pickle (x)
+        Load the specified dictionaries.
         """
         res = DictSrc()
         res.set_dict_src(path_list)
@@ -271,8 +243,7 @@ def _():
 
     class _BasicUnpickler(pickle.Unpickler):
         """
-        A safer unpickler which allows pickling only the format type classes. \n
-        Side effect: pickle (x)
+        A safer unpickler which allows pickling only the format type classes.
         """
 
         def find_class(self, module, name):
@@ -282,7 +253,6 @@ def _():
                 f'Global \'{module}.{name}\' is forbidden')
 
     def _get_dict_set_file(path_list):
-        """Side effect: hashlib (x)"""
         hashed_path_list = hashlib.md5(str(path_list).encode()).hexdigest()
         return f'dict_set_{hashed_path_list}{PICKLED_SUFFIX}'
 
@@ -296,12 +266,7 @@ def _():
     def _get_dict_data_from_text(source, format_):
         """
         讀取詞典檔並建立詞典資料 \n
-        Parse and create dictionary data from a dictionary text file. \n
-        Side effect: fileIO (r),
-            parse_line_in_format: ValueError (x),
-                Word (r),
-                Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
-                ETC (r)
+        Parse and create dictionary data from a dictionary text file.
         """
         text_chinese_phonetic = {}
         text_max_word_length = 0
@@ -330,9 +295,7 @@ def _():
     def _create_dict_data_dump(dict_data, path):
         """
         將詞典資料傾印到檔案 \n
-        Dump the content of a dictionary data to a file. \n
-        Side effect: fileIO (w), pickle (x)
-            get_dict_set_file: hashlib (x)
+        Dump the content of a dictionary data to a file.
         """
         out_path = path
         if not isinstance(path, str):
@@ -342,7 +305,6 @@ def _():
             pickler_.dump(dict_data)
 
     def _is_path_list_eq(lhs, rhs, lhs_suffix='', rhs_suffix=''):
-        """Side effect: os.path (x)"""
         if not isinstance(lhs, str) and not isinstance(rhs, str):
             lhs_src_paths = map(_get_src_path, lhs)
             rhs_src_paths = map(_get_src_path, rhs)
@@ -356,11 +318,7 @@ def _():
     def _get_dict_data_from_dump(path):
         """
         從先前傾印出的檔案取得詞典資料 \n
-        Get directionary data from a dumped data file. \n
-        Side effect: IO (w), fileIO (r), os.path (x), sys (x),
-            pickle.UnpicklingError (x)
-            BasicUnpickler: pickle.unpickler (x)
-            get_dict_set_file: hashlib (x)
+        Get directionary data from a dumped data file.
         """
         src_path = path
         if isinstance(path, str):
@@ -423,8 +381,7 @@ def _():
     class DictSrc:
         """
         詞典檔紀錄清單 \n
-        The dictionary entry list. \n
-        Side effect: IO (w), fileIO (rw), os (x), sys (x) re (x), pickle (x)
+        The dictionary entry list.
         """
         def __init__(self):
             self.__loaded_dict = []
@@ -435,8 +392,7 @@ def _():
         def add_dict_src(self, path, format_):
             """
             新增要讀取的詞典檔 \n
-            Add the dictionary file to the dictionary source. \n
-            Side effect: DEFAULT_FORMAT (r)
+            Add the dictionary file to the dictionary source.
             """
             self.__dict_src.append((path, format_))
             return self
@@ -468,29 +424,7 @@ def _():
             Load the dictionary data from the corresponding dumped data file. \n
             Parse and create dictionary data from \n
             the pre-processed dictionary text file if needed.
-            Pre-process the dictionary text file if needed. \n
-            Side effect: os (x), DEFAULT_FORMAT (r)
-                preprocess_dict: IO (w), fileIO (rw), os (x), sys (x), re (x)
-                    parse_line_in_format: ValueError (x),
-                        Word (r),
-                        Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
-                        ETC (r)
-                    create_line_from_format:
-                        Word (r),
-                        Zhuyin (r), TL (r), THRS (r), _Phonetic (r),
-                        ETC (r)
-                _get_dict_data_from_dump:
-                    IO (w), fileIO (r), os.path (x), sys (x),
-                    pickle.UnpicklingError (x)
-                    BasicUnpickler:
-                            pickle.unpickler (x)
-                    get_dict_set_file: hashlib (x)
-                _get_dict_data_from_text:
-                    fileIO (r),
-                    Word (r), _Phonetic (r), ETC (r)
-                _create_dict_data_dump:
-                    fileIO (w), pickle (x)
-                    get_dict_set_file: hashlib (x)
+            Pre-process the dictionary text file if needed.
             """
             dict_ = CtlDict()
 

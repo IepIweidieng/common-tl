@@ -239,7 +239,6 @@ TL = phonetic.def_phonetic(
 
 def tl_syllable_to_ipa(tl_, dialect='chiang', variant='southern'):
     """
-    Convert a TL syllable to IPA. \n
-    Side effect: IO (w)
+    Convert a TL syllable to IPA.
     """
     return phonetic.phonetic_syllable_to_ipa(TL, tl_, dialect, variant)

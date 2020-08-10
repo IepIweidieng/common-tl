@@ -23,8 +23,7 @@ def chinese_word_to_phonetic(word, dict_):
 def phonetic_word_to_ipa(phonetic_word, dialects=lang(), phonetic=None):
     """
     將拼音轉成國際音標 \n
-    Convert a phonetic word into IPA. \n
-    Side effect: *_syllable_to_ipa: IO (w)
+    Convert a phonetic word into IPA.
     """
     ipa_word = []
 
@@ -47,14 +46,13 @@ def phonetic_word_to_ipa(phonetic_word, dialects=lang(), phonetic=None):
 def ipa_pair_to_tl(ipa_pair, *args, **kwargs):
     """
     將國際音標轉成廣義臺羅拼音 \n
-    Convert an IPA initial-final pair into Common TL initial-final pair. \n
+    Convert an IPA initial-final pair into Common TL initial-final pair.
     """
     return [ipa_pair_to_tl_pair(syllable, *args, **kwargs) for syllable in ipa_pair]
 
 def phonetic_word_to_tl(phonetic_word, dialects=lang(), phonetic=None):
     """
-    Convert a word in phonetic notation to Common TL. \n
-    Side effect: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
+    Convert a word in phonetic notation to Common TL.
     """
     ipa_pair_word = phonetic_word_to_ipa(phonetic_word, dialects, phonetic)
     return ipa_pair_to_tl(ipa_pair_word,
@@ -64,8 +62,7 @@ def phonetic_word_to_tl(phonetic_word, dialects=lang(), phonetic=None):
 
 def chinese_to_roman(sentence, dict_, dialects=lang()):
     """
-    Convert a Chinese sentence to Common TL. \n
-    Side effect: phonetic_word_to_tl: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
+    Convert a Chinese sentence to Common TL.
     """
     words_of_sentence = ctl_segment.split_chinese_word(sentence, dict_)
 
@@ -84,8 +81,7 @@ def _print_pairs(pairs):
 
 def phonetic_to_tl(sentence, dialects=lang(), phonetic=ctl_dict.TL):
     """
-    Convert a TL-like phonetic sentence to Common TL. \n
-    Side effect: phonetic_word_to_tl: phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
+    Convert a TL-like phonetic sentence to Common TL.
     """
     # Handle punctuation and capitalization before splitting
     for punc in ('.', ',', ';', ':', '"', "'", '?', '!', '─', '—'):
@@ -103,12 +99,6 @@ def phonetic_to_tl(sentence, dialects=lang(), phonetic=ctl_dict.TL):
 
 
 def demonstrate():
-    """
-    Side effect: IO (w), time (x)
-        ctl_dict.DictSrc.create_dict:
-            fileIO (rw), os (x), sys (x), pickle (x)
-        phonetic_word_to_ipa: *_syllable_to_ipa: IO (w)
-    """
     import time
     time_loading_start = time.perf_counter()
 

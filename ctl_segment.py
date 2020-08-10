@@ -24,8 +24,6 @@ def split_chinese_word(sentence, dict_):
         # Find the longest word start from current_offset
         word_bound = ctl_util.linear_search_rightmost(
             1, min(max_word_bound + 1, dict_.max_word_length + 1),
-            # Side effect: [split_chinese_word] sentence (r),
-            #                                   dict_.chinese_phonetic (r)
             lambda new_bound:
                 (merged_sentence[current_offset: current_offset + new_bound]
                     in dict_.chinese_phonetic)
@@ -83,8 +81,7 @@ def merge(sentence):
 
 def split_file(path, dict_):
     """
-    Split Chinese words for a .trn file. \n
-    Side effect: os.path (x), fileIO (rw)
+    Split Chinese words for a .trn file.
     """
     if os.path.isfile(path) and os.path.splitext(path) == '.trn':
         shutil.copy(path, f'{path}_bk')
@@ -108,8 +105,6 @@ def split_for_each_file(path, dict_):
         split_for_each_file(path_to_the_folder)
     Example:
         split_for_each_file("/home/thh101u/Desktop/333_sentence_trn0629/")
-    Side effect: os (x), IO (w)
-        split_file: fileIO (rw)
     """
     for subpath in os.listdir(path):
         standard_subpath = os.path.join(path, subpath)
@@ -123,11 +118,6 @@ def split_for_each_file(path, dict_):
 
 
 def demonstrate():
-    """
-    Side effect: IO (w), time (x)
-        ctl_dict.create_dict:
-            fileIO (rw), os (x), sys (x), pickle (x)
-    """
     import time
     time_loading_start = time.perf_counter()
 

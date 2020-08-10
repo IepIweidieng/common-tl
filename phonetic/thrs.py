@@ -279,7 +279,6 @@ THRS = phonetic.def_phonetic(
 
 def thrs_syllable_to_ipa(thrs_, dialect='sixian', variant=None):
     """
-    Convert a THRS syllable to IPA. \n
-    Side effect: IO (w)
+    Convert a THRS syllable to IPA.
     """
     return phonetic.phonetic_syllable_to_ipa(THRS, thrs_, dialect, variant)

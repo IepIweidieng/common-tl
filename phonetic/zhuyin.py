@@ -106,8 +106,7 @@ def _final_branch(final, bopomofo_rhyme):
 
 def zhuyin_syllable_to_ipa(zhuyin, dialect=None, variant=None):
     """
-    Convert a zhuyin syllable to IPA. \n
-    Side effect: IO (w)
+    Convert a zhuyin syllable to IPA.
     """
     offset = 0
 

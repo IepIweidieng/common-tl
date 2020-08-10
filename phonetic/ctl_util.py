@@ -59,8 +59,6 @@ def linear_search_rightmost(first, last, eq_func):
         String: '行政院會議'
         Value:   T T T F T  (Target: T)
         Result:          ^
-    Side effect: eq_func: [split_chinese_word] sentence (r),
-        tl_dict.chinese_phonetic (r)
     """
     right = last - 1
 

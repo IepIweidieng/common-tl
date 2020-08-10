@@ -36,9 +36,6 @@ def def_phonetic(name, dialect, variant, tone_prefix,
     ))
 
 def _report_invalid(obj, catagory):
-    """
-    Side effect: IO (w)
-    """
     print('Warning: ', obj,
         ' is an invalid ', catagory,'.  Continued.',
         sep='', file=sys.stderr, flush=True)
@@ -50,9 +47,7 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
     Output syllable: (initial, f'{medial}{nucleus0}{nucleus1}{coda}{phone.TONE_PREFIX}{tone}') \n
 
     The tone can appear at any position. \n
-    A vowel becomes a medial if it is in the medial list and another vowel presents. \n
-
-    Side effect: _report_invalid: IO (w)
+    A vowel becomes a medial if it is in the medial list and another vowel presents.
     """
     syll = normalize(syll)
     dialect = dialect and dialect.replace("'", '_').lower()
