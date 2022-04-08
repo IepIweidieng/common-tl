@@ -47,8 +47,8 @@ def _f00(initial):
 
 def _f010(initial):
     return {
-        'p': 'wo', 'pʰ': 'wo', 'm': 'wo',
-    }.get(initial, 'o')
+        'p': 'wɔ', 'pʰ': 'wɔ', 'm': 'wɔ',
+    }.get(initial, 'ɔ')
 
 
 def _f05(initial):
@@ -62,19 +62,19 @@ def _f25(initial): return initial and 'ʊŋ' or 'wəŋ'
 
 _FINAL_LIST = (
 # Nucleus ∅    /ə/                                             /a/
-# Coda    ∅     /o/    /ɤ/   /e/    /i/    /u/    /n/    /ŋ/    ∅    /i/    /u/    /n/    /ŋ/
+# Coda    ∅     /ɔ/    /ɤ/   /e/    /i/    /u/    /n/    /ŋ/    ∅    /i/    /u/    /n/    /ŋ/
 # Medial
-        (_f00, (_f010, 'ɤ',  'e'),  'ei',  'ou',  'ən',  _f05, 'a',  'ai',  'au',  'an',  'aŋ'),
-        ('i',  ('jo',  None, 'je'), None,  'jou', 'in',  'iŋ', 'ja', 'jai', 'jau', 'jɛn', 'jaŋ'),
-        ('u',  ('wo',  None, None), 'wei', None,  'wən', _f25, 'wa', 'wai', None,  'wan', 'waŋ'),
+        (_f00, (_f010, 'ɤ',  'e'),  'ei',  'ɔu',  'ən',  _f05, 'a',  'ai',  'au',  'an',  'aŋ'),
+        ('i',  ('jɔ',  None, 'je'), None,  'jɔu', 'in',  'iŋ', 'ja', 'jai', 'jau', 'jɛn', 'jaŋ'),
+        ('u',  ('wɔ',  None, None), 'wei', None,  'wən', _f25, 'wa', 'wai', None,  'wan', 'waŋ'),
         ('y',  (None,  None, 'ɥe'), None,  None,  'yn', 'jʊŋ', None, None,  None,  'ɥɛn', None),
 )
 
 
 def _r010(initial):
     return {
-        'p': 'wo˞', 'pʰ': 'wo˞', 'm': 'wo˞',
-    }.get(initial, 'o˞')
+        'p': 'wɔ˞', 'pʰ': 'wɔ˞', 'm': 'wɔ˞',
+    }.get(initial, 'ɔ˞')
 
 
 def _r05(initial):
@@ -88,11 +88,11 @@ def _r25(initial): return initial and 'ʊ̃˞' or 'wɚ̃'
 
 _RHOTIC_FINAL_LIST = (
 # Nucleus ∅    /ə/                                            /a/
-# Coda    ∅     /o/    /ɤ/   /e/     /i/   /u/    /n/   /ŋ/    ∅     /i/    /u/    /n/    /ŋ/
+# Coda    ∅     /ɔ/    /ɤ/   /e/     /i/   /u/    /n/   /ŋ/    ∅     /i/    /u/    /n/    /ŋ/
 # Medial
-        ('ɚ',  (_r010, 'ɤ˞',  'eɚ'),  'ɚ',  'ou˞',  'ɚ',  _r05, 'aɚ',  'aɚ',  'au˞',  'aɚ',  'ãɚ̃'),
-        ('jɚ', ('jo˞',  'jɚ', 'jeɚ'), None, 'jou˞', 'jɚ', 'jɚ̃', 'jaɚ', 'jaɚ', 'jau˞', 'jɐɚ', 'jãɚ̃'),
-        ('u˞',  ('wo˞ ', 'wɚ', None), 'wɚ',  None,  'ʊ˞',  _r25, 'waɚ', 'waɚ', None,  'waɚ', 'wãɚ̃'),
+        ('ɚ',  (_r010, 'ɤ˞',  'eɚ'),  'ɚ',  'ɔu˞',  'ɚ',  _r05, 'aɚ',  'aɚ',  'au˞',  'aɚ',  'ãɚ̃'),
+        ('jɚ', ('jɔ˞',  'jɚ', 'jeɚ'), None, 'jɔu˞', 'jɚ', 'jɚ̃', 'jaɚ', 'jaɚ', 'jau˞', 'jɐɚ', 'jãɚ̃'),
+        ('u˞',  ('wɔ˞ ', 'wɚ', None), 'wɚ',  None,  'ʊ˞',  _r25, 'waɚ', 'waɚ', None,  'waɚ', 'wãɚ̃'),
         ('ɥɚ', (None,  'ɥɚ', 'ɥeɚ'), None, None,  'ɥɚ', 'jʊ̃˞', None,  None,  None,  'ɥɐɚ', None),
 )
 

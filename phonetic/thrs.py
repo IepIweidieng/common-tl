@@ -189,13 +189,22 @@ def _NULL_NUCLEUS_BRANCH(self_type, thrs_coda, branch_type):
         }.get(thrs_coda, _NULL_NUCLEUS_BRANCH_INITIAL)
     return _NULL_NUCLEUS_BRANCH
 
+_closed_o = Dialect('ɔ', 'ɔ', 'ɔ', 'ɔ', 'o', 'ɔ')
+def _o(self_type, thrs_coda, branch_type):
+    if (branch_type == phonetic.CODA
+        and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+        return {
+            None: _closed_o,
+        }.get(thrs_coda, 'ɔ')
+    return _o
+
 
 _THRS_NUCLEUS_LIST = {
     'a': 'a',
     'e': 'e',
     'ee': 'ɛ',  # Used in Zhao'an dialect
     'er': 'ə',  # Used in Hailu and Raoping dialects
-    'o': 'o',
+    'o': _o,    # /o/ for THRS rhymes 'o' & 'io' in Zhao'an dialect; otherwise /ɔ/
     'oo': 'ɔ',  # Used in Zhao'an dialect
     'i': 'i',
     'u': 'u',
