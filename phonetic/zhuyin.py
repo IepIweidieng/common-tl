@@ -91,7 +91,7 @@ _RHOTIC_FINAL_LIST = (
 # Coda    ∅     /o/    /ɤ/   /e/     /i/   /u/    /n/   /ŋ/    ∅     /i/    /u/    /n/    /ŋ/
 # Medial
         ('ɚ',  (_r010, 'ɤ˞',  'eɚ'),  'ɚ',  'ou˞',  'ɚ',  _r05, 'aɚ',  'aɚ',  'au˞',  'aɚ',  'ãɚ̃'),
-        ('jɚ', ('jo˞',  'jɚ', 'jeɚ'), None, 'jou', 'jɚ', 'jɚ̃', 'jaɚ', 'jaɚ', 'jau˞', 'jɐɚ', 'jãɚ̃'),
+        ('jɚ', ('jo˞',  'jɚ', 'jeɚ'), None, 'jou˞', 'jɚ', 'jɚ̃', 'jaɚ', 'jaɚ', 'jau˞', 'jɐɚ', 'jãɚ̃'),
         ('u˞',  ('wo˞ ', 'wɚ', None), 'wɚ',  None,  'ʊ˞',  _r25, 'waɚ', 'waɚ', None,  'waɚ', 'wãɚ̃'),
         ('ɥɚ', (None,  'ɥɚ', 'ɥeɚ'), None, None,  'ɥɚ', 'jʊ̃˞', None,  None,  None,  'ɥɐɚ', None),
 )
