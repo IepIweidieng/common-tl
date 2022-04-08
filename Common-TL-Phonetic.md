@@ -18,27 +18,32 @@ The phonetic graphemes enclosed in `⟨⟩` are IPA.\
 
 ### Convention of terminologies in this article 本文用語慣例
 
-Chinese (languages) 漢語
-: The Sinitic languages and dialects 漢語族各語言與各方言
-    - _E.g._, Mandarin, Hokkien, and Hakka. 例如：標準漢語、閩南語、客家語。
-    - Including written Chinese and sign languages for Chinese. 包含中文與漢語手語。
+<dl>
+<dt>Chinese (languages) 漢語</dt>
+<dd>The Sinitic languages and dialects 漢語族各語言與各方言</dd>
 
-Written Chinese 中文（= 漢語書面語）
-: The Sinitic languages and dialects in time-invariant expressive forms 漢語族語言與方言的各種非時變表達形式
-    - _E.g._, Chinese characters, Latin script, and Braille. 例如：漢字、拉丁字母文字、點字。
+- _E.g._, Mandarin, Hokkien, and Hakka. 例如：標準漢語、閩南語、客家語。
+- Including written Chinese and sign languages for Chinese. 包含中文與漢語手語。
 
-Mandarin 標準漢語
-: Modern Standard Mandarin Chinese 現代標準漢語
-    - Including Putonghua and Guoyu. 包含國語與普通話。
+<dt>Written Chinese 中文（= 漢語書面語）</dt>
+<dd>The Sinitic languages and dialects in time-invariant expressive forms 漢語族語言與方言的各種非時變表達形式</dd>
 
-Putonghua 普通話
-: Mainland China's standard of Mandarin 標準漢語的中國大陸標準
+- _E.g._, Chinese characters, Latin script, and Braille. 例如：漢字、拉丁字母文字、點字。
 
-Guoyu 國語
-: Taiwan's standard of Mandarin 標準漢語的臺灣標準
+<dt>Mandarin 標準漢語</dt>
+<dd>Modern Standard Mandarin Chinese 現代標準漢語</dd>
 
-The Sixian dialect++s++ 四縣++諸++腔
-: Northern Sixian dialect and Sourthern Sixian dialect 北四縣腔與南四縣腔
+- Including Putonghua and Guoyu. 包含國語與普通話。
+
+<dt>Putonghua 普通話</dt>
+<dd>Mainland China's standard of Mandarin 標準漢語的中國大陸標準</dd>
+
+<dt>Guoyu 國語</dt>
+<dd>Taiwan's standard of Mandarin 標準漢語的臺灣標準</dd>
+
+<dt>The Sixian dialect<u>s</u> 四縣<u>諸</u>腔</dt>
+<dd>Northern Sixian dialect and Sourthern Sixian dialect 北四縣腔與南四縣腔</dd>
+</dl>
 
 ## Remarks of grapheme tables 音標字素表格凡例
 
@@ -68,19 +73,21 @@ Items not separated by `/` are _voiceless_.
 
 | | Bilabial <br> 雙唇音 | Labiodental <br> 唇齒音 | Alveolar <br> 齦音 | Post-alveolar <br> 齦後音 | (Alveolo&#8288;--)palatal <br> (齦&#8288;--)硬顎音 | Velar <br> 軟顎音 | Glottal <br> 聲門音
 :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---:
-Nasal 鼻音 | / [m]&nbsp;⟨m⟩ || / [n]&nbsp;⟨n⟩ || / [ȵ]~[ɲ]&nbsp;⟨gn⟩ ^Note:⟨gn⟩^ | / [ŋ]&nbsp;⟨ng⟩ | :x:
+Nasal 鼻音 | / [m]&nbsp;⟨m⟩ || / [n]&nbsp;⟨n⟩ || / [ȵ]\~[ɲ]&nbsp;⟨gn⟩ <sup>Note:⟨gn⟩</sup> | / [ŋ]&nbsp;⟨ng⟩ | :x:
 Unaspirated stop 不送氣塞音 | [p]&nbsp;⟨p⟩ / [b]&nbsp;⟨b⟩ || [t]&nbsp;⟨t⟩ / <br> [d]&nbsp;**⟨d⟩** ||| [k]&nbsp;⟨k⟩ / [g]&nbsp;⟨g⟩ | [ʔ]&nbsp;⟨⟩ (None) / :x:
 Aspirated stop 送氣塞音 | [pʰ]&nbsp;⟨ph⟩ || [tʰ]&nbsp;⟨th⟩ | || [kʰ]&nbsp;⟨kh⟩
-Unaspirated affricate  不送氣塞擦音 | || [ts]&nbsp;⟨ts⟩ / [dz]&nbsp;**⟨dj⟩** ^Note:⟨dj⟩^ | [tʃ]~&#8288;[ʈʂ]&nbsp;**⟨tsr⟩** | [tɕ]&nbsp;**⟨tsc⟩** / [dʑ]&nbsp;**⟨djz⟩** ^Note:⟨dj⟩^
-Aspirated affricate 送氣塞擦音 | || [tsʰ]&nbsp;⟨tsh⟩ | [tʃʰ]~&#8288;[ʈʂʰ]&nbsp;**⟨tsrh⟩** | [tɕʰ]&nbsp;**⟨tsch⟩**
-Fricative 擦音 | | [f]&nbsp;**⟨f⟩** / [v]~&#8288;[ʋ]&nbsp;**⟨v⟩** | [s]&nbsp;⟨s⟩ / <br> [z]&nbsp;⟨j⟩ | [ʃ]~&#8288;[ʂ]&nbsp;**⟨sr⟩** / <br> [ʒ]\~&#8288;[ʐ]\~[ɻ]&nbsp;**⟨jr⟩** | [ɕ]&nbsp;**⟨sc⟩** / [ʑ]&nbsp;**⟨jz⟩** | [x]&nbsp;_⟨h⟩_ ^Note:x^ | [h]&nbsp;⟨h⟩
-Approximant 近音 || || / [ɹ̠]&nbsp;⟨⟩ (None) ^Note:ɹ̠^ | / [j]&nbsp;_⟨i⟩_ |
-Rounded Approximant 圓唇近音 ||||| / [ɥ]&nbsp;**⟨y⟩** ^Note:ɥ^ | / [w]&nbsp;_⟨u⟩_
+Unaspirated affricate  不送氣塞擦音 | || [ts]&nbsp;⟨ts⟩ / [dz]&nbsp;**⟨dj⟩** <sup>Note:⟨dj⟩</sup> | [tʃ]\~&#8288;[ʈʂ]&nbsp;**⟨tsr⟩** | [tɕ]&nbsp;**⟨tsc⟩** / [dʑ]&nbsp;**⟨djz⟩** <sup>Note:⟨dj⟩</sup>
+Aspirated affricate 送氣塞擦音 | || [tsʰ]&nbsp;⟨tsh⟩ | [tʃʰ]\~&#8288;[ʈʂʰ]&nbsp;**⟨tsrh⟩** | [tɕʰ]&nbsp;**⟨tsch⟩**
+Fricative 擦音 | | [f]&nbsp;**⟨f⟩** / [v]\~&#8288;[ʋ]&nbsp;**⟨v⟩** | [s]&nbsp;⟨s⟩ / <br> [z]&nbsp;⟨j⟩ | [ʃ]\~&#8288;[ʂ]&nbsp;**⟨sr⟩** / <br> [ʒ]\~&#8288;[ʐ]\~[ɻ]&nbsp;**⟨jr⟩** | [ɕ]&nbsp;**⟨sc⟩** / [ʑ]&nbsp;**⟨jz⟩** | [x]&nbsp;_⟨h⟩_ <sup>Note:x</sup> | [h]&nbsp;⟨h⟩
+Approximant 近音 || || / [ɹ̠]&nbsp;⟨⟩ (None) <sup>Note:ɹ̠</sup> | / [j]&nbsp;_⟨i⟩_ |
+Rounded Approximant 圓唇近音 ||||| / [ɥ]&nbsp;**⟨y⟩** <sup>Note:ɥ</sup> | / [w]&nbsp;_⟨u⟩_
 Lateral approximant 邊近音 | :x: | :x: | / [l]&nbsp;⟨l⟩ |||| :x:
-Lateral approximant ~ Tap 邊近音&#8288;~&#8288;閃音 | :x: | :x: | / [l]~&#8288;[ɾ]&nbsp;**⟨dl⟩** ^Note:⟨dl⟩^ |||| :x:
+Lateral approximant \~ Tap 邊近音&#8288;\~&#8288;閃音 | :x: | :x: | / [l]\~&#8288;[ɾ]&nbsp;**⟨dl⟩** <sup>Note:⟨dl⟩</sup> |||| :x:
 
 - The **post-alveolar** series contains **retroflex**, **palato--alveolar (_domed (partially palatalized) post-alveolar_)**, and **alveolo--palatal (_palatalized post-alveolar_)** consonants. In this table, the first two are placed into the same column, while the last one is placed into its own column.\
   **齦後音** 系列包含 **捲舌音**、**顎--齦音（_拱 (部份顎化) 齦後音_）**、與**齦--顎音（_顎化齦後音_）** 三類子音。本表將前兩類列進同一列，而最後一類獨立列出。
+
+<details><summary>Inline notes</summary>
 
 *[Note:⟨gn⟩]: Used in Taiwanese Hokkien Éng-tsēng old Chiang-chiu accent　用於臺灣閩南語永靖老漳州腔
 *[Note:⟨dj⟩]: (TL: "j") Used in Taiwanese Hokkien Choân-chiu accent　用於臺灣閩南語偏泉州腔口音
@@ -88,6 +95,7 @@ Lateral approximant ~ Tap 邊近音&#8288;~&#8288;閃音 | :x: | :x: | / [l]~&#8
 *[Note:ɹ̠]: Used in Taiwanese Hakka Southern Sixian dialect　用於臺灣客家語南四縣腔
 *[Note:x]: The pronunciation of Bopomofo/Zhuyin "H" in Putonghua　注音聲母「ㄏ」的普通話發音
 *[Note:ɥ]: Bopomofo/Zhuyin "Yu" as medial　注音介母「ㄩ」
+</details>
 
 **Note ⟨gn⟩**: Used in Taiwanese Hokkien Éng-tsēng old Chiang-chiu accent　用於臺灣閩南語永靖老漳州腔 \
 **Note ⟨dj⟩**: (TL: "j") Used in Taiwanese Hokkien Choân-chiu accent　用於臺灣閩南語偏泉州腔口音 \
@@ -118,7 +126,7 @@ t**si** <br> t**shi** <br> **si** | [t**ɕi**] <br> [t**ɕʰi**] <br> [**ɕi**] 
 :--- | :---: | :---: | :---: | :---: | :---:
 Nasal(ized) 鼻(化)音 | [m]&nbsp;⟨-&#8288;m⟩ | [n]&nbsp;⟨-&#8288;n⟩ | [ŋ]&nbsp;⟨-&#8288;ng⟩ || [◌&#8288;̃]&nbsp;⟨-&#8288;nn⟩
 Rhotic 兒化音 ||||| [◌˞&nbsp;]&nbsp;**⟨-&#8288;rr⟩** |
-Stop with no audible release 無聲除阻塞音 | [p̚]&nbsp;⟨-&#8288;p⟩ <br> ([p̚(ʔ)]&#8288;~&#8288;[p̚͜ʔ]) | [t̚]&nbsp;⟨-&#8288;t⟩ <br> ([t̚(ʔ)]&#8288;~&#8288;[t̚͜ʔ]) | [k̚]&nbsp;⟨-&#8288;k⟩ <br> ([k̚(ʔ)]&#8288;~&#8288;[k̚͜ʔ]) | [ʔ]~&#8288;[]^sandhi^&nbsp;⟨-&#8288;h⟩ | :x:
+Stop with no audible release 無聲除阻塞音 | [p̚]&nbsp;⟨-&#8288;p⟩ <br> ([p̚(ʔ)]&#8288;\~&#8288;[p̚͜ʔ]) | [t̚]&nbsp;⟨-&#8288;t⟩ <br> ([t̚(ʔ)]&#8288;\~&#8288;[t̚͜ʔ]) | [k̚]&nbsp;⟨-&#8288;k⟩ <br> ([k̚(ʔ)]&#8288;\~&#8288;[k̚͜ʔ]) | [ʔ]\~&#8288;[]<sup>sandhi</sup>&nbsp;⟨-&#8288;h⟩ | :x:
 
 ※ ⟨-nn⟩ may appear before other codas. ⟨-nn⟩ 可出現在其他韻尾前。
 - TL "**-nn**h" [◌&#8288;**̃**ʔ] ⟨**-nn**h⟩: Used in Taiwanese Hokkien  用於臺灣閩南語
@@ -135,16 +143,18 @@ Items separated by `/` mean `unrounded / rounded`.\
 || Front 前 || Central 央 || Back 後 ||
 :--- | :---: | :---: | :---: | :---: | :---: | :---:
 || Oral 口腔音 | Nasal 鼻化音 | Oral 口腔音 | Nasal 鼻化音 | Oral 口腔音 | Nasal 鼻化音
-Semivowel 半母音 | [j]~&#8288;[i̯]&nbsp;_⟨i⟩_ / [ɥ]~&#8288;[y̯]&nbsp;**⟨y⟩** ^Note:ɥ^ | | | | / [w]~&#8288;[u̯]&nbsp;_⟨u⟩_ |
-Close 閉 | [i]&nbsp;⟨i⟩ / <br> [y]&nbsp;**⟨y⟩** ^Note:y^ | [ĩ]&nbsp;⟨inn⟩ | [ɨ]&nbsp;⟨ir⟩ ^Note:⟨ir⟩^ || / [u]&nbsp;⟨u⟩ | / [ũ]&nbsp;⟨unn⟩
-Near-close 次閉 ||||| / [ʊ]&nbsp;_⟨oo/o⟩_ ^Note:ʊ^
-Close-mid 半閉 | [e]&nbsp;⟨e⟩ | [ẽ]&nbsp;⟨enn⟩ | [ɘ]~&#8288;[ə]&nbsp;⟨er⟩ ^Note:⟨er⟩^ || [ɤ]&nbsp;_⟨o/or⟩_ ^Note:ɤ^ / [o]&nbsp;⟨oo/o⟩
+Semivowel 半母音 | [j]\~&#8288;[i̯]&nbsp;_⟨i⟩_ / [ɥ]\~&#8288;[y̯]&nbsp;**⟨y⟩** <sup>Note:ɥ</sup> | | | | / [w]\~&#8288;[u̯]&nbsp;_⟨u⟩_ |
+Close 閉 | [i]&nbsp;⟨i⟩ / <br> [y]&nbsp;**⟨y⟩** <sup>Note:y</sup> | [ĩ]&nbsp;⟨inn⟩ | [ɨ]&nbsp;⟨ir⟩ <sup>Note:⟨ir⟩</sup> || / [u]&nbsp;⟨u⟩ | / [ũ]&nbsp;⟨unn⟩
+Near-close 次閉 ||||| / [ʊ]&nbsp;_⟨oo/o⟩_ <sup>Note:ʊ</sup>
+Close-mid 半閉 | [e]&nbsp;⟨e⟩ | [ẽ]&nbsp;⟨enn⟩ | [ɘ]\~&#8288;[ə]&nbsp;⟨er⟩ <sup>Note:⟨er⟩</sup> || [ɤ]&nbsp;_⟨o/or⟩_ <sup>Note:ɤ</sup> / [o]&nbsp;⟨oo/o⟩
 Mid 中 ||| [ə]&nbsp;⟨o/or⟩ ||
-Open-mid 半開 | [ɛ]&nbsp;⟨ee⟩ | [ɛ̃]&nbsp;⟨eenn⟩ ^Note:⟨eenn⟩^ ||| / [ɔ]&nbsp;⟨oo⟩ | / [ɔ̃]&nbsp;**⟨oonn⟩**
-Near-open 次開 ||| [ɐ]&nbsp;⟨a⟩ ^Note:ɐ^ |
+Open-mid 半開 | [ɛ]&nbsp;⟨ee⟩ | [ɛ̃]&nbsp;⟨eenn⟩ <sup>Note:⟨eenn⟩</sup> ||| / [ɔ]&nbsp;⟨oo⟩ | / [ɔ̃]&nbsp;**⟨oonn⟩**
+Near-open 次開 ||| [ɐ]&nbsp;⟨a⟩ <sup>Note:ɐ</sup> |
 Open 開 ||| [a]&nbsp;⟨a⟩ | [ã]&nbsp;⟨ann⟩ |
 
 ※ [ɚ]&nbsp;**⟨orr/orrr⟩**
+
+<details><summary>Inline notes</summary>
 
 *[Note:y]: Bopomofo/Zhuyin "Yu"　注音「ㄩ」
 *[Note:ʊ]: The nucleus of Mandarin syllables "東通弄" (-**o**ng) in Putonghua; [**o**] in Guoyu　標準漢語「東通弄」等字韻腹（-**ㄨ**ㄥ）的普通話發音；國語中為 [**o**] <br> Will be changed to ⟨**u**⟩ for Putonghua　普通話發音將改成 ⟨**u**⟩
@@ -153,6 +163,7 @@ Open 開 ||| [a]&nbsp;⟨a⟩ | [ã]&nbsp;⟨ann⟩ |
 *[Note:⟨ir⟩]: Used in Taiwanese Hokkien Choân-chiu accent　用於臺灣閩南語偏泉州腔口音
 *[Note:⟨er⟩]: Used in Taiwanese Hokkien Choân-chiu accent　用於臺灣閩南語偏泉州腔口音
 *[Note:⟨eenn⟩]: Used in Taiwanese Hokkien Éng-tsēng old Chiang-chiu accent　用於臺灣閩南語永靖老漳州腔
+</details>
 
 **Note y**: Bopomofo/Zhuyin "Yu"　注音「ㄩ」 \
 **Note ʊ**: The nucleus of Mandarin syllables "東通弄" (-**o**ng) in Putonghua; [**o**] in Guoyu　標準漢語「東通弄」等字韻腹（-**ㄨ**ㄥ）的普通話發音；國語中為 [**o**] <br> Will be changed to ⟨**u**⟩ for Putonghua　普通話發音將改成 ⟨**u**⟩ \
@@ -177,12 +188,15 @@ i**o**nn <br> i**o**ng <br> i**o**k <br> i**o**nnh | ([**ɔ**]) | ⟨i**oo**nn�
 
 | | Bilabial <br> 雙唇音 | Alveolar <br> 齦音 | Post-alveolar <br> 齦後音 | Velar <br> 軟顎音
 | :---: | :---: | :---: | :---: | :---:
-Nasal 鼻音 | [m̩] ⟨m⟩ | [n̩] ⟨n⟩ ^Note:n̩^ || [ŋ̍] ⟨ng⟩
-Approximant 近音 || [ɹ̩] _⟨ir⟩_ ^Note:ㄭ1^ | [ɻ̩] _⟨ir⟩_ ^Note:ㄭ2^
+Nasal 鼻音 | [m̩] ⟨m⟩ | [n̩] ⟨n⟩ <sup>Note:n̩</sup> || [ŋ̍] ⟨ng⟩
+Approximant 近音 || [ɹ̩] _⟨ir⟩_ <sup>Note:ㄭ1</sup> | [ɻ̩] _⟨ir⟩_ <sup>Note:ㄭ2</sup>
+
+<details><summary>Inline notes</summary>
 
 *[Note:n̩]: Used in Taiwanese Hakka　用於臺灣客家語
 *[Note:ㄭ1]: The vowel in Mandarin syllables "資雌斯"　標準漢語「資雌斯」等字韻母
 *[Note:ㄭ2]: The vowel in Mandarin syllables "之吃施日"　標準漢語「之吃施日」等字韻母
+</details>
 
 **Note n̩**: Used in Taiwanese Hakka　用於臺灣客家語 \
 **Note ㄭ1**: The final of Mandarin syllables "資雌斯"　標準漢語「資雌斯」等字韻母 \
@@ -220,22 +234,26 @@ The tones are prefixed with `2`.\
 Tone | Name | Sixian | Hailu | Dabu | Raoping (Hsinchu) | Raoping (Zhuolan) | Zhao'an | Southern Sixian
 :--- | ---: | :---: | :---: | :---: | :---: | :---: | :---: | :---:
 聲調 | 調名 | 四縣 | 海陸 | 大埔 | 饒平（新竹） | 饒平（卓蘭） | 詔安 | 南四縣
-**21** | dark level 陰平 | v24/vˊ | v53/vˋ | v33/v+ | v11/vˇ | v11/vˇ | v11/vˇ | v24/vˊ / v33/v+ ^Note:33^
-**22** | dark rising 陰上 | v31/vˋ | v24/vˊ | v31/v^ | | | v31/v^ | v31/vˋ
-**23** | dark departing 陰去 | v55/v | v11/vˇ | v53/vˋ | v53/vˋ | v31/v^ | | v55/v
-**24** | dark entering 陰入 | vd2/vdˋ | vd5/vd | vd21/vd^ | vd2/vdˋ | vd2/vdˋ | v(d)24/v(d)ˊ | vd2/vdˋ
+**21** | dark level 陰平 | v24/vˊ | v53/vˋ | v33/v+ | v11/vˇ | v11/vˇ | v11/vˇ | v24/vˊ / v33/v+ <sup>Note:33</sup>
+**22** | dark rising 陰上 | v31/vˋ | v24/vˊ | v31/v<sup> | | | v31/v</sup> | v31/vˋ
+**23** | dark departing 陰去 | v55/v | v11/vˇ | v53/vˋ | v53/vˋ | v31/v<sup> | | v55/v
+**24** | dark entering 陰入 | vd2/vdˋ | vd5/vd | vd21/vd</sup> | vd2/vdˋ | vd2/vdˋ | v(d)24/v(d)ˊ | vd2/vdˋ
 **25** | light level 陽平 | v11/vˇ | v55/v | v113/vˇ | v55/v | v53/vˋ | v53/vˋ | v11/vˇ
 **26** | light rising 陽上 |  | | | | | |
 **27** | light departing 陽去 | | v33/v+ | | v24/vˊ | v55/v | v55/v |
 **28** | light entering 陽入 | vd5/vd | vd2/vdˋ | vd54/vdˋ | vd5/vd | vd5/vd | vd43/vdˋ | vd5/vd
-**29** | super dark level 超陰平^Note:SDL^ |  | | v35/vˊ | | | |
-**212** | super dark entering 超陰入^Note:SDE^ |  | | | |  vd24/vdˊ | |
+**29** | super dark level 超陰平<sup>Note:SDL</sup> |  | | v35/vˊ | | | |
+**212** | super dark entering 超陰入<sup>Note:SDE</sup> |  | | | |  vd24/vdˊ | |
+
+<details><summary>Inline notes</summary>
 
 *[Note:33]: Used in Meinong District, Kaohsiung, etc　用於高雄美濃等地
 *[Note:SDL]: Used in Dabu dialect　用於大埔腔
 *[Note:SDE]: Used in Raoping dialect (Zhuolan)　用於饒平腔（卓蘭）
-**Note 33**: Used in Meinong District, Kaohsiung, etc　用於高雄美濃等地
-**Note SDL**: Used in Dabu dialect　用於大埔腔
+</details>
+
+**Note 33**: Used in Meinong District, Kaohsiung, etc　用於高雄美濃等地 \
+**Note SDL**: Used in Dabu dialect　用於大埔腔 \
 **Note SDE**: Used in Raoping dialect (Zhuolan)　用於饒平腔（卓蘭）
 
 ### Mandarin 標準漢語
@@ -251,17 +269,24 @@ Tone | Name | Zhuyin
 **02** | light level 陽平 | ㄚˊ
 **03** | rising 上聲 | ㄚˇ
 **04** | departing 去聲 | ㄚˋ
-**05** | entering 入聲 | ㄚ˙ ^Note:SME^
+**05** | entering 入聲 | ㄚ˙ <sup>Note:SME</sup>
+
+<details><summary>Inline notes</summary>
 
 *[Note:SME]: Unused in Mandarin; handled as the neutral tone on occurrences　標準漢語不使用；實際出現時，將當作輕聲處理
+</details>
 
 **Note SME**: Unused in Mandarin; handled as the neutral tone on occurrences　標準漢語不使用；實際出現時，將當作輕聲處理
 
 
 *[IPA]: International Phonetic Alphabet 國際音標
+
 *[CTL]: Common TL 通用 TL
+
 *[Common TL]: Common TL 通用 TL
+
 *[TL]: Taiwanese Romanization System 臺灣閩南語羅馬字拼音方案
+
 *[THRS]: Taiwanese Hakka Romanization System 臺灣客家語拼音方案
 
 ## References 參考資料
