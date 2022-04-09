@@ -4,8 +4,13 @@ import pickle
 import re
 import sys
 from collections import UserString
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, TypeVar, Union, cast
 
 import phonetic.ctl_util as ctl_util
+
+_T = TypeVar('_T')
+_StrT = TypeVar('_StrT', str, UserString)
+_Str = Union[str, UserString]
 
 # Dictionary format tokens
 class Word(UserString): pass
@@ -18,7 +23,7 @@ class TaiwaneseHakkaRomanization(_RomanPhonetic): pass
 THRS = TaiwaneseHakkaRomanization
 class ETC(UserString): pass
 
-_FORMAT_TYPE_LIST = {
+_FORMAT_TYPE_LIST: Dict[str, Type[UserString]] = {
     'Word': Word,
     'Zhuyin': Zhuyin,
     'TaiwaneseRomanization': TaiwaneseRomanization,
@@ -26,7 +31,7 @@ _FORMAT_TYPE_LIST = {
     'ETC': ETC
 }
 
-_FORMAT_TYPE_ABBRV_LIST = {
+_FORMAT_TYPE_ABBRV_LIST: Dict[str, Type[UserString]] = {
     'Word': Word,
     'Zhuyin': Zhuyin,
     'TL': TaiwaneseRomanization,
@@ -35,15 +40,22 @@ _FORMAT_TYPE_ABBRV_LIST = {
 }
 
 
-def parse_line_in_format(line, format_):
-    etcs = []
+Format = Sequence[Union[str, Type[UserString]]]
+PhraseData = Tuple[Word, _Phonetic, Type[_Phonetic], List[ETC]]
+PhraseDataOut = Tuple[Union[Word, str], Union[_Phonetic, str], Type[_Phonetic], Union[List[ETC], List[str], List[Union[ETC, str]]]]
+
+def parse_line_in_format(line: str, format_: Format) -> PhraseData:
+    etcs: List[ETC] = []
     splited = line.split('\t')
 
     for (splited_item, parse_item) in zip(splited, format_):
         if parse_item in _FORMAT_TYPE_LIST:
+            assert isinstance(parse_item, str)
             parse_item = _FORMAT_TYPE_LIST[parse_item]
         elif parse_item in _FORMAT_TYPE_ABBRV_LIST:
+            assert isinstance(parse_item, str)
             parse_item = _FORMAT_TYPE_ABBRV_LIST[parse_item]
+        assert not isinstance(parse_item, str)
 
         if parse_item not in _FORMAT_TYPE_LIST.values():
             raise ValueError(
@@ -60,18 +72,22 @@ def parse_line_in_format(line, format_):
     return (word, phonetic, phonetic_type, etcs)
 
 
-def create_line_from_format(phrase_data, format_):
+def create_line_from_format(phrase_data: PhraseDataOut, format_: Format) -> str:
     (word, phonetic, *additional) = (phrase_data)
     etcs = len(additional) > 1 and additional[1] or []
+    assert isinstance(etcs, list)
     etcs_len = len(etcs)
     etcs_index = 0
-    out_content = []
+    out_content: List[Union[UserString, str]] = []
 
     for parse_item in format_:
         if parse_item in _FORMAT_TYPE_LIST:
+            assert isinstance(parse_item, str)
             parse_item = _FORMAT_TYPE_LIST[parse_item]
         elif parse_item in _FORMAT_TYPE_ABBRV_LIST:
+            assert isinstance(parse_item, str)
             parse_item = _FORMAT_TYPE_ABBRV_LIST[parse_item]
+        assert not isinstance(parse_item, str)
 
         if parse_item is Word:
             out_content.append(word)
@@ -93,7 +109,7 @@ _PUNCTUATION_LIST = {'。', '，', '、', '；', '：', '「', '」',
                      '〈', '〉', '．', '˙', '—', '～'}
 
 
-def preprocess_dict(dict_path, format_):
+def preprocess_dict(dict_path: str, format_: Format) -> None:
     """
     中文詞典檔前處理 \n
     Do pre-process on a dictionary text file
@@ -106,14 +122,14 @@ def preprocess_dict(dict_path, format_):
     file_content = list(dict.fromkeys(file_content))
 
     # For processing file content
-    out_content = []
+    out_content: List[str] = []
     markup_ref_pattern = re.compile(r'^.*?&[^\t]+?;.*?$')
     multi_space_pattern = re.compile(r' {2,}')
     parenthesis_pattern = re.compile(r'[\(（].*?[\)）]')
 
     # For warning of invalid contents
-    invalid_word_warnings = []
-    mismatched_syllable_count_warnings = []
+    invalid_word_warnings: List[str] = []
+    mismatched_syllable_count_warnings: List[str] = []
 
     # Process each line in the file
     for (pos, line) in enumerate(file_content):
@@ -203,6 +219,14 @@ def preprocess_dict(dict_path, format_):
         elif os.path.isfile(warning_file):
             os.remove(warning_file)
 
+SrcItem = Union[str, Tuple[str, Format]]
+SrcList = List[SrcItem]
+SrcSpec = Union[SrcList, SrcItem]
+DictSylList = List[_Phonetic]
+DictPronounCandList = List[DictSylList]
+DictEntries = Dict[Union[Word, str], DictPronounCandList]
+DictData = Tuple[SrcSpec, DictEntries, int]
+OptDictData = Tuple[Optional[SrcSpec], Optional[DictEntries], Optional[int]]
 
 # Data structure:
 #   chinese_phonetic: {word: candidate_phonetics, word2: candidate_phonetics2, ...}
@@ -210,26 +234,26 @@ def preprocess_dict(dict_path, format_):
 #   phonetic: [syllable1, syllable2, ...]
 #   Overview: {word: [[syllable11, syllable12], [syllable21, syllable22]], ...}
 class CtlDict:
-    def __init__(self):
-        self.chinese_phonetic = {}
-        self.max_word_length = 0
+    def __init__(self) -> None:
+        self.chinese_phonetic: DictEntries = {}
+        self.max_word_length: int = 0
 
 PROCESSED_SUFFIX = '_out'
 PICKLED_SUFFIX = '.pickle'
 
 
 # Used on _
-def _call(func, *arg, **kwarg): return func(*arg, **kwarg)
+def _call(func: Callable[..., _T], *arg, **kwarg) -> _T: return func(*arg, **kwarg)
 
 @_call
-def _():
+def _() -> None:
     # Used by class SrcDict
 
     # Public functions
 
     global create_dict
 
-    def create_dict(path_list, *args, **kwargs):
+    def create_dict(path_list: SrcList, *args, **kwargs) -> CtlDict:
         """
         載入指定詞典 \n
         Load the specified dictionaries.
@@ -246,29 +270,29 @@ def _():
         A safer unpickler which allows pickling only the format type classes.
         """
 
-        def find_class(self, module, name):
+        def find_class(self, module: str, name: str) -> Type[UserString]:
             if module == 'ctl_dict' and name in _FORMAT_TYPE_LIST:
                 return _FORMAT_TYPE_LIST[name]
             raise pickle.UnpicklingError(
                 f'Global \'{module}.{name}\' is forbidden')
 
-    def _get_dict_set_file(path_list):
+    def _get_dict_set_file(path_list: SrcSpec):
         hashed_path_list = hashlib.md5(str(path_list).encode()).hexdigest()
         return f'dict_set_{hashed_path_list}{PICKLED_SUFFIX}'
 
-    def _get_src_path(dict_src_item):
+    def _get_src_path(dict_src_item: SrcItem) -> str:
         if isinstance(dict_src_item, str):
             return dict_src_item
 
         (dict_src_item_path, _) = dict_src_item
         return dict_src_item_path
 
-    def _get_dict_data_from_text(source, format_):
+    def _get_dict_data_from_text(source: str, format_: Format) -> DictData:
         """
         讀取詞典檔並建立詞典資料 \n
         Parse and create dictionary data from a dictionary text file.
         """
-        text_chinese_phonetic = {}
+        text_chinese_phonetic: DictEntries = {}
         text_max_word_length = 0
 
         with open(source, 'r', encoding='utf8') as dict_file:
@@ -292,7 +316,7 @@ def _():
 
         return (source, text_chinese_phonetic, text_max_word_length)
 
-    def _create_dict_data_dump(dict_data, path):
+    def _create_dict_data_dump(dict_data: DictData, path: SrcSpec) -> None:
         """
         將詞典資料傾印到檔案 \n
         Dump the content of a dictionary data to a file.
@@ -300,11 +324,12 @@ def _():
         out_path = path
         if not isinstance(path, str):
             out_path = _get_dict_set_file(path)
+        assert isinstance(out_path, str)
         with open(out_path, 'wb') as pickle_file:
             pickler_ = pickle.Pickler(pickle_file, pickle.HIGHEST_PROTOCOL)
             pickler_.dump(dict_data)
 
-    def _is_path_list_eq(lhs, rhs, lhs_suffix='', rhs_suffix=''):
+    def _is_path_list_eq(lhs: SrcSpec, rhs: SrcSpec, lhs_suffix: str='', rhs_suffix: str='') -> bool:
         if not isinstance(lhs, str) and not isinstance(rhs, str):
             lhs_src_paths = map(_get_src_path, lhs)
             rhs_src_paths = map(_get_src_path, rhs)
@@ -315,7 +340,7 @@ def _():
             )
         return f'{lhs}{lhs_suffix}' == f'{rhs}{rhs_suffix}'
 
-    def _get_dict_data_from_dump(path):
+    def _get_dict_data_from_dump(path: SrcSpec) -> Tuple[Optional[OptDictData], Optional[str]]:
         """
         從先前傾印出的檔案取得詞典資料 \n
         Get directionary data from a dumped data file.
@@ -344,7 +369,7 @@ def _():
                 return ((source, None, None), in_path)
         return (None, None)
 
-    def _check_dict_data(dict_data, dict_data_path, __dict_src):
+    def _check_dict_data(dict_data: Optional[OptDictData], dict_data_path: Optional[str], __dict_src) -> bool:
         if dict_data is None:
             if dict_data_path is not None:
                 print('Warning: The dump file \'', dict_data_path,
@@ -383,13 +408,13 @@ def _():
         詞典檔紀錄清單 \n
         The dictionary entry list.
         """
-        def __init__(self):
-            self.__loaded_dict = []
-            self.__dict_src = []
+        def __init__(self) -> None:
+            self.__loaded_dict: List[SrcSpec] = []
+            self.__dict_src: SrcList = []
 
         # Public methods
 
-        def add_dict_src(self, path, format_):
+        def add_dict_src(self, path: str, format_: Format):
             """
             新增要讀取的詞典檔 \n
             Add the dictionary file to the dictionary source.
@@ -405,7 +430,7 @@ def _():
             self.__dict_src.clear()
             return self
 
-        def set_dict_src(self, path_list):
+        def set_dict_src(self, path_list: SrcSpec):
             """
             指定要載入的詞典 \n
             Specify the dictionaries to be loaded. \n
@@ -416,7 +441,7 @@ def _():
                 self.__dict_src = [path_list]
             return self
 
-        def create_dict(self, reprocess=False, recreate_dump=False):
+        def create_dict(self, reprocess: bool=False, recreate_dump: bool=False) -> CtlDict:
             """
             載入詞典的對應傾印檔； \n
             若無，則讀取已經過前處理之詞典檔，並生成傾印檔；
@@ -432,6 +457,7 @@ def _():
                 # Load the dumped data of the dictionaries to be loaded if exists
                 (dict_data, dict_data_file) = _get_dict_data_from_dump(self.__dict_src)
                 if _check_dict_data(dict_data, dict_data_file, self.__dict_src):
+                    dict_data = cast(DictData, dict_data)
                     self.__load_dict_data(dict_, dict_data)
                     return dict_
 
@@ -461,6 +487,7 @@ def _():
                             (dict_data, _) = _get_dict_data_from_dump(
                                 dict_data_file)
                             if _check_dict_data(dict_data, dict_data_file, path):
+                                dict_data = cast(DictData, dict_data)
                                 self.__load_dict_data(dict_, dict_data)
                 elif os.path.isfile(path_unprocessed):
                     preprocess_dict(path_unprocessed, format_)
@@ -479,7 +506,7 @@ def _():
 
         # Private methods
 
-        def __load_dict_data(self, dict_, dict_data,):
+        def __load_dict_data(self, dict_: CtlDict, dict_data: DictData,) -> None:
             """
             載入詞典檔到詞典表中 \n
             Load dictionary data into dictionary list. \n

@@ -3,7 +3,10 @@ Common definition for Latin phonetic alphabets
 '''
 
 import sys
-from .ctl_util import normalize, str_get_greedy, str_get_tone
+from typing import Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Type, Union
+from .ctl_util import Str, normalize, str_get_greedy, str_get_tone
+
+IpaPair = Tuple[str, str]
 
 # Syllable component types
 INITIAL = "initial"
@@ -22,8 +25,16 @@ TONE = "tone"
 
 _IPA_NASALIZATION = '\u0303'  # ' ̃ '
 
-def def_phonetic(name, dialect, variant, tone_prefix,
-        null_phones, phone_lists, nasalization):
+Part = Literal['medial', 'nucleus_i', 'nucleus_if', 'nucleus_f', 'tone', 'initial', 'coda']
+Branch = Literal['coda', 'medial', 'initial', 'medial_ipa', 'nucleus_i_ipa', 'nucleus_f_ipa']
+Phone = PhoneSpec = Union[Str, Callable[[Part, Optional[Str], Branch], 'PhoneSpec'], Sequence['PhoneSpec']]
+PhoneSet = Set[Optional[Str]]
+PhoneDict = Dict[Optional[Str], PhoneSpec]
+
+def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone_prefix: str,
+        null_phones: Tuple[Phone, Phone, Phone, Phone, Phone],
+        phone_lists: Tuple[PhoneDict, PhoneSet, PhoneDict, PhoneDict, PhoneDict],
+        nasalization: str) -> Type:
     (null_initial, null_medial, null_nucleus, null_coda, null_tone) = null_phones
     (initial_list, medial_list, nucleus_list, coda_list, tone_list) = phone_lists
     return type(name, (object,), dict(
@@ -35,12 +46,12 @@ def def_phonetic(name, dialect, variant, tone_prefix,
         NASALIZATION=nasalization
     ))
 
-def _report_invalid(obj, catagory):
+def _report_invalid(obj: PhoneSpec, catagory: str) -> None:
     print('Warning: ', obj,
         ' is an invalid ', catagory,'.  Continued.',
         sep='', file=sys.stderr, flush=True)
 
-def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
+def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], variant: Optional[str]) -> IpaPair:
     """
     Convert a syllable in a phonetic notation to IPA. \n
     Input syllable: f'{initial}{medial}{nucleus0}{nucleus1}{coda}' \n
@@ -55,8 +66,10 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
 
     tone_list = phone.TONE_LIST
     if isinstance(tone_list, phone.DIALECT):
+        assert dialect is not None
         tone_list = getattr(tone_list, dialect)
     if isinstance(tone_list, phone.VARIANT):
+        assert variant is not None
         tone_list = getattr(tone_list, variant)
     (str_tone, tone, phone_no_tone) = str_get_tone(syll, tone_list, phone.NULL_TONE)
 
@@ -97,7 +110,8 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
     (str_coda, offset, coda) = str_get_greedy(
         phone_no_tone, offset, phone.CODA_LIST, phone.NULL_CODA)
 
-    def get_patched(component, self_type, str_component, custom_patch=None):
+    PatchFunc = Callable[[Optional[PhoneSpec], Part], PhoneSpec]
+    def get_patched(component: Optional[PhoneSpec], self_type: Part, str_component: Optional[Str], custom_patch: Optional[PatchFunc] = None) -> str:
         """
         Perform a series of one-pass patches on a syllable component
         """
@@ -114,8 +128,10 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
                 result = result(self_type, str_initial, INITIAL)
         # Patch the syllable component according to the dialect and the variant
         if isinstance(result, phone.DIALECT):
+            assert dialect is not None
             result = getattr(result, dialect)
         if isinstance(result, phone.VARIANT):
+            assert variant is not None
             result = getattr(result, variant)
         # Concatenate the syllable component defined with multiple parts
         if isinstance(result, list):
@@ -129,8 +145,8 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
             result = f'{str_component}?'
         return result
 
-    def nasalization(vowels):
-        new_vowels = []
+    def nasalization(vowels: str) -> str:
+        new_vowels: List[str] = []
         for vowel_item in vowels:
             new_vowels.append(vowel_item)
             new_vowels.append(_IPA_NASALIZATION)
@@ -144,19 +160,21 @@ def phonetic_syllable_to_ipa(phone, syll, dialect, variant):
 
     # Patch consonantal syllable components according to the nearest syllable component
 
-    def patch_initial(initial, self_type):
+    def patch_initial(initial: Optional[PhoneSpec], self_type: Part) -> str:
         result = initial
         if callable(result):
             result = result(self_type, medial or nucleus0, MEDIAL_IPA)
         if callable(result):
             result = result(self_type, nucleus0, NUCLEUS_I_IPA)
+        assert isinstance(result, str)
         return result
     initial = get_patched(initial, INITIAL, str_initial, patch_initial)
 
-    def patch_coda(coda, self_type):
+    def patch_coda(coda: Optional[PhoneSpec], self_type: Part) -> str:
         result = coda
         if callable(result):
             result = result(self_type, nucleus1 or nucleus0, NUCLEUS_F_IPA)
+        assert isinstance(result, str)
         return result
     coda = get_patched(coda, CODA, str_coda, patch_coda)
 

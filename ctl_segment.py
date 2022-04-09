@@ -1,11 +1,12 @@
 import os
 import shutil
+from typing import List
 
 import ctl_dict
 import phonetic.ctl_util as ctl_util
 
 
-def split_chinese_word(sentence, dict_):
+def split_chinese_word(sentence: str, dict_: ctl_dict.CtlDict) -> List[str]:
     """
     斷詞程式 \n
     有空白的都併在一起然後斷詞 \n
@@ -13,7 +14,7 @@ def split_chinese_word(sentence, dict_):
     Merge the spaces in a sentence,
       and then split the merged sentence into words.
     """
-    spilted_words = []
+    spilted_words: List[str] = []
     merged_sentence = merge(sentence)
 
     str_len = len(merged_sentence)
@@ -43,14 +44,14 @@ def split_chinese_word(sentence, dict_):
     return spilted_words
 
 
-def merge(sentence):
+def merge(sentence: str) -> str:
     """
     將中羅併在一起羅羅分開 \n
     Merge Chinese characters, while keep roman words delimited by a space. \n
     Roman words followed by or led by Chinese characters are also merged
       with the characters into a single word.
     """
-    merged_sentence = []
+    merged_sentence: List[str] = []
     merge_units = sentence.strip().split(' ')
     merged_str = ''
     is_prev_merge_unit_roman = False
@@ -79,7 +80,7 @@ def merge(sentence):
     return ' '.join(merged_sentence)
 
 
-def split_file(path, dict_):
+def split_file(path: str, dict_: ctl_dict.CtlDict) -> None:
     """
     Split Chinese words for a .trn file.
     """
@@ -97,7 +98,7 @@ def split_file(path, dict_):
                 f'{lf.join(trn_roman)}')
 
 
-def split_for_each_file(path, dict_):
+def split_for_each_file(path: str, dict_: ctl_dict.CtlDict) -> None:
     """
     資料夾下的 trn 重新斷詞 \n
     Split Chinese words for every .trn file in the folder and subfolders. \n
@@ -117,7 +118,7 @@ def split_for_each_file(path, dict_):
     print("Split for each file done!")
 
 
-def demonstrate():
+def demonstrate() -> None:
     import time
     time_loading_start = time.perf_counter()
 
@@ -149,7 +150,7 @@ def demonstrate():
 
 
 # Usage example
-def main():
+def main() -> None:
     from ctl_dict import Word, Zhuyin, TL, ETC
 
     sentence = '這是個範例！'

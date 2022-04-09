@@ -1,14 +1,24 @@
 import sys
+from typing import Callable, Dict, Optional, Tuple, Union, cast
+
+from .ctl_util import Str
+from .phonetic import IpaPair
+
+PhoneSet = Dict[Optional[Str], int]
+PhoneDict = Dict[Optional[Str], str]
+FinalSpecItem = Union[Optional[str], Callable[[str], str]]
+FinalSpec = Union[FinalSpecItem, Tuple[FinalSpecItem, ...]]
+FinalTable = Tuple[Tuple[FinalSpec, ...], ...]
 
 # Used by zhuyin_syllable_to_ipa
 
 
-def _str_get(str_, pos):
+def _str_get(str_: Str, pos: int) -> Str:
     return len(str_) > pos and str_[pos] or ''
 
 _TONE_PREFIX = '0'
 
-_BOPOMOFO_TONE_LIST = {
+_BOPOMOFO_TONE_LIST: PhoneDict = {
     '': "1",
     '\u02C9': '1',  # 'ˉ'
     '\u02CA': '2',  # 'ˊ'
@@ -17,7 +27,7 @@ _BOPOMOFO_TONE_LIST = {
     '\u02D9': '5',  # '˙'
 }
 
-_BOPOMOFO_INITIAL_LIST = {
+_BOPOMOFO_INITIAL_LIST: PhoneDict = {
     'ㄅ': 'p',  'ㄉ': 't',                             'ㄍ': 'k',
     'ㄆ': 'pʰ', 'ㄊ': 'tʰ',                            'ㄎ': 'kʰ',
     'ㄇ': 'm',  'ㄋ': 'n',
@@ -28,9 +38,9 @@ _BOPOMOFO_INITIAL_LIST = {
                 'ㄖ': 'ʐ',
 }
 
-_BOPOMOFO_MEDIAL_LIST = {'ㄧ': 1, 'ㄨ': 2, 'ㄩ': 3}
+_BOPOMOFO_MEDIAL_LIST: PhoneSet = {'ㄧ': 1, 'ㄨ': 2, 'ㄩ': 3}
 
-_BOPOMOFO_RHYME_LIST = {
+_BOPOMOFO_RHYME_LIST: PhoneSet = {
     'ㄦ': 0,
     'ㄛ': 1, 'ㄜ': 1, 'ㄝ': 1,
     'ㄟ': 2, 'ㄡ': 3, 'ㄣ': 4, 'ㄥ': 5,
@@ -38,29 +48,29 @@ _BOPOMOFO_RHYME_LIST = {
 }
 
 
-def _f00(initial):
+def _f00(initial: str) -> str:
     return {
         'ts': 'ɹ', 'tsʰ': 'ɹ', 's': 'ɹ',
         'ʈʂ': 'ɻ', 'ʈʂʰ': 'ɻ', 'ʂ': 'ɻ', 'ʐ': 'ɻ',
     }.get(initial, 'ə')
 
 
-def _f010(initial):
+def _f010(initial: str) -> str:
     return {
         'p': 'wɔ', 'pʰ': 'wɔ', 'm': 'wɔ',
     }.get(initial, 'ɔ')
 
 
-def _f05(initial):
+def _f05(initial: str) -> str:
     return {
         'p': 'ʊŋ', 'pʰ': 'ʊŋ', 'm': 'ʊŋ', 'f': 'ʊŋ',
     }.get(initial, 'əŋ')
 
 
-def _f25(initial): return initial and 'ʊŋ' or 'wəŋ'
+def _f25(initial: str) -> str: return initial and 'ʊŋ' or 'wəŋ'
 
 
-_FINAL_LIST = (
+_FINAL_LIST: FinalTable = (
 # Nucleus ∅    /ə/                                             /a/
 # Coda    ∅     /ɔ/    /ɤ/   /e/    /i/    /u/    /n/    /ŋ/    ∅    /i/    /u/    /n/    /ŋ/
 # Medial
@@ -71,19 +81,19 @@ _FINAL_LIST = (
 )
 
 
-def _r010(initial):
+def _r010(initial: str) -> str:
     return {
         'p': 'wɔ˞', 'pʰ': 'wɔ˞', 'm': 'wɔ˞',
     }.get(initial, 'ɔ˞')
 
 
-def _r05(initial):
+def _r05(initial: str) -> str:
     return {
         'p': 'ʊ̃˞', 'pʰ': 'ʊ̃˞', 'm': 'ʊ̃˞', 'f': 'ʊ̃˞',
     }.get(initial, 'ɚ̃')
 
 
-def _r25(initial): return initial and 'ʊ̃˞' or 'wɚ̃'
+def _r25(initial: str) -> str: return initial and 'ʊ̃˞' or 'wɚ̃'
 
 
 _RHOTIC_FINAL_LIST = (
@@ -97,14 +107,14 @@ _RHOTIC_FINAL_LIST = (
 )
 
 
-def _final_branch(final, bopomofo_rhyme):
-    return final[{
+def _final_branch(final: Tuple[FinalSpecItem, ...], bopomofo_rhyme: Str) -> FinalSpecItem:
+    return final[cast(int, cast(PhoneSet, {
         'ㄛ': 0, 'ㄜ': 1, 'ㄝ': 2,
-    }.get(bopomofo_rhyme)]
+    }).get(bopomofo_rhyme))]
 
 
 
-def zhuyin_syllable_to_ipa(zhuyin, dialect=None, variant=None):
+def zhuyin_syllable_to_ipa(zhuyin: Str, dialect: Optional[str] = None, variant: Optional[str] = None) -> IpaPair:
     """
     Convert a zhuyin syllable to IPA.
     """

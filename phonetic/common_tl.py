@@ -1,18 +1,24 @@
+from typing import Dict, List, Optional, Sequence, Tuple, Union
+
 from . import ctl_util
-from .ctl_util import str_get_greedy
+from .ctl_util import Str, str_get_greedy
+from phonetic.phonetic import IpaPair
+
+CtlPair = IpaPair
+PhoneDict = Dict[Str, Union[str, Sequence[str]]]
 
 # Used by ipa_pair_to_tl_pair
 
 Dialect = ctl_util.def_dialect([])
 dialect = ctl_util.namedtuple_ctor(Dialect)
 
-GENERAL_VARIANT_LIST = ['southern', 'northern']
+GENERAL_VARIANT_LIST: List[str] = ['southern', 'northern']
 VARIANT_LIST = Dialect()
 
 Variant = ctl_util.def_variant(GENERAL_VARIANT_LIST, VARIANT_LIST)
 variant = ctl_util.namedtuple_ctor(Variant)
 
-_COMMON_TL_INITIAL_LIST = {
+_COMMON_TL_INITIAL_LIST: PhoneDict = {
     # *: Not in original TL
 
     # IPA consonants.
@@ -43,7 +49,7 @@ _COMMON_TL_INITIAL_LIST = {
     '\u0320': '',  # ' ̠ '; retracted; used in Southern Sixian dialect of Taiwanese Hakka
 }
 
-_COMMON_TL_FINAL_LIST = {
+_COMMON_TL_FINAL_LIST: PhoneDict = {
     # *: Not in original TL
 
     # IPA consonants.
@@ -116,8 +122,8 @@ _COMMON_TL_FINAL_LIST = {
 }
 
 
-def _compare_and_replace_append(src, prev_pos_list, current_symbol,
-                                replace_append_list, target=None):
+def _compare_and_replace_append(src: str, prev_pos_list: Dict[str, int], current_symbol: str,
+                                replace_append_list: Tuple[str, str, str], target: Optional[str] = None):
     new_src = None
     (str_replaced, str_replacer, str_append) = replace_append_list
     target = target if target is not None else str_replaced
@@ -155,7 +161,7 @@ def _compare_and_replace_append(src, prev_pos_list, current_symbol,
     return new_src
 
 
-def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
+def ipa_pair_to_tl_pair(ipa_pair: IpaPair, dialect: Optional[str] = None, variant: Optional[str] = 'southern') -> CtlPair:
     """
     Convert an IPA syllable to common TL.
     """
@@ -183,6 +189,7 @@ def ipa_pair_to_tl_pair(ipa_pair, dialect=None, variant='southern'):
             offset = offset + 1
 
         if isinstance(tl_phone, Variant):
+            assert variant is not None
             tl_phone = getattr(tl_phone, variant)
 
         # Merge multiple 'nn'

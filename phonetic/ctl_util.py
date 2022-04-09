@@ -1,28 +1,33 @@
-from collections import namedtuple
+from collections import UserString, namedtuple
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Type, TypeVar, Union
 import unicodedata
 
-def namedtuple_ctor(Tuple, default=None):
+Str = Union[str, UserString]
+_T = TypeVar('_T')
+_StrT = TypeVar('_StrT', bound=Str)
+
+def namedtuple_ctor(Tuple: Type[_T], default: Any = None) -> Callable[..., _T]:
     return (lambda *args, **kwargs:
         Tuple(*([*args] + [default]*(len(Tuple._fields)-len(args))))._replace(**kwargs))
 
-def def_lang(lang_list):
+def def_lang(lang_list: Sequence[str]) -> Type:
     return namedtuple('Lang', lang_list)
-def def_dialect(dialect_list):
+def def_dialect(dialect_list: Sequence[str]) -> Type:
     return namedtuple('Dialect', dialect_list)
-def def_variant(general_variant_list, variant_list):
+def def_variant(general_variant_list: Sequence[str], variant_list: Sequence[Sequence[str]]) -> Type:
     return namedtuple('Variant', sum(variant_list, general_variant_list))
 
 class Lang_opt(namedtuple('Lang_opt', ['dialect', 'variant'])):
-    def _asdict(self):
+    def _asdict(self) -> Dict[str, Any]:
         res = super()._asdict()
         return {k: res[k] for k in res if res[k] is not None}
 lang_opt = namedtuple_ctor(Lang_opt)
 
-def normalize(str_):
+def normalize(str_: _StrT) -> _StrT:
     '''Decompose precomposed characters'''
     return type(str_)(unicodedata.normalize("NFD", str(str_)))
 
-def find_first_non_roman(text):
+def find_first_non_roman(text: Str) -> int:
     """
     Usage & result:
         find_first_non_roman('abcdef')   == 6
@@ -35,7 +40,7 @@ def find_first_non_roman(text):
     return len(text)
 
 
-def is_char_roman(char):
+def is_char_roman(char: Str) -> bool:
     if not (('A' <= char <= 'Z') or ('a' <= char <= 'z')
             or ('0' <= char <= '9') or (char == '#') or (char == '*')
             or (char == '-') or (char == ' ')
@@ -49,7 +54,7 @@ def is_char_roman(char):
     return True
 
 
-def linear_search_rightmost(first, last, eq_func):
+def linear_search_rightmost(first: int, last: int, eq_func: Callable[[int], bool]) -> Optional[int]:
     """
     Find the rightmost element which the value equals to the target. \n
     Search in the range [first, last) of an unsorted array. \n
@@ -71,7 +76,7 @@ def linear_search_rightmost(first, last, eq_func):
     return None
 
 
-def get_max_length(dict_):
+def get_max_length(dict_: Dict[Str, Any]) -> int:
     result = 0
     for key in dict_:
         result = max(len(key), result)
@@ -79,7 +84,7 @@ def get_max_length(dict_):
     return result
 
 
-def str_get_greedy(str_, offset, source_dict, default_):
+def str_get_greedy(str_: Str, offset: int, source_dict: Dict[Str, _T], default_: Optional[_T]) -> Tuple[Optional[Str], int, Optional[_T]]:
     new_offset = offset
     str_max_length = min(get_max_length(source_dict), max(len(str_) - offset, 0))
     for length in range(str_max_length, 0, -1):
@@ -92,7 +97,7 @@ def str_get_greedy(str_, offset, source_dict, default_):
     return (None, offset, default_)
 
 
-def str_get_tone(str_, tone_list, default_):
+def str_get_tone(str_: Str, tone_list: Dict[Str, _T], default_: Optional[_T]) -> Tuple[Optional[Str], Optional[_T], Str]:
     tone = None
     str_tone_len = 0
     str_tone_max_length = get_max_length(tone_list)
