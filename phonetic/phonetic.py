@@ -110,7 +110,7 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
     (str_coda, offset, coda) = str_get_greedy(
         phone_no_tone, offset, phone.CODA_LIST, phone.NULL_CODA)
 
-    PatchFunc = Callable[[Optional[PhoneSpec], Part], PhoneSpec]
+    PatchFunc = Callable[[Optional[PhoneSpec], Part], Optional[PhoneSpec]]
     def get_patched(component: Optional[PhoneSpec], self_type: Part, str_component: Optional[Str], custom_patch: Optional[PatchFunc] = None) -> str:
         """
         Perform a series of one-pass patches on a syllable component
@@ -160,21 +160,19 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
 
     # Patch consonantal syllable components according to the nearest syllable component
 
-    def patch_initial(initial: Optional[PhoneSpec], self_type: Part) -> str:
+    def patch_initial(initial: Optional[PhoneSpec], self_type: Part) -> Optional[PhoneSpec]:
         result = initial
         if callable(result):
             result = result(self_type, medial or nucleus0, MEDIAL_IPA)
         if callable(result):
             result = result(self_type, nucleus0, NUCLEUS_I_IPA)
-        assert isinstance(result, str)
         return result
     initial = get_patched(initial, INITIAL, str_initial, patch_initial)
 
-    def patch_coda(coda: Optional[PhoneSpec], self_type: Part) -> str:
+    def patch_coda(coda: Optional[PhoneSpec], self_type: Part) -> Optional[PhoneSpec]:
         result = coda
         if callable(result):
             result = result(self_type, nucleus1 or nucleus0, NUCLEUS_F_IPA)
-        assert isinstance(result, str)
         return result
     coda = get_patched(coda, CODA, str_coda, patch_coda)
 
