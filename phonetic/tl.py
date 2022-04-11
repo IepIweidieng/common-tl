@@ -5,7 +5,7 @@ TL - Taiwanese Romanization System (臺灣閩南語羅馬字拼音方案)
 from typing import List, Optional, cast
 from . import ctl_util
 from . import phonetic
-from .phonetic import Str, Part, _Parts, IpaParts, PhoneSpec, PhoneSet, PhoneDict, PhoneCtxDict, after_initial
+from .phonetic import Str, Part, SrcParts, IpaParts, PhoneSpec, PhoneSet, PhoneDict, PhoneCtxDict, after_initial
 
 _PHONE_NAME = 'TL'
 
@@ -25,8 +25,8 @@ variant = ctl_util.namedtuple_ctor(Variant)
 
 _TONE_PREFIX = ''
 
-def _NULL_TONE_BRANCH(self_type: Part, tl: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.SRC and self_type == phonetic.TONE:
+def _NULL_TONE_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'p': '4', 't': '4', 'k': '4', 'h': '4', 'nnh': '4',
         }).get(tl.coda[-1], '1')
@@ -45,18 +45,18 @@ _TL_TONE_LIST: PhoneDict = {
     '9': '9', '\u030B': '9',  # ' ̋ '
 }
 
-def _s(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
+def _s(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'i': 'ɕ',
-        }).get(after_initial(ipa), 's')
+        }).get(after_initial(tl), 's')
     return _s
 
-def _z(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
+def _z(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'i': 'ʑ',
-        }).get(after_initial(ipa), 'z')
+        }).get(after_initial(tl), 'z')
     return _z
 
 
@@ -77,45 +77,40 @@ _TL_INITIAL_LIST: PhoneDict = {
 
 _TL_MEDIAL_LIST: PhoneSet = {'i', 'u', 'er', 'ir'}
 
-def _A_BRANCH(self_type: Part, tl: _Parts, branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.SRC
-            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+def _A_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF:
         return cast(PhoneCtxDict, {
             ('i', 'n'): 'ɛ', ('i', 't'): 'ɛ',
         }).get((tl.medial[-1], tl.coda[0]), 'a')
     return _A_BRANCH
 
-def _O_BRANCH(self_type: Part, tl: _Parts, branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.SRC
-            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+def _O_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF:
         return cast(PhoneDict, {
             'ng': 'ɔ', 'm': 'ɔ', 'p': 'ɔ', 'k': 'ɔ',
             'nn': 'ɔ', 'ⁿ': 'ɔ', 'nnh': 'ɔ', 'ⁿh': 'ɔ',
         }).get(tl.coda[0], variant(northern='o', southern='ə'))
     return _O_BRANCH
 
-def _E_BRANCH(self_type: Part, tl: _Parts, branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.SRC
-            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+def _E_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF:
         return cast(PhoneDict, {
             'ng': 'ɛ', 'k': 'ɛ'
         }).get(tl.coda[0], 'e')
     return _E_BRANCH
 
-def _I_BRANCH(self_type: Part, tl: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.SRC:
-        if (self_type == phonetic.MEDIAL
-                or self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_F):
-            return 'i'
-        if self_type == phonetic.NUCLEUS_IF:
-            return cast(PhoneDict, {
-                'ng': 'iə', 'k': 'iə'
-            }).get(tl.coda[0], 'i')
+def _I_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if (self_type == phonetic.MEDIAL
+        or self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_F):
+        return 'i'
+    if self_type == phonetic.NUCLEUS_IF:
+        return cast(PhoneDict, {
+            'ng': 'iə', 'k': 'iə'
+        }).get(tl.coda[0], 'i')
     return _I_BRANCH
 
-def _NULL_NUCLEUS_BRANCH(self_type: Part, tl: _Parts, branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.SRC
-            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
+def _NULL_NUCLEUS_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF:
         return cast(PhoneDict, {
             'ng': 'ŋ̍', 'ngh': 'ŋ̍',
             'm': 'm̩', 'mh': 'm̩',

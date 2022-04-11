@@ -31,14 +31,10 @@ NUCLEUS_IF = "nucleus_if"  # Nucleus which both nexts to initial or medial and n
 CODA = "coda"
 TONE = "tone"
 
-SRC = "src" # The source phonetic system
-IPA = "ipa"
-
 _IPA_NASALIZATION = '\u0303'  # ' ̃ '
 
 Part = Literal['medial', 'nucleus_i', 'nucleus_if', 'nucleus_f', 'tone', 'initial', 'coda']
-Branch = Literal['src', 'ipa']
-Phone = PhoneSpec = Union[Str, Callable[[Part, _Parts, Branch], 'PhoneSpec'], Sequence['PhoneSpec']]
+Phone = PhoneSpec = Union[Str, Callable[[Part, SrcParts], 'PhoneSpec'], Sequence['PhoneSpec']]
 PhoneSet = Set[Optional[Str]]
 PhoneDict = Dict[Optional[Str], PhoneSpec]
 PhoneCtxDict = Dict[Tuple[Optional[Str], Optional[Str]], PhoneSpec]
@@ -150,18 +146,14 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
         if len(part) == 0:
             part.append(None)
 
-    PatchFunc = Callable[[Optional[PhoneSpec], Part], Optional[PhoneSpec]]
-    def get_patched(phone_spec: Optional[PhoneSpec], self_type: Part, parts: _Parts, custom_patch: Optional[PatchFunc] = None) -> str:
+    def get_patched(phone_spec: Optional[PhoneSpec], self_type: Part, parts: SrcParts) -> str:
         """
         Perform a series of one-pass patches on a syllable component
         """
         result = phone_spec
-        if callable(custom_patch):
-            result = custom_patch(result, self_type)
-        else:
-            # Patch the syllable component according to the phonetic of non-nucleus syllable components
-            if callable(result):
-                result = result(self_type, parts, SRC)
+        # Patch the syllable component according to the phonetic of non-nucleus syllable components
+        if callable(result):
+            result = result(self_type, parts)
         # Patch the syllable component according to the dialect and the variant
         if isinstance(result, phone.DIALECT):
             assert dialect is not None
@@ -171,9 +163,7 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
             result = getattr(result, variant)
         # Concatenate the syllable component defined with multiple parts
         if isinstance(result, list):
-            new_result = [
-                get_patched(spec, self_type, parts, custom_patch)
-                    for spec in result]
+            new_result = [get_patched(spec, self_type, parts) for spec in result]
             result = ''.join(new_result)
         # Patch failes if the result is not a string
         if not isinstance(result, str):
@@ -209,26 +199,15 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
     if tone:
         ipa_parts.tone.append(tone)
 
-    for k, part in ipa_parts._asdict().items():
-        if len(part) == 0 and k not in {INITIAL, CODA}:
-            part.append(None)
-
     # Patch consonantal syllable components
-
-    def patch_ipa_part(phone_spec: Optional[PhoneSpec], self_type: Part) -> Optional[PhoneSpec]:
-        result = phone_spec
-        if callable(result):
-            result = result(self_type, ipa_parts, IPA)
-        return result
-
-    initial = get_patched(initial, INITIAL, src_parts, patch_ipa_part)
+    initial = get_patched(initial, INITIAL, src_parts)
     post_initial = after_initial(ipa_parts)
     if post_initial:
         initial = initial.rstrip(str(strip_non_letter(post_initial)[0]))
     if initial:
         ipa_parts.initial.append(initial)
-    coda = get_patched(coda, CODA, src_parts, patch_ipa_part)
-    if ipa_parts.nucleus[-1]:
+    coda = get_patched(coda, CODA, src_parts)
+    if len(ipa_parts.nucleus) and ipa_parts.nucleus[-1]:
         coda = coda.lstrip(str(strip_non_letter(ipa_parts.nucleus[-1])[-1]))
     if coda:
         ipa_parts.coda.append(coda)
@@ -237,6 +216,10 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
     if str_coda is not None and str_coda.startswith(phone.NASALIZATION):
         nasalize(ipa_parts.medial)
         nasalize(ipa_parts.nucleus)
+
+    for part in ipa_parts:
+        if len(part) == 0:
+            part.append(None)
 
     if phone.POST_PROCESS is not None:
         ipa_parts = phone.POST_PROCESS(ipa_parts)
