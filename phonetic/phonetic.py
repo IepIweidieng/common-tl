@@ -46,7 +46,8 @@ PhoneCtxDict = Dict[Tuple[Optional[Str], Optional[Str]], PhoneSpec]
 def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone_prefix: str,
         null_phones: Tuple[Phone, Phone, Phone, Phone, Phone],
         phone_lists: Tuple[PhoneDict, PhoneSet, PhoneDict, PhoneDict, PhoneDict],
-        nasalization: str) -> Type:
+        nasalization: str,
+        post_process: Optional[Callable[[IpaParts], IpaParts]] = None) -> Type:
     (null_initial, null_medial, null_nucleus, null_coda, null_tone) = null_phones
     (initial_list, medial_list, nucleus_list, coda_list, tone_list) = phone_lists
     return type(name, (object,), dict(
@@ -55,7 +56,8 @@ def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone
             NULL_NUCLEUS=null_nucleus, NULL_CODA=null_coda, NULL_TONE=null_tone,
         INITIAL_LIST=initial_list, MEDIAL_LIST=medial_list,
             NUCLEUS_LIST=nucleus_list, CODA_LIST=coda_list, TONE_LIST=tone_list,
-        NASALIZATION=nasalization
+        NASALIZATION=nasalization,
+        POST_PROCESS=post_process,
     ))
 
 def after_initial(parts: _Parts) -> Optional[Str]:
@@ -235,6 +237,9 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
     if str_coda is not None and str_coda.startswith(phone.NASALIZATION):
         nasalize(ipa_parts.medial)
         nasalize(ipa_parts.nucleus)
+
+    if phone.POST_PROCESS is not None:
+        ipa_parts = phone.POST_PROCESS(ipa_parts)
 
     ninitial = sum((bool(v) for v in ipa_parts.initial))
     ipa_list = [str(phone) for phone in sum(ipa_parts, []) if phone]

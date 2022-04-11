@@ -5,7 +5,7 @@ TL - Taiwanese Romanization System (臺灣閩南語羅馬字拼音方案)
 from typing import List, Optional, cast
 from . import ctl_util
 from . import phonetic
-from .phonetic import Str, Part, _Parts, Branch, PhoneSpec, PhoneSet, PhoneDict, PhoneCtxDict, after_initial
+from .phonetic import Str, Part, _Parts, IpaParts, PhoneSpec, PhoneSet, PhoneDict, PhoneCtxDict, after_initial
 
 _PHONE_NAME = 'TL'
 
@@ -140,30 +140,20 @@ _TL_NUCLEUS_LIST: PhoneDict = {
 }
 
 
-def _CODA_MH_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
-        return cast(PhoneDict, {
-            'm̩': 'mʔ'
-        }).get(ipa.nucleus[-1], 'mʔ?')  # Invalid combination
-    return _CODA_MH_BRANCH
-
-def _CODA_NGH_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
-        return cast(PhoneDict, {
-            'ŋ̍': 'ŋʔ'
-        }).get(ipa.nucleus[-1], 'ŋʔ?')  # Invalid combination
-    return _CODA_NGH_BRANCH
-
-
 _TL_CODA_LIST: PhoneDict = {
-    'm': 'm', 'mh': _CODA_MH_BRANCH,
+    'm': 'm', 'mh': 'mʔ',
     'n': 'n',
-    'ng': 'ŋ', 'ngh': _CODA_NGH_BRANCH,
+    'ng': 'ŋ', 'ngh': 'ŋʔ',
     'p': 'p̚', 't': 't̚', 'k': 'k̚', 'h': 'ʔ',
     'nn': '', 'ⁿ': '',   # Nasalize the former vowels
     'nnh': 'ʔ', 'ⁿh': 'ʔ',  # Nasalize the former vowels and then append a 'ʔ'
 }
 _TL_NASALIZATION = 'nn'
+
+def _TL_POST_PROCESS(ipa: IpaParts) -> IpaParts:
+    if ipa.coda[-1] in {'mʔ', 'ŋʔ'}: # Stray pseudo-coda
+        ipa.coda[-1] = f'{ipa.coda[-1]}?' # Mark as an invalid combination
+    return ipa
 
 '''
 _FINAL_LIST = (
@@ -193,7 +183,8 @@ TL = phonetic.def_phonetic(
     _PHONE_NAME, Dialect, Variant, _TONE_PREFIX,
     ('', '', _NULL_NUCLEUS_BRANCH, '', _NULL_TONE_BRANCH),
     (_TL_INITIAL_LIST, _TL_MEDIAL_LIST, _TL_NUCLEUS_LIST, _TL_CODA_LIST, _TL_TONE_LIST),
-    _TL_NASALIZATION
+    _TL_NASALIZATION,
+    _TL_POST_PROCESS,
 )
 
 def tl_syllable_to_ipa(tl_: Str, dialect: Optional[str] = 'chiang', variant: Optional[str] = 'southern') -> phonetic.IpaPair:
