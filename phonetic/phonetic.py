@@ -4,7 +4,7 @@ Common definition for Latin phonetic alphabets
 
 import sys
 from typing import Callable, Dict, List, Literal, NamedTuple, Optional, Sequence, Set, Tuple, Type, Union
-from .ctl_util import Str, normalize, str_get_greedy, str_get_tone
+from .ctl_util import Str, normalize, strip_non_letter, str_get_greedy, str_get_tone
 
 IpaPair = Tuple[str, str]
 
@@ -220,9 +220,14 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
         return result
 
     initial = get_patched(initial, INITIAL, src_parts, patch_ipa_part)
+    post_initial = after_initial(ipa_parts)
+    if post_initial:
+        initial = initial.rstrip(str(strip_non_letter(post_initial)[0]))
     if initial:
         ipa_parts.initial.append(initial)
     coda = get_patched(coda, CODA, src_parts, patch_ipa_part)
+    if ipa_parts.nucleus[-1]:
+        coda = coda.lstrip(str(strip_non_letter(ipa_parts.nucleus[-1])[-1]))
     if coda:
         ipa_parts.coda.append(coda)
 

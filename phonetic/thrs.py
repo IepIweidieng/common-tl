@@ -6,7 +6,7 @@ Compatible with Tongyong Pinyin for Taiwanese Hakka (臺灣客語通用拼音方
 from typing import List, Optional, cast
 from . import ctl_util
 from . import phonetic
-from .phonetic import IpaPair, Str, _Parts, Part, Branch, PhoneSpec, PhoneSet, PhoneDict, after_initial
+from .phonetic import Str, _Parts, Part, Branch, PhoneSpec, PhoneSet, PhoneDict, after_initial
 
 _PHONE_NAME = 'THRS'
 
@@ -132,27 +132,11 @@ def _s(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
         }).get(after_initial(ipa), 's')
     return _s
 
-def _m(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
-        return cast(PhoneDict, {
-            'm̩': ''
-        }).get(ipa.nucleus[-1], 'm')
-    return _m
-
-def _n(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
-        return cast(PhoneDict, {
-            'n̩': ''
-        }).get(ipa.nucleus[-1], 'n')
-    return _n
-
 def _ng(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
     if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'i': 'ȵ',
-        }).get(after_initial(ipa)) or cast(PhoneDict, {
-            'ŋ̍': ''
-        }).get(ipa.nucleus[-1], 'ŋ')
+        }).get(after_initial(ipa), 'ŋ')
     return _ng
 
 
@@ -160,7 +144,7 @@ _THRS_INITIAL_LIST: PhoneDict = {
     'b': 'p',   'd': 't',                                         'g': 'k',
     'p': 'pʰ',  't': 'tʰ',                                        'k': 'kʰ',
     'bb': 'b',  'l': 'l',
-    'm': _m,    'n': _n,                                          'ng': _ng,
+    'm': 'm',   'n': 'n',                                         'ng': _ng,
                 'z': ['t', _s],       'zh': 'tʃ',    'j': 'tɕ',
                 'c': ['t', _s, 'ʰ'],  'ch': 'tʃʰ',   'q': 'tɕʰ',
     'f': 'f',   's': [_s],            'sh': 'ʃ',     'x': 'ɕ',    'h': 'h',
@@ -203,32 +187,10 @@ _THRS_NUCLEUS_LIST: PhoneDict = {
 }
 
 
-def _CODA_M_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
-        return cast(PhoneDict, {
-            'm̩': ''
-        }).get(ipa.nucleus[-1], 'm')
-    return _CODA_M_BRANCH
-
-def _CODA_N_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
-        return cast(PhoneDict, {
-            'n̩': ''
-        }).get(ipa.nucleus[-1], 'n')
-    return _CODA_N_BRANCH
-
-def _CODA_NG_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
-        return cast(PhoneDict, {
-            'ŋ̍': ''
-        }).get(ipa.nucleus[-1], 'ŋ')
-    return _CODA_NG_BRANCH
-
-
 _THRS_CODA_LIST: PhoneDict = {
-    'm': _CODA_M_BRANCH,
-    'n': _CODA_N_BRANCH,
-    'ng': _CODA_NG_BRANCH,
+    'm': 'm',
+    'n': 'n',
+    'ng': 'ŋ',
     'b': 'p̚', 'd': 't̚', 'g': 'k̚',
     'p': 'p̚', 't': 't̚', 'k': 'k̚',  # From Tongyong Pinyin for Taiwanese Hakka
     'nn': '',   # Nasalize the former vowels; mainly used in Zhao'an dialect

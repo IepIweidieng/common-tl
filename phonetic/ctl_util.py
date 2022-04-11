@@ -27,6 +27,9 @@ def normalize(str_: _StrT) -> _StrT:
     '''Decompose precomposed characters'''
     return type(str_)(unicodedata.normalize("NFD", str(str_)))
 
+def strip_non_letter(str_: Str) -> Str:
+    return type(str_)(''.join((str(ch) for ch in str_ if is_char_latin_letter(ch))))
+
 def find_first_non_roman(text: Str) -> int:
     """
     Usage & result:
@@ -39,20 +42,24 @@ def find_first_non_roman(text: Str) -> int:
             return pos
     return len(text)
 
-
 def is_char_roman(char: Str) -> bool:
-    if not (('A' <= char <= 'Z') or ('a' <= char <= 'z')
+    return (('A' <= char <= 'Z') or ('a' <= char <= 'z')
             or ('0' <= char <= '9') or (char == '#') or (char == '*')
             or (char == '-') or (char == ' ')
             or ('\u00C0' <= char <= '\u1EFF')  # Latin-1 Supplement - Latin Extended Additional
             or ('\u2C60' <= char <= '\u2C7D')  # Latin Extended-C
             or ('\uA720' <= char <= '\uA78C')  # Latin Extended-D
             or ('\uA7FB' <= char <= '\uA7FF')  # Latin Extended-D
-            or ('\uFB00' <= char <= '\uFB06')):  # Alphabetic Presentation Forms: Latin
-        return False
+            or ('\uFB00' <= char <= '\uFB06'))  # Alphabetic Presentation Forms: Latin
 
-    return True
+def is_char_digital_tone(char: Str) -> bool:
+    return ('0' <= char <= '9') or (char == '#') or (char == '*') or (char == '-')
 
+def is_char_latin_letter(char: Str) -> bool:
+    return (is_char_roman(char)
+        and not is_char_digital_tone(char)
+        and not unicodedata.category(str(char)).startswith('M')
+        and unicodedata.category(str(char)) != 'Lm')
 
 def linear_search_rightmost(first: int, last: int, eq_func: Callable[[int], bool]) -> Optional[int]:
     """
