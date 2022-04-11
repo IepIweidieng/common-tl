@@ -6,7 +6,7 @@ Compatible with Tongyong Pinyin for Taiwanese Hakka (臺灣客語通用拼音方
 from typing import List, Optional, cast
 from . import ctl_util
 from . import phonetic
-from .phonetic import Str, Part, Branch, PhoneSpec, PhoneSet, PhoneDict
+from .phonetic import IpaPair, Str, _Parts, Part, Branch, PhoneSpec, PhoneSet, PhoneDict, after_initial
 
 _PHONE_NAME = 'THRS'
 
@@ -33,31 +33,31 @@ _TONE_PREFIX = '2'
 
 # For 'ˋ'
 _vdf = Dialect('4', '8', '8', '4', '8', '4')
-def _FALLING_TONE_BRANCH(self_type: Part, thrs_coda: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+def _FALLING_TONE_BRANCH(self_type: Part, thrs: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.SRC and self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'b': _vdf, 'd': _vdf, 'nnd': _vdf, 'g': _vdf,
             'p': _vdf, 't': _vdf, 'nnt': _vdf, 'k': _vdf,  # From Tongyong Pinyin for Taiwanese Hakka
-        }).get(thrs_coda, Dialect('2', '1', '3', Variant(hsinchu='3', zhuolan='5'), '5', '2'))
+        }).get(thrs.coda[-1], Dialect('2', '1', '3', Variant(hsinchu='3', zhuolan='5'), '5', '2'))
     return _FALLING_TONE_BRANCH
 
 # For '^'
 _vdlf = dialect(dabu='4')
-def _LOW_FALLING_TONE_BRANCH(self_type: Part, thrs_coda: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+def _LOW_FALLING_TONE_BRANCH(self_type: Part, thrs: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.SRC and self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'b': _vdlf, 'd': _vdlf, 'nnd': _vdlf, 'g': _vdlf,
             'p': _vdlf, 't': _vdlf, 'nnt': _vdlf, 'k': _vdlf,  # From Tongyong Pinyin for Taiwanese Hakka
-        }).get(thrs_coda, dialect(dabu='2'))
+        }).get(thrs.coda[-1], dialect(dabu='2'))
     return _LOW_FALLING_TONE_BRANCH
 
 _vd0 = Dialect('8', '4', None, '8', None, '8')
-def _NULL_TONE_BRANCH(self_type: Part, thrs_coda: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.CODA and self_type == phonetic.TONE:
+def _NULL_TONE_BRANCH(self_type: Part, thrs: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.SRC and self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'b': _vd0, 'd': _vd0, 'nnd': _vd0, 'g': _vd0,
             'p': _vd0, 't': _vd0, 'nnt': _vd0, 'k': _vd0,  # From Tongyong Pinyin for Taiwanese Hakka
-        }).get(thrs_coda, Dialect('3', '5', None, Variant(hsinchu='5', zhuolan='7'), '7', '3'))
+        }).get(thrs.coda[-1], Dialect('3', '5', None, Variant(hsinchu='5', zhuolan='7'), '7', '3'))
     return _NULL_TONE_BRANCH
 
 _THRS_TONE_LIST: PhoneDict = Dialect(
@@ -125,39 +125,34 @@ _THRS_TONE_LIST: PhoneDict = Dialect(
     },
 )
 
-def _s(self_type: Part, medial: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.MEDIAL_IPA and self_type == phonetic.INITIAL:
+def _s(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'i': Dialect('ɕ', 's', 's', 's', 's', 'ɕ'),
-        }).get(medial and medial[:1], 's')
+        }).get(after_initial(ipa), 's')
     return _s
 
-def _m(self_type: Part, nucleus: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+def _m(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'm̩': ''
-        }).get(nucleus, 'm')
+        }).get(ipa.nucleus[-1], 'm')
     return _m
 
-def _n(self_type: Part, nucleus: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
+def _n(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'n̩': ''
-        }).get(nucleus, 'n')
+        }).get(ipa.nucleus[-1], 'n')
     return _n
 
-def _INITIAL_NG_BRANCH(self_type: Part, nucleus: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.NUCLEUS_I_IPA and self_type == phonetic.INITIAL:
-        return cast(PhoneDict, {
-            'ŋ̍': ''
-        }).get(nucleus, 'ŋ')
-    return _INITIAL_NG_BRANCH
-
-def _ng(self_type: Part, medial: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.MEDIAL_IPA and self_type == phonetic.INITIAL:
+def _ng(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.INITIAL:
         return cast(PhoneDict, {
             'i': 'ȵ',
-        }).get(medial and medial[:1], _INITIAL_NG_BRANCH)
+        }).get(after_initial(ipa)) or cast(PhoneDict, {
+            'ŋ̍': ''
+        }).get(ipa.nucleus[-1], 'ŋ')
     return _ng
 
 
@@ -175,29 +170,23 @@ _THRS_INITIAL_LIST: PhoneDict = {
 
 _THRS_MEDIAL_LIST: PhoneSet = {'i', 'u'}
 
-def _NULL_NUCLEUS_BRANCH_INITIAL(self_type: Part, thrs_initial: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.INITIAL
+def _NULL_NUCLEUS_BRANCH(self_type: Part, thrs: _Parts, branch_type: Branch) -> PhoneSpec:
+    if (branch_type == phonetic.SRC
             and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
         return cast(PhoneDict, {
             'ng': 'ŋ̍', 'n': 'n̩', 'm': 'm̩',
-        }).get(thrs_initial, '')
-    return _NULL_NUCLEUS_BRANCH_INITIAL
-
-def _NULL_NUCLEUS_BRANCH(self_type: Part, thrs_coda: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.CODA
-            and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
-        return cast(PhoneDict, {
+        }).get(thrs.coda[0]) or cast(PhoneDict, {
             'ng': 'ŋ̍', 'n': 'n̩', 'm': 'm̩',
-        }).get(thrs_coda, _NULL_NUCLEUS_BRANCH_INITIAL)
+        }).get(thrs.initial[-1], '')
     return _NULL_NUCLEUS_BRANCH
 
 _closed_o = Dialect('ɔ', 'ɔ', 'ɔ', 'ɔ', 'o', 'ɔ')
-def _o(self_type: Part, thrs_coda: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if (branch_type == phonetic.CODA
+def _o(self_type: Part, thrs: _Parts, branch_type: Branch) -> PhoneSpec:
+    if (branch_type == phonetic.SRC
         and (self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF)):
         return cast(PhoneDict, {
             None: _closed_o,
-        }).get(thrs_coda, 'ɔ')
+        }).get(thrs.coda[0], 'ɔ')
     return _o
 
 
@@ -214,25 +203,25 @@ _THRS_NUCLEUS_LIST: PhoneDict = {
 }
 
 
-def _CODA_M_BRANCH(self_type: Part, nucleus: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+def _CODA_M_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
         return cast(PhoneDict, {
             'm̩': ''
-        }).get(nucleus, 'm')
+        }).get(ipa.nucleus[-1], 'm')
     return _CODA_M_BRANCH
 
-def _CODA_N_BRANCH(self_type: Part, nucleus: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+def _CODA_N_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
         return cast(PhoneDict, {
             'n̩': ''
-        }).get(nucleus, 'n')
+        }).get(ipa.nucleus[-1], 'n')
     return _CODA_N_BRANCH
 
-def _CODA_NG_BRANCH(self_type: Part, nucleus: Optional[Str], branch_type: Branch) -> PhoneSpec:
-    if branch_type == phonetic.NUCLEUS_F_IPA and self_type == phonetic.CODA:
+def _CODA_NG_BRANCH(self_type: Part, ipa: _Parts, branch_type: Branch) -> PhoneSpec:
+    if branch_type == phonetic.IPA and self_type == phonetic.CODA:
         return cast(PhoneDict, {
             'ŋ̍': ''
-        }).get(nucleus, 'ŋ')
+        }).get(ipa.nucleus[-1], 'ŋ')
     return _CODA_NG_BRANCH
 
 

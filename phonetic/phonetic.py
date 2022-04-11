@@ -3,33 +3,45 @@ Common definition for Latin phonetic alphabets
 '''
 
 import sys
-from typing import Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Type, Union
+from typing import Callable, Dict, List, Literal, NamedTuple, Optional, Sequence, Set, Tuple, Type, Union
 from .ctl_util import Str, normalize, str_get_greedy, str_get_tone
 
 IpaPair = Tuple[str, str]
 
+PhoneSegments = List[Optional[Str]]
+
 # Syllable component types
+class _Parts(NamedTuple):
+    initial: PhoneSegments
+    medial: PhoneSegments
+    nucleus: PhoneSegments
+    coda: PhoneSegments
+    tone: PhoneSegments
+
+class SrcParts(_Parts): # Components in the source phonetic system
+    pass
+class IpaParts(_Parts):
+    pass
+
 INITIAL = "initial"
 MEDIAL = "medial"
 NUCLEUS_I = "nucleus_i"  # Nucleus which nexts to initial or medial
 NUCLEUS_F = "nucleus_f"  # Nucleus which nexts to final
 NUCLEUS_IF = "nucleus_if"  # Nucleus which both nexts to initial or medial and nexts to final
 CODA = "coda"
-INITIAL_IPA = "initial_ipa"
-MEDIAL_IPA = "medial_ipa"
-NUCLEUS_I_IPA = "nucleus_i_ipa"
-NUCLEUS_F_IPA = "nucleus_f_ipa"
-NUCLEUS_IF_IPA = "nucleus_if_ipa"
-CODA = "coda"
 TONE = "tone"
+
+SRC = "src" # The source phonetic system
+IPA = "ipa"
 
 _IPA_NASALIZATION = '\u0303'  # ' ̃ '
 
 Part = Literal['medial', 'nucleus_i', 'nucleus_if', 'nucleus_f', 'tone', 'initial', 'coda']
-Branch = Literal['coda', 'medial', 'initial', 'medial_ipa', 'nucleus_i_ipa', 'nucleus_f_ipa']
-Phone = PhoneSpec = Union[Str, Callable[[Part, Optional[Str], Branch], 'PhoneSpec'], Sequence['PhoneSpec']]
+Branch = Literal['src', 'ipa']
+Phone = PhoneSpec = Union[Str, Callable[[Part, _Parts, Branch], 'PhoneSpec'], Sequence['PhoneSpec']]
 PhoneSet = Set[Optional[Str]]
 PhoneDict = Dict[Optional[Str], PhoneSpec]
+PhoneCtxDict = Dict[Tuple[Optional[Str], Optional[Str]], PhoneSpec]
 
 def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone_prefix: str,
         null_phones: Tuple[Phone, Phone, Phone, Phone, Phone],
@@ -45,6 +57,9 @@ def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone
             NUCLEUS_LIST=nucleus_list, CODA_LIST=coda_list, TONE_LIST=tone_list,
         NASALIZATION=nasalization
     ))
+
+def after_initial(parts: _Parts) -> Optional[Str]:
+    return ([v for v in sum((parts.medial, parts.nucleus), []) if v] or [None])[0]
 
 def _report_invalid(obj: PhoneSpec, catagory: str) -> None:
     print('Warning: ', obj,
@@ -64,6 +79,9 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
     dialect = dialect and dialect.replace("'", '_').lower()
     variant = variant and variant.replace("'", '_').lower()
 
+    src_parts = SrcParts([], [], [], [], [])
+    ipa_parts = IpaParts([], [], [], [], [])
+
     tone_list = phone.TONE_LIST
     if isinstance(tone_list, phone.DIALECT):
         assert dialect is not None
@@ -80,10 +98,16 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
         (str_tone, tone, phone_no_tone) = (
             str_tone_neutral, tone_neutral, phone_no_tone_neutral)
 
+    if str_tone:
+        src_parts.tone.append(str_tone)
+
     offset = 0
 
     (str_initial, offset, initial) = str_get_greedy(
         phone_no_tone, offset, phone.INITIAL_LIST, phone.NULL_INITIAL)
+
+    if str_initial:
+        src_parts.initial.append(str_initial)
 
     # Get nucleus0
     (str_medial, medial) = (None, '')
@@ -107,25 +131,35 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
         nucleus0 = medial
         medial = phone.NULL_MEDIAL
 
+    if str_medial:
+        src_parts.medial.append(str_medial)
+    if str_nucleus0:
+        src_parts.nucleus.append(str_nucleus0)
+        if str_nucleus1:
+            src_parts.nucleus.append(str_nucleus1)
+
     (str_coda, offset, coda) = str_get_greedy(
         phone_no_tone, offset, phone.CODA_LIST, phone.NULL_CODA)
 
+    if str_coda:
+        src_parts.coda.append(str_coda)
+
+    for part in src_parts:
+        if len(part) == 0:
+            part.append(None)
+
     PatchFunc = Callable[[Optional[PhoneSpec], Part], Optional[PhoneSpec]]
-    def get_patched(component: Optional[PhoneSpec], self_type: Part, str_component: Optional[Str], custom_patch: Optional[PatchFunc] = None) -> str:
+    def get_patched(phone_spec: Optional[PhoneSpec], self_type: Part, parts: _Parts, custom_patch: Optional[PatchFunc] = None) -> str:
         """
         Perform a series of one-pass patches on a syllable component
         """
-        result = component
+        result = phone_spec
         if callable(custom_patch):
             result = custom_patch(result, self_type)
         else:
-            # Patch the syllable component according to the phonetic of non-nucleus syllable components, from coda to initial
+            # Patch the syllable component according to the phonetic of non-nucleus syllable components
             if callable(result):
-                result = result(self_type, str_coda, CODA)
-            if callable(result):
-                result = result(self_type, str_medial, MEDIAL)
-            if callable(result):
-                result = result(self_type, str_initial, INITIAL)
+                result = result(self_type, parts, SRC)
         # Patch the syllable component according to the dialect and the variant
         if isinstance(result, phone.DIALECT):
             assert dialect is not None
@@ -136,56 +170,72 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
         # Concatenate the syllable component defined with multiple parts
         if isinstance(result, list):
             new_result = [
-                get_patched(ipa_part, self_type, str_component, custom_patch)
-                    for ipa_part in result]
+                get_patched(spec, self_type, parts, custom_patch)
+                    for spec in result]
             result = ''.join(new_result)
         # Patch failes if the result is not a string
         if not isinstance(result, str):
-            _report_invalid(f'{str_component} -> {component} -> {result}', self_type)
-            result = f'{str_component}?'
+            _report_invalid(f'{parts} -> {phone_spec} -> {result}', self_type)
+            result = f'{parts}?'
         return result
 
-    def nasalization(vowels: str) -> str:
-        new_vowels: List[str] = []
-        for vowel_item in vowels:
-            new_vowels.append(vowel_item)
-            new_vowels.append(_IPA_NASALIZATION)
-        return ''.join(new_vowels)
+    def nasalize(segms: PhoneSegments) -> None:
+        new_segms: PhoneSegments = []
+        for vowels in segms:
+            if vowels is None:
+                continue
+            new_vowels: List[str] = []
+            for vowel in vowels:
+                new_vowels.append(str(vowel))
+                new_vowels.append(_IPA_NASALIZATION)
+            new_segms.append(''.join(new_vowels))
+        segms.clear()
+        segms.extend(new_segms)
 
     # Patch syllable components
-    medial = get_patched(medial, MEDIAL, str_medial)
-    nucleus0 = get_patched(nucleus0, NUCLEUS_I if nucleus1 else NUCLEUS_IF, str_nucleus0)
-    nucleus1 = get_patched(nucleus1, NUCLEUS_F, str_nucleus1)
-    tone = get_patched(tone, TONE, str_tone)
+    medial = get_patched(medial, MEDIAL, src_parts)
+    if medial:
+        ipa_parts.medial.append(medial)
+    nucleus0 = get_patched(nucleus0, NUCLEUS_I if nucleus1 else NUCLEUS_IF, src_parts)
+    if nucleus0:
+        ipa_parts.nucleus.append(nucleus0)
+    nucleus1 = get_patched(nucleus1, NUCLEUS_F, src_parts)
+    if nucleus1:
+        ipa_parts.nucleus.append(nucleus1)
+    tone = get_patched(tone, TONE, src_parts)
+    ipa_parts.tone.append(phone.TONE_PREFIX)
+    if tone:
+        ipa_parts.tone.append(tone)
 
-    # Patch consonantal syllable components according to the nearest syllable component
+    for k, part in ipa_parts._asdict().items():
+        if len(part) == 0 and k not in {INITIAL, CODA}:
+            part.append(None)
 
-    def patch_initial(initial: Optional[PhoneSpec], self_type: Part) -> Optional[PhoneSpec]:
-        result = initial
+    # Patch consonantal syllable components
+
+    def patch_ipa_part(phone_spec: Optional[PhoneSpec], self_type: Part) -> Optional[PhoneSpec]:
+        result = phone_spec
         if callable(result):
-            result = result(self_type, medial or nucleus0, MEDIAL_IPA)
-        if callable(result):
-            result = result(self_type, nucleus0, NUCLEUS_I_IPA)
+            result = result(self_type, ipa_parts, IPA)
         return result
-    initial = get_patched(initial, INITIAL, str_initial, patch_initial)
 
-    def patch_coda(coda: Optional[PhoneSpec], self_type: Part) -> Optional[PhoneSpec]:
-        result = coda
-        if callable(result):
-            result = result(self_type, nucleus1 or nucleus0, NUCLEUS_F_IPA)
-        return result
-    coda = get_patched(coda, CODA, str_coda, patch_coda)
+    initial = get_patched(initial, INITIAL, src_parts, patch_ipa_part)
+    if initial:
+        ipa_parts.initial.append(initial)
+    coda = get_patched(coda, CODA, src_parts, patch_ipa_part)
+    if coda:
+        ipa_parts.coda.append(coda)
 
     # Apply nasalization to the vowels if needed
     if str_coda is not None and str_coda.startswith(phone.NASALIZATION):
-        medial = nasalization(medial)
-        nucleus0 = nasalization(nucleus0)
-        nucleus1 = nasalization(nucleus1)
+        nasalize(ipa_parts.medial)
+        nasalize(ipa_parts.nucleus)
+
+    ninitial = sum((bool(v) for v in ipa_parts.initial))
+    ipa_list = [str(phone) for phone in sum(ipa_parts, []) if phone]
 
     # Validity check
-    if (offset != len(phone_no_tone)
-            or any(v.endswith("?") for v in (initial, medial, nucleus0, nucleus1, coda, tone))):
+    if offset != len(phone_no_tone) or any(v.endswith("?") for v in ipa_list):
         _report_invalid(f'{syll} -> {phone_no_tone}', phone.NAME)
-        (initial, medial, nucleus0, nucleus1, coda, tone) = (v.rstrip("?")
-            for v in (initial, medial, nucleus0, nucleus1, coda, tone))
-    return (initial, f'{medial}{nucleus0}{nucleus1}{coda}{phone.TONE_PREFIX}{tone}')
+        ipa_list = [v.rstrip("?") for v in ipa_list]
+    return (''.join(ipa_list[:ninitial]), ''.join(ipa_list[ninitial:]))
