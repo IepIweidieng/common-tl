@@ -28,7 +28,8 @@ _TONE_PREFIX = ''
 def _NULL_TONE_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
     if self_type == phonetic.TONE:
         return cast(PhoneDict, {
-            'p': '4', 't': '4', 'k': '4', 'h': '4', 'nnh': '4',
+            'p': '4', 't': '4', 'k': '4', 'h': '4',
+            'nnh': '4', 'mh': '4', 'ngh': '4',
         }).get(tl.coda[-1], '1')
     return _NULL_TONE_BRANCH
 
