@@ -3,10 +3,10 @@ THRS - Taiwanese Hakka Romanization System (臺灣客家語拼音方案)
 Compatible with Tongyong Pinyin for Taiwanese Hakka (臺灣客語通用拼音方案)
 '''
 
-from typing import List, Optional, cast
+from typing import Dict, List, Optional, cast
 from . import ctl_util
 from . import phonetic
-from .phonetic import Str, SrcParts, Part, PhoneSpec, PhoneSet, PhoneDict, after_initial
+from .phonetic import GraphemeDict, Str, SrcParts, Part, PhoneSpec, PhoneSet, PhoneDict, after_initial
 
 _PHONE_NAME = 'THRS'
 
@@ -37,7 +37,6 @@ def _FALLING_TONE_BRANCH(self_type: Part, thrs: SrcParts) -> PhoneSpec:
     if self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'b': _vdf, 'd': _vdf, 'nnd': _vdf, 'g': _vdf,
-            'p': _vdf, 't': _vdf, 'nnt': _vdf, 'k': _vdf,  # From Tongyong Pinyin for Taiwanese Hakka
         }).get(thrs.coda[-1], Dialect('2', '1', '3', Variant(hsinchu='3', zhuolan='5'), '5', '2'))
     return _FALLING_TONE_BRANCH
 
@@ -47,7 +46,6 @@ def _LOW_FALLING_TONE_BRANCH(self_type: Part, thrs: SrcParts) -> PhoneSpec:
     if self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'b': _vdlf, 'd': _vdlf, 'nnd': _vdlf, 'g': _vdlf,
-            'p': _vdlf, 't': _vdlf, 'nnt': _vdlf, 'k': _vdlf,  # From Tongyong Pinyin for Taiwanese Hakka
         }).get(thrs.coda[-1], dialect(dabu='2'))
     return _LOW_FALLING_TONE_BRANCH
 
@@ -56,7 +54,6 @@ def _NULL_TONE_BRANCH(self_type: Part, thrs: SrcParts) -> PhoneSpec:
     if self_type == phonetic.TONE:
         return cast(PhoneDict, {
             'b': _vd0, 'd': _vd0, 'nnd': _vd0, 'g': _vd0,
-            'p': _vd0, 't': _vd0, 'nnt': _vd0, 'k': _vd0,  # From Tongyong Pinyin for Taiwanese Hakka
         }).get(thrs.coda[-1], Dialect('3', '5', None, Variant(hsinchu='5', zhuolan='7'), '7', '3'))
     return _NULL_TONE_BRANCH
 
@@ -190,12 +187,22 @@ _THRS_CODA_LIST: PhoneDict = {
     'n': 'n',
     'ng': 'ŋ',
     'b': 'p̚', 'd': 't̚', 'g': 'k̚',
-    'p': 'p̚', 't': 't̚', 'k': 'k̚',  # From Tongyong Pinyin for Taiwanese Hakka
     'nn': '',   # Nasalize the former vowels; mainly used in Zhao'an dialect
     'nnd': 't̚',  # Nasalize the former vowels and then append a 't̚'; used in Zhao'an dialect
-    'nnt': 't̚',
 }
 _THRS_NASALIZATION = 'nn'
+
+# For converting Tongyong Pinyin for Taiwanese Hakka to THRS
+_coda_tongyong_to_thrs: GraphemeDict = {
+    'p': 'b', 't': 'd', 'k': 'g',
+}
+def _THRS_PRE_PROCESS(syll: Str) -> Str:
+    for ri, ch in enumerate(reversed(syll)):
+        if ctl_util.is_char_latin_letter(ch):
+            if ch in _coda_tongyong_to_thrs.keys():
+                syll = type(syll)(f'{syll[:-(ri + 1)]}{_coda_tongyong_to_thrs.get(ch)}{syll[ri + 1:]}')
+            break
+    return syll
 
 '''
 _FINAL_LIST = (
@@ -234,7 +241,8 @@ THRS = phonetic.def_phonetic(
     _PHONE_NAME, Dialect, Variant, _TONE_PREFIX,
     ('', '', _NULL_NUCLEUS_BRANCH, '', _NULL_TONE_BRANCH),
     (_THRS_INITIAL_LIST, _THRS_MEDIAL_LIST, _THRS_NUCLEUS_LIST, _THRS_CODA_LIST, _THRS_TONE_LIST),
-    _THRS_NASALIZATION
+    _THRS_NASALIZATION,
+    _THRS_PRE_PROCESS,
 )
 
 def thrs_syllable_to_ipa(thrs_: Str, dialect: Optional[str] = 'sixian', variant: Optional[str] = None) -> phonetic.IpaPair:

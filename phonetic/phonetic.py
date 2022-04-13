@@ -38,11 +38,13 @@ Phone = PhoneSpec = Union[Str, Callable[[Part, SrcParts], 'PhoneSpec'], Sequence
 PhoneSet = Set[Optional[Str]]
 PhoneDict = Dict[Optional[Str], PhoneSpec]
 PhoneCtxDict = Dict[Tuple[Optional[Str], Optional[Str]], PhoneSpec]
+GraphemeDict = Dict[Str, Str]
 
 def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone_prefix: str,
         null_phones: Tuple[Phone, Phone, Phone, Phone, Phone],
         phone_lists: Tuple[PhoneDict, PhoneSet, PhoneDict, PhoneDict, PhoneDict],
         nasalization: str,
+        pre_process: Optional[Callable[[Str], Str]] = None,
         post_process: Optional[Callable[[IpaParts], IpaParts]] = None) -> Type:
     (null_initial, null_medial, null_nucleus, null_coda, null_tone) = null_phones
     (initial_list, medial_list, nucleus_list, coda_list, tone_list) = phone_lists
@@ -53,6 +55,7 @@ def def_phonetic(name: str, dialect: Sequence[str], variant: Sequence[str], tone
         INITIAL_LIST=initial_list, MEDIAL_LIST=medial_list,
             NUCLEUS_LIST=nucleus_list, CODA_LIST=coda_list, TONE_LIST=tone_list,
         NASALIZATION=nasalization,
+        PRE_PROCESS=pre_process,
         POST_PROCESS=post_process,
     ))
 
@@ -74,6 +77,8 @@ def phonetic_syllable_to_ipa(phone: Type, syll: Str, dialect: Optional[str], var
     A vowel becomes a medial if it is in the medial list and another vowel presents.
     """
     syll = normalize(syll)
+    if phone.PRE_PROCESS:
+        syll = phone.PRE_PROCESS(syll)
     dialect = dialect and dialect.replace("'", '_').lower()
     variant = variant and variant.replace("'", '_').lower()
 

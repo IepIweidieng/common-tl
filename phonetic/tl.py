@@ -2,10 +2,11 @@
 TL - Taiwanese Romanization System (臺灣閩南語羅馬字拼音方案)
 '''
 
+from functools import reduce
 from typing import List, Optional, cast
 from . import ctl_util
 from . import phonetic
-from .phonetic import Str, Part, SrcParts, IpaParts, PhoneSpec, PhoneSet, PhoneDict, PhoneCtxDict, after_initial
+from .phonetic import GraphemeDict, Str, Part, SrcParts, IpaParts, PhoneSpec, PhoneSet, PhoneDict, PhoneCtxDict, after_initial
 
 _PHONE_NAME = 'TL'
 
@@ -65,14 +66,10 @@ _TL_INITIAL_LIST: PhoneDict = {
     'p': 'p',   't': 't',                    'k': 'k',
     'ph': 'pʰ', 'th': 'tʰ',                  'kh': 'kʰ',
     'b': 'b',   'l': 'ᵈl',                   'g': 'g',
-                'dl': 'ᵈl',
     'm': 'm',   'n': 'n',     'gn': 'ȵ',     'ng': 'ng',
                 'ts': ['t', _s],
                 'tsh': ['t', _s, 'ʰ'],
-                'ch': ['t', _s],
-                'chh': ['t', _s, 'ʰ'],
-                'dj': [Dialect('d', ''), _z],  # For Taiwanese Choân-chiu accent
-                'j': [Dialect('d', ''), _z],   # For Taiwanese Chiang-chiu accent
+                'j': [Dialect('d', ''), _z],
                 's': [_s],                     'h': 'h',
 }
 
@@ -89,7 +86,7 @@ def _O_BRANCH(self_type: Part, tl: SrcParts) -> PhoneSpec:
     if self_type == phonetic.NUCLEUS_I or self_type == phonetic.NUCLEUS_IF:
         return cast(PhoneDict, {
             'ng': 'ɔ', 'm': 'ɔ', 'p': 'ɔ', 'k': 'ɔ',
-            'nn': 'ɔ', 'ⁿ': 'ɔ', 'nnh': 'ɔ', 'ⁿh': 'ɔ',
+            'nn': 'ɔ', 'nnh': 'ɔ',
         }).get(tl.coda[0], variant(northern='o', southern='ə'))
     return _O_BRANCH
 
@@ -128,7 +125,6 @@ _TL_NUCLEUS_LIST: PhoneDict = {
     'or': 'ə',
     'o': _O_BRANCH,
     'oo': 'ɔ',
-    'o͘': 'ɔ',
     'i': _I_BRANCH,
     'u': 'u',
     'er': 'ɘ',  # Used in Taiwanese Choân-chiu accent
@@ -141,10 +137,19 @@ _TL_CODA_LIST: PhoneDict = {
     'n': 'n',
     'ng': 'ŋ', 'ngh': 'ŋʔ',
     'p': 'p̚', 't': 't̚', 'k': 'k̚', 'h': 'ʔ',
-    'nn': '', 'ⁿ': '',   # Nasalize the former vowels
-    'nnh': 'ʔ', 'ⁿh': 'ʔ',  # Nasalize the former vowels and then append a 'ʔ'
+    'nn': '',   # Nasalize the former vowels
+    'nnh': 'ʔ',  # Nasalize the former vowels and then append a 'ʔ'
 }
 _TL_NASALIZATION = 'nn'
+
+_src_to_tl: GraphemeDict = {
+    # Graphemes in Pe̍h-ōe-jī variants (one-to-one)
+    'ch': 'ts', 'chh': 'tsh', 'ⁿ': 'nn', 'o͘': 'oo', 'ou': 'oo',
+    # Graphemes in Common TL (many-to-one)
+    'dl': 'l', 'dj': 'j',
+}
+def _TL_PRE_PROCESS(syll: Str) -> Str:
+    return reduce(lambda x, y: x.replace(str(y[0]), str(y[1])), _src_to_tl.items(), syll)
 
 def _TL_POST_PROCESS(ipa: IpaParts) -> IpaParts:
     if ipa.coda[-1] in {'mʔ', 'ŋʔ'}: # Stray pseudo-coda
@@ -180,6 +185,7 @@ TL = phonetic.def_phonetic(
     ('', '', _NULL_NUCLEUS_BRANCH, '', _NULL_TONE_BRANCH),
     (_TL_INITIAL_LIST, _TL_MEDIAL_LIST, _TL_NUCLEUS_LIST, _TL_CODA_LIST, _TL_TONE_LIST),
     _TL_NASALIZATION,
+    _TL_PRE_PROCESS,
     _TL_POST_PROCESS,
 )
 
