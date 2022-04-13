@@ -61,6 +61,13 @@ def _z(self_type: Part, tl: SrcParts) -> PhoneSpec:
         }).get(after_initial(tl), 'z')
     return _z
 
+def _j(self_type: Part, ipa: SrcParts) -> PhoneSpec:
+    if self_type == phonetic.INITIAL:
+        if after_initial(ipa) == 'i' and ipa.coda[0] and ipa.coda[0].startswith('nn'):
+            return 'ȵ' # = TL 'gn'
+        return [Dialect('d', ''), _z]
+    return _j
+
 
 _TL_INITIAL_LIST: PhoneDict = {
     'p': 'p',   't': 't',                    'k': 'k',
@@ -69,7 +76,7 @@ _TL_INITIAL_LIST: PhoneDict = {
     'm': 'm',   'n': 'n',     'gn': 'ȵ',     'ng': 'ng',
                 'ts': ['t', _s],
                 'tsh': ['t', _s, 'ʰ'],
-                'j': [Dialect('d', ''), _z],
+                'j': _j,
                 's': [_s],                     'h': 'h',
 }
 
@@ -154,6 +161,11 @@ def _TL_PRE_PROCESS(syll: Str) -> Str:
 def _TL_POST_PROCESS(ipa: IpaParts) -> IpaParts:
     if ipa.coda[-1] in {'mʔ', 'ŋʔ'}: # Stray pseudo-coda
         ipa.coda[-1] = f'{ipa.coda[-1]}?' # Mark as an invalid combination
+    # TL 'gni?'/'ji?nn' -> CTL 'gn?' if `?` != ''
+    if ipa.initial[-1] == 'ȵ' and ipa.medial[0] and ipa.medial[0].startswith('i'):
+        del ipa.medial[0]
+        if not len(ipa.medial):
+            ipa.medial.append(None)
     return ipa
 
 '''
