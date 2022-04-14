@@ -113,6 +113,7 @@ TL | IPA | CTL | 備註
 :---: | :---: | :---: | ---
 **l** | [d]\~&#8288;[ɾ]\~&#8288;[l]&nbsp;"**[ᵈl]**" | **⟨dl⟩** |
 m**◌** <br> n**◌** <br> ng**◌** | [m**◌&#8288;̃** ] <br> [n**◌&#8288;̃** ] <br> [ŋ**◌&#8288;̃** ] | ⟨m**◌nn**⟩ <br> ⟨n**◌nn**⟩ <br> ⟨ng**◌nn**⟩ |
+j**inn** <br> ji**◌nn** <br> gn**◌** | [ɲ**◌&#8288;̃** ]\~[ȵ**◌&#8288;̃** ] | ⟨gn**◌nn**⟩ | Used in Taiwanese Hokkien Éng-tsēng old Chiang-chiu accent　用於臺灣閩南語永靖老漳州腔
 t**si** <br> t**shi** <br> **si** | [t**ɕi**] <br> [t**ɕʰi**] <br> [**ɕi**] | ⟨t**sci**⟩ <br> ⟨t**schi**⟩ <br> ⟨**sci**⟩ | For avoiding conflicts with THRS "zi" [t**si**], "ci" [t**shi**], and "si" [**si**] used for transcribing Taiwanese Hakka dialects other than the Sixian dialects. <br> 避免與客家語拼音方案用於拼寫四縣諸腔以外腔調的 "zi" [t**si**]、"ci" [t**shi**]、與 "si" [**si**] 衝突
 **ji** | [d**ʑi**] | ⟨d**jzi**⟩ | Choân-chiu accent <br> 偏泉州腔口音
 **ji** | [**ʑi**] | ⟨**jzi**⟩ | Chiang-chiu accent <br> 偏漳州腔口音
