@@ -72,23 +72,23 @@ The tone is artificially set to either light level tone ⟨5⟩ or light enterin
 
 | ↓Medial +&nbsp;Nucleus <br> ↓介音 +&nbsp;主要韻母 | Coda→ <br> 韻尾→ | /ʔ/ <br> ⟨-h⟩ | /◌̃/ <br> ⟨-&#8288;nn⟩ | /◌̃ʔ/ <br> ⟨-&#8288;nnh⟩ | /m/ <br> ⟨-&#8288;m⟩ | /p̚/ <br> ⟨-&#8288;p⟩ | /n/ <br> ⟨-n⟩ | /t̚/ <br> ⟨-&#8288;t⟩ | /ŋ/ <br> ⟨-&#8288;ng⟩ | /k̚/ <br> ⟨-&#8288;k⟩ | /j/ <br> ⟨-i⟩ | /jʔ/ ⟨-&#8288;ih⟩ | /◌̃j̃/ <br> ⟨-&#8288;inn⟩ | /◌̃j̃ʔ/ <br> ⟨-&#8288;innh⟩ | /w/ <br> ⟨-u⟩ | /wʔ/ <br> ⟨-&#8288;uh⟩ | /◌̃w̃/ <br> ⟨-&#8288;unn⟩ | /◌̃w̃ʔ/ ⟨-&#8288;unnh⟩ |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| /a/ ⟨a⟩ | á | a̍h | ânn,âⁿ | a̍nnh,a̍ⁿh | âm | a̍p | ân | a̍t | âng | a̍k | âi | **a̍ih** | âinn,âiⁿ | **a̍innh,(?)** | âu | a̍uh | | **a̍unnh,(?)** |
-| /e/ ⟨e⟩ | ê | e̍h | ênn,êⁿ | e̍nnh,e̍ⁿh | | | (iân) | (ia̍t) | (îng,êng) | (i̍k,e̍k) | | | | | | | | |
+| /a/ ⟨a⟩ | á | a̍h | ânn,âⁿ | a̍nnh,a̍hⁿ | âm | a̍p | ân | a̍t | âng | a̍k | âi | **a̍ih** | âinn,âiⁿ | **a̍innh,(?)** | âu | a̍uh | | **a̍unnh,(?)** |
+| /e/ ⟨e⟩ | ê | e̍h | ênn,êⁿ | e̍nnh,e̍hⁿ | | | (iân) | (ia̍t) | (îng,êng) | (i̍k,e̍k) | | | | | | | | |
 | /ɛ/ ⟨ee⟩ | **êe,ê͘** | **e̍eh,e̍͘&nbsp;h** | **êenn,ê͘&nbsp;ⁿ** | | | | (iân) | (ia̍t) | **êng,ê͘&nbsp;ng** | **e̍k,e̍͘&nbsp;k** | | | | | | | | |
 | /ɨ/ ⟨ir⟩ | **îr,(î/û)** [ɹ̩]\~[ɨ] | | | | **îrm,(îm/ûm)** | **i̍rp,(i̍p/u̍p)** | **îrn,(în/ûn)** | **i̍rt,(i̍t/u̍t)** | **îrng,(êng/ûng)** | **i̍rk,(e̍k/u̍k)** | | | **irînn,(êng/oâiⁿ)** | | | | | |
 | /ɘ/ ⟨er⟩ | **êr,(ê)** | **e̍rh,(e̍h)** | | | (m̂ [ə̯m̩]) | | | | (n̂g [ə̯ŋ̍]) | | | | | | **erû,(iô)** /&#8288;ɘ̯u/ | | | |
 | /ɘ̯e/ ⟨ere⟩ | **erê,(ôe)** | **ere̍h,(oe̍h)** | | | | | | | | | | | | | | | | |
-| /i/ ⟨i⟩ | î | i̍h | înn,îⁿ | i̍nnh,i̍ⁿh | îm | i̍p | în | i̍t | (îng,êng) | (i̍k,e̍k) | | | | | | | | |
+| /i/ ⟨i⟩ | î | i̍h | înn,îⁿ | i̍nnh,i̍hⁿ | îm | i̍p | în | i̍t | (îng,êng) | (i̍k,e̍k) | | | | | | | | |
 | /iə̯/ ⟨ier⟩ | | | | | | | | | îng,êng | i̍k,e̍k | | | | | | | | |
 | (/jo/ [jə]\~[jɤ] ⟨io/ior⟩) | (iô\(r\),(iô)) | (io̍\(r\)h,(io̍h)) | | | | | | | (îng,êng) | (i̍k,e̍k) | | | | | | | | |
 | /jo/ [jo] ⟨io⟩ | iô | io̍h | | | | | | | | | | | | | | | | |
-| /jɔ/ ⟨ioo⟩ | **iôo,(?)** | | **iônn,(iûⁿ)** | **io̍nnh,(iu̍ⁿh)** | | | | | iông | io̍k | | | | | | | | |
-| /ju/ ⟨iu⟩ | iû | iu̍h | iûnn,iûⁿ | iu̍nnh,iu̍ⁿh | | | | | | | | | | | | | | |
+| /jɔ/ ⟨ioo⟩ | **iôo,(?)** | | **iônn,(iûⁿ)** | **io̍nnh,(iu̍hⁿ)** | | | | | iông | io̍k | | | | | | | | |
+| /ju/ ⟨iu⟩ | iû | iu̍h | iûnn,iûⁿ | iu̍nnh,iu̍hⁿ | | | | | | | | | | | | | | |
 | /jɛ/ ⟨iee⟩ | | | | | | | iân | ia̍t | **iêng,(êng)** | | | | | | | | | |
-| /ja/ ⟨ia⟩ | iâ | ia̍h | iânn,iâⁿ | ia̍nnh,ia̍ⁿh | iâm | ia̍p | (iân) | (ia̍t) | iâng | ia̍k | | | | | iâu | ia̍uh | iâunn,iâuⁿ | |
+| /ja/ ⟨ia⟩ | iâ | ia̍h | iânn,iâⁿ | ia̍nnh,ia̍hⁿ | iâm | ia̍p | (iân) | (ia̍t) | iâng | ia̍k | | | | | iâu | ia̍uh | iâunn,iâuⁿ | |
 | (/o/ [ə]\~[ɤ] ⟨o/or⟩) | (ô\(r\),(ô)) | (o̍\(r\)h,(o̍h)) | | | | | | | | | | | | | | | | |
 | /o/ [o] ⟨o⟩ | ô | o̍h | | | | | | | | | | | | | | | | |
-| /ɔ/ ⟨oo⟩ | ôo,ô͘ | o̍oh,o̍͘h | ônn,ôⁿ | o̍nnh,o̍ⁿh | ôm | o̍p | | | ông | o̍k | | | | | | | | |
+| /ɔ/ ⟨oo⟩ | ôo,ô͘ | o̍oh,o̍͘h | ônn,ôⁿ | o̍nnh,o̍hⁿ | ôm | o̍p | | | ông | o̍k | | | | | | | | |
 | /u/ ⟨u⟩ | û | u̍h | | | | | ûn | u̍t | | | uî,ûi /wi/ | **ui̍h,(?)** /wiʔ/ | **uînn,ûiⁿ** /w̃ĩ/ | | | | | |
 | /wa/ ⟨ua⟩ | uâ,ôa | ua̍h,oa̍h | uânn,ôaⁿ | | | | uân,oân | ua̍t,oa̍t | **uâng,(?)** | | uâi,oâi | | uâinn,oâiⁿ | | | | | |
 | /wɛ/ ⟨uee⟩ | **uêe,(ôe)** | | | | | | | | | | | | | | | | | |
