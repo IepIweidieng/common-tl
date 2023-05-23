@@ -151,7 +151,7 @@ _TL_NASALIZATION = 'nn'
 
 _src_to_tl: GraphemeDict = {
     # Graphemes in Pe̍h-ōe-jī variants (one-to-one)
-    'ch': 'ts', 'chh': 'tsh', 'ⁿ': 'nn', 'o͘': 'oo', 'ou': 'oo',
+    'ch': 'ts', 'chh': 'tsh', 'hⁿ': 'nnh', 'ⁿ': 'nn', 'o͘': 'oo', 'ou': 'oo',
     # Graphemes in Common TL (many-to-one)
     'dl': 'l', 'dj': 'j',
 }
