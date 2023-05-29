@@ -2,7 +2,7 @@
 
 ## Prerequisite
 
-- Python >= 3.6
+- Python >= 3.8
 
 ## Usage examples
 
