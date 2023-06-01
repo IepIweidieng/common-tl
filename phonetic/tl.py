@@ -65,7 +65,7 @@ def _j(self_type: Part, ipa: SrcParts) -> PhoneSpec:
     if self_type == phonetic.INITIAL:
         if after_initial(ipa) == 'i' and ipa.coda[0] and ipa.coda[0].startswith('nn'):
             return 'ȵ' # = TL 'gn'
-        return [Dialect('d', ''), _z]
+        return [Dialect('', 'd'), _z]
     return _j
 
 
