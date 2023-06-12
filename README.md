@@ -33,9 +33,9 @@ Punctuation and capitalization are ignored.
 thai3-khoong1 piong5-iu2 dlin2 ho2 dlin2 tsciah8-pa2 be7 u7-iong5 to7-dlai5 gun2-tscia1 tse7-ooh0
 ```
 
-### Convert a *sentence* (string form) in Bopomofo (Zhuyin) and TL into an IPA or Common TL
+### Convert a *string-form sentence* in Bopomofo (Zhuyin) and TL into IPA or Common TL 
 
-*Sentence* here means a Python list of `word`s. A `word` is either a string or a pair. (Explained below)
+*String-form sentence* means a Python list of *string-form word*s. A *string-form word* is a Python list of a *phonetic syllable*. (Explained below)
 
 Preprocedure:
 
@@ -112,12 +112,12 @@ CTL can be converted into the modified form of IPA and be converted back without
 
 [Reference for Typical Linguistic Syllable Component Definitions](https://en.wikipedia.org/wiki/Syllable "Syllable - Wikipedia")
 
-#### *Syllable forms* (forms to represent a syllable)
+#### Syllable forms (forms to represent a syllable)
 
 * *String form*: A `str` or an instance of `_Phonetic` (a subclass of `UserString`; see below)
 * *Pair form*: An *initial-final pair* (see below)
 
-#### *Initial-final pair* (a syllable in the pair form)
+#### *Initial-final pair* (*pair-form syllable*)
 
 A pair of an *initial* string and a *final* string in phonetic notation which represents a syllable \
 *I.e.*, `(initial, final)`
@@ -129,39 +129,52 @@ An *initial-final* pair can also be one of …
 
 Example:
 
-Word | IPA | IPA, Pair form | TL, Pair form
+Word | IPA | IPA, pair form | TL, pair form
 --- | --- | --- | ---
-*拼* *phing* <br> (Taiwanese Hokkien, Kaohsiung) | /pʰiəŋ˦/ | `('pʰ', 'iəŋ1')` | `('ph', 'ing1')`
+*拼* *phing* <br> (Taiwanese Hokkien, Kaohsiung) | /pʰiəŋ˥˥/ | `('pʰ', 'iəŋ1')` | `('ph', 'ing1')`
 
-#### *Word* forms
+#### Word forms
 
-A word represented by a list of syllables \
-*I.e.*, `[syllable_0, syllable_1, ...]`
-
-* String form: All the syllables are in the string form (typing hint: `ch2rm.PhoneticSylList`)
-* Pair form: All the syllables are in the pair form (typing hints: `ch2rm.IpaWord` & `ch2rm.CtlWord`)
+* Ordinarily written text
+* Phonetic string: A single string of the phonetic notation of the whole word.
+* String form: A list of string-form syllables of the word (typing hint: `ch2rm.PhoneticSylList`)
+* Pair form: A list of pair-form syllables of the word (typing hints: `ch2rm.IpaWord` & `ch2rm.CtlWord`)
 
 Example:
 
-Word | IPA | IPA, String form | IPA, Pair form
+Word | IPA | IPA, string form | IPA, pair form
 --- | --- | --- | ---
-*拼音* *phing-im* <br> (Taiwanese Hokkien, Kaohsiung) | /pʰiəŋ˦.im˦/ | `['pʰiəŋ1', 'im1']` | `[('pʰ', 'iəŋ1'), ('', 'im1')]`
+*拼音* *phing-im* <br> (Taiwanese Hokkien, Kaohsiung) | /pʰiəŋ˥˥.im˥˥/ | `['pʰiəŋ1', 'im1']` | `[('pʰ', 'iəŋ1'), ('', 'im1')]`
 
 #### *Sentence* forms
 
-A sentence represented by a list of *word*s \
-I.e., `[word_0, word_1, ...]`
+* Ordinarily written text
+* Segmented written text: A list of ordinarily written words of the sentence
+* Phonetic string: A single string of the phonetic notation of the whole sentence.
+* String form: A list of string-form words of the sentence
+* Pair form: A list of pair-form words of the sentence
 
-* String form: All the *word*s are in the string form
-* Pair form: All the *word*s are in the pair form
-
-In the string form, each *word* can have independent type (`str` or one of the subclasses of `_Phonetic`; see below)
+In the string form, each string-form word can have independent type (`str` or one of the subclasses of `_Phonetic`; see below)
 
 Example:
 
-Sentence | Words | TL, String form | TL, Pair form
+Sentence | Words | TL, string form | TL, pair form
 --- | --- | --- | ---
 *咱人生來自由* <br> *Lán-lâng senn-\-lâi tsū-iû* <br> (Taiwanese Hokkien, Kaohsiung) | *咱人* *lán-lâng*, <br> *生來* *senn-\-lâi*, <br> *自由* *tsū-iû* | `[['lan2', 'lang5'], ['senn1', 'lai0'], ['tsu7', 'iu5']]` | `[[('l', 'an2'), ('l', 'ang5')], [('s', 'enn1'), ('l', 'ai0')], [('ts', 'u7'), ('', 'iu5')]]`
+
+#### Comparison of Text Forms
+
+Form | Sentence | Word | Syllable
+--- | --- | --- | ---
+Ordinarily written text | Sentence text <br> & segmented text | Word text |
+Phonetic string | Phonetic sentence (string) | Phonetic word (string) | Phonetic syllable
+String form <br> (\* of string(s)) | String-form sentence (list of …) | String-form word (list of …) | Phonetic syllable
+Pair form <br> (\* of pair(s)) | Pair-form sentence (list of …) | Pair-form word (list of …) | Initial-final pair
+
+Note that:
+
+* There are no ordinarily written syllable text. One-syllable texts are treated as one-word text.
+* There are no lists of phonetic word strings. However, a list of ordinarily written word texts can result from word segmentation.
 
 ### Terms/Concepts about the Dictionary
 
@@ -173,9 +186,9 @@ A word-to-phonetic-notation dictionary built from any number of *dictionary text
 
 #### *Dictionary text file*
 
-A CSV file which uses tabs (`'\t'`) as the separator character
+A file composed of tab-separated values.
 
-Each line in the file should at least contains a `Word` field and a `_Phonetic` field
+Each line in the file should be separated into $n$ fields by $n - 1$ tabs and should at least contains a `Word` field and a `_Phonetic` field
 
 #### *(pre-)processing* (for dictionary text files)
 
@@ -196,8 +209,8 @@ A tuple of *dictinionary format token*s used for specifying the fields of a dict
 A set of subclass of `UserString`.
 
 Current support format tokens (only those not prefixed with `_` should be used):
-* `Word`: Field for the word (syllables separated by spaces)
-* `_Phonetic`: Field for the word in phonetic notation
+* `Word`: Field for the word
+* `_Phonetic`: Field for the word in phonetic notation (syllables are separated by spaces) \
 Subclasses:
     * `_RomanPhonetic`: Phonetic notation systems using Latin alphabet
         * `TaiwaneseRomanization` (`TL`)
@@ -215,23 +228,32 @@ Either a string of the path to a dictionary text file or a tuple with such a str
 
 typing hint: `ctl_dict.SrcSpec`
 
-Either a list of (typing hint: `ctl_dict.SrcList`) or a single *dictionary text file specification item*.
+Either a list of (typing hint: `ctl_dict.SrcList`) or a single dictionary text file specification item.
+
+#### Comparison of Dictionary Text File Specification Components
+
+Component | typing hint <br> (`ctl_dict.*`) | typing hint (partially expanded)
+--- | --- | ---
+Dictionary format token | | `Union[str, Type[UserString]]`
+Dictionary format specification | `Format` | `Sequence[Union[str, Type[UserString]]]]`
+Dictionary text file specification item | `SrcItem` | `Union[str, Tuple[str, Format]]`
+Dictionary text file specification | `SrcSpec` | `Union[List[SrcItem], SrcItem]`
 
 ## Text Conversion Functions
 
 These functions perform word segmentation and pronunciation quering and thus require the use of a dictionary.
 
-### Word level (single string)
+### Word level (ordinarily written)
 
 #### `ch2rm.chinese_word_to_phonetic(word: str, dict_: ctl_dict.CtlDict) -> ctl_dict.DictPronounCandList`
 
-Return a list of the possible phonetic notations of `word` in the dictionary `dict_`
+Return a list of the possible phonetic notations of the ordinarily written `word` in the dictionary `dict_`
 
-### Sentence level (single string)
+### Sentence level (ordinarily written)
 
 #### `ch2rm.chinese_to_roman(sentence: str, dict_: ctl_dict.CtlDict, dialects: Lang = ch2rm.lang()) -> List[CtlWord]`
 
-Segment the `sentence` into words, and then convert the result into a CTL *sentence* in the pair form
+Segment the ordinarily written `sentence` into words, and then convert the result into a pair-form CTL sentence
 
 ## Phonetic Notation Conversion Functions
 
@@ -241,46 +263,57 @@ These functions only perform conversions between phonetic notations and thus do 
 
 #### `phonetic.*.*_syllable_to_ipa(syll: Str, dialect: Optional[str] = ?, variant: Optional[str] = ?) -> IpaPair`
 
-Convert a syllable string `syll` written in `*` phonetic notation system into an IPA pair
+Convert a syllable string `syll` written in the phonetic notation system `*` into an IPA pair
 
 *E.g.*,
 
 * `phonetic.tl.tl_syllable_to_ipa(tl_: Str, dialect: Optional[str] = 'chiang', variant: Optional[str] = 'southern') -> phonetic.IpaPair`
-    * Convert a Taiwanese Hokkien syllable in TL `syll` into an IPA pair
+    * Convert a Taiwanese Hokkien syllable written in TL `syll` into an IPA pair
 * `phonetic.zhuyin.zhuyin_syllable_to_ipa(zhuyin: Str, dialect: Optional[str] = None, variant: Optional[str] = None) -> IpaPair`
-    * Convert a Standard Mandarin syllable in Zhuyin/Bopomofo `zhuyin` into an IPA pair
+    * Convert a Standard Mandarin syllable written in Zhuyin/Bopomofo `zhuyin` into an IPA pair
 
 ### Syllable level (pair form)
 
 #### `phonetic.common_tl.ipa_pair_to_tl_pair(ipa_pair: IpaPair, dialect: Optional[str] = None, variant: Optional[str] = 'southern') -> CtlPair`
 
-Convert an IPA pair into a CTL syllable in the pair form
+Convert an IPA pair into a CTL pair
 
-### Word level (list of syllables)
+### Word level
     
 #### `ch2rm.phonetic_word_to_ipa(phonetic_word: PhoneticSylList, dialects: Lang = ch2rm.lang(), phonetic: Optional[Type[ctl_dict._Phonetic]] = None) -> IpaWord`
 
-Convert a list of syllable strings into a list of IPA pairs
+Convert a string-form phonetic word into a pair-form IPA word
 
 The phonetic notation system of each syllable is specified by its type (one of the subclasses of `_Phonetic`) or `phonetic` if its type is `str`.
 
 #### `ch2rm.ipa_pair_to_tl(ipa_pair: IpaWord, *args, **kwargs) -> CtlWord`
 
-Convert a list of IPA pairs into a list of CTL initial-final pairs
+Convert a pair-form IPA word into a pair-form CTL word
 
-Its arguments are forwarded to `phonetic.common_tl.ipa_pair_to_tl_pair()`.
+Its non-positional arguments are forwarded to `phonetic.common_tl.ipa_pair_to_tl_pair()`.
 
 #### `ch2rm.phonetic_word_to_tl(phonetic_word: PhoneticSylList, dialects: Lang = ch2rm.lang(), phonetic: Optional[Type[ctl_dict._Phonetic]] = None) -> CtlWord`
 
-Convert a list of syllable strings into a list of CTL initial-final pairs
+Convert a string-form word into a pair-form CTL word
 
-This function is the combination of the above two functions.
+This function is the combination of the previous two functions.
 
-### Sentence level (single string)
+### Sentence level (phonetic string)
 
 #### `ch2rm.phonetic_to_tl(sentence: str, dialects: Lang = ch2rm.lang(), phonetic: Type[ctl_dict._Phonetic] = ctl_dict.TL) -> List[CtlWord]`
 
-Segment the TL-like phonetic `sentence` into words, and then convert the result into a CTL *sentence* in the pair form
+Segment the TL-like phonetic `sentence` into words, and then convert the result into a pair-form CTL sentence
+
+## Comparison of Conversion Functions
+
+To→ <br> From↓ | Phonetic \* <br> (string-form) | IPA \* <br> (pair-form) | CTL \* <br> (pair-form)
+--- |:---:|:---:|:---:
+Ordinarily written | <br> `chinese_word_to_phonetic()` | `chinese_to_roman()` <br> &nbsp;
+Phonetic string | | | `phonetic_to_tl()` <br> &nbsp;
+Phonetic \* <br> (string-form) | | <br> `phonetic_word_to_ipa()` <br> `*_syllable_to_ipa()` | <br> `phonetic_word_to_tl()` <br> &nbsp;
+IPA \* <br> (pair-form) | | | <br> `ipa_pair_to_tl()` <br> `ipa_pair_to_tl_pair()`
+
+Note that there are no conversion functions which directly convert texts from a level (sentence/word/syllable) to another.
 
 ## Word Segmentation Functions
 
@@ -290,7 +323,7 @@ These functions require the use of a dictionary.
 
 #### `ctl_segment.split_chinese_word(sentence: str, dict_: ctl_dict.CtlDict) -> List[str]`
 
-Segment the `sentence` into words. Currently, the forward maximum matching algorithm is used.
+Segment the ordinarily written `sentence` into words. Currently, the forward maximum matching algorithm is used.
 
 Before the segmentation, the spaces within `sentence` are reduced to 1 space between TL-like words and removed otherwise.
 
@@ -308,6 +341,8 @@ A backup file whose path is `_bk` suffixed to the original `path` is created.
 
 Perform word segmentation for the first line of all `.trn` files under `path` and its all (direct or indirect) sub-directories in-place
 
+It calls `ctl_segment.split_file()` and thus also creates backup files.
+
 ## Dictionary Functions
 
 These functions are used to create a `CtlDict` object.
@@ -318,7 +353,7 @@ These functions are used to create a `CtlDict` object.
 
 Create a dictionary using the given dictionary text file specification
 
-A `ctl_dict.DictSrc` is created internally.
+A `ctl_dict.DictSrc` object is created internally.
 
 ### Dictionary Builder Methods
 
@@ -326,7 +361,7 @@ These are methods of the class `ctl_dict.DictSrc`.
 
 #### `DictSrc.add_dict_src(self, path: str, format_: Format)`
 
-Add the given dictionary text files with given format specifications into the dictionary text file specification
+Add the given dictionary text file with given format specification into the dictionary text file specification
 
 #### `DictSrc.reset_dict_src(self)`
 
@@ -338,6 +373,4 @@ Specify the dictionary text file specification
 
 #### `DictSrc.create_dict(self, reprocess: bool = False, recreate_dump: bool = False) -> CtlDict`
 
-Create a dictionary and dump it. By default, a dumped `CtlDict` with the same dictionary text file specification is loaded if exists.
-
-
+Create a dictionary. All the specified dictionary text files are separately loaded and dumped and then combined in-order and dumped again. By default, the already dumped data are loaded if exist.
