@@ -173,7 +173,7 @@ Pair form <br> (\* of pair(s)) | Pair-form sentence (list of …) | Pair-form wo
 
 Note that:
 
-* There are no ordinarily written syllable text. One-syllable texts are treated as one-word text.
+* There are no ordinarily written syllable texts. One-syllable texts are treated as one-word text.
 * There are no lists of phonetic word strings. However, a list of ordinarily written word texts can result from word segmentation.
 
 ### Terms/Concepts about the Dictionary
