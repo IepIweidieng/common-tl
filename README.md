@@ -33,11 +33,11 @@ Punctuation and capitalization are ignored.
 thai3-khoong1 piong5-iu2 dlin2 ho2 dlin2 tsciah8-pa2 be7 u7-iong5 to7-dlai5 gun2-tscia1 tse7-ooh0
 ```
 
-### Convert a *string-form sentence* in Bopomofo (Zhuyin) and TL into IPA or Common TL 
+### Convert a *string-form sentence* in Bopomofo (Zhuyin) and TL into IPA or Common TL
 
 *String-form sentence* means a Python list of *string-form word*s. A *string-form word* is a Python list of a *phonetic syllable*. (Explained below)
 
-Preprocedure:
+Custom function definitions:
 
 ```python3
 import ch2rm
@@ -84,9 +84,9 @@ Currently applicable Chinese languages and dialects:
 The commonly used phonetic notations used by these languages and dialects can be converted into CTL and then be converted back without losing any information other than the following:
 
 * The citation tone of neutral tone syllables is lost for TL.
-* TL o vs. oo for variants of Taiwanese Hokkien where TL o is pronunced as [o] if the Southern transcription variant of CTL is used.
+* TL o vs. oo for variants of Taiwanese Hokkien where TL o is pronounced as [o] if the Southern transcription variant of CTL is used.
 
-The strict form of CTL can also spells out non-phonemic features so that every grapheme at the same position within a syllble represents the same range of speech sound among all applicable language and dialects. This is the form used by this project.
+The strict form of CTL can also spells out non-phonemic features so that every grapheme at the same position within a syllable represents the same range of speech sound among all applicable language and dialects. This is the form used by this project.
 
 CTL has two transcription variants as listed in the following table:
 
@@ -202,7 +202,7 @@ Each line in the file should be separated into $n$ fields by $n - 1$ tabs and sh
 
 typing hint: `ctl_dict.Format`
 
-A tuple of *dictinionary format token*s used for specifying the fields of a dictionary text file.
+A tuple of *dictionary format token*s used for specifying the fields of a dictionary text file.
 
 #### *Dictionary format token*
 
@@ -241,7 +241,7 @@ Dictionary text file specification | `SrcSpec` | `Union[List[SrcItem], SrcItem]`
 
 ## Text Conversion Functions
 
-These functions perform word segmentation and pronunciation quering and thus require the use of a dictionary.
+These functions perform word segmentation and pronunciation querying and thus require the use of a dictionary.
 
 ### Word level (ordinarily written)
 
@@ -279,7 +279,7 @@ Convert a syllable string `syll` written in the phonetic notation system `*` int
 Convert an IPA pair into a CTL pair
 
 ### Word level
-    
+
 #### `ch2rm.phonetic_word_to_ipa(phonetic_word: PhoneticSylList, dialects: Lang = ch2rm.lang(), phonetic: Optional[Type[ctl_dict._Phonetic]] = None) -> IpaWord`
 
 Convert a string-form phonetic word into a pair-form IPA word
