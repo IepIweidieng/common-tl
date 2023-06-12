@@ -8,7 +8,7 @@
 
 ### Convert a sentence written in Chinese characters to Common TL
 
-A dictionary composed of tab-separated values is required.
+A dictionary composed of tab-separated values is required, see [Dictionary Preparation](#Dictionary-Preparation).
 
 ```python-repl
 >>> import ch2rm, ctl_dict
@@ -241,7 +241,7 @@ Dictionary text file specification | `SrcSpec` | `Union[List[SrcItem], SrcItem]`
 
 ## Text Conversion Functions
 
-These functions perform word segmentation and pronunciation querying and thus require the use of a dictionary.
+These functions perform word segmentation and pronunciation querying and thus require the use of a dictionary, see [Dictionary Preparation](#Dictionary-Preparation).
 
 ### Word level (ordinarily written)
 
@@ -317,7 +317,7 @@ Note that there are no conversion functions which directly convert texts from a 
 
 ## Word Segmentation Functions
 
-These functions require the use of a dictionary.
+These functions require the use of a dictionary, see [Dictionary Preparation](#Dictionary-Preparation).
 
 ### String level
 
@@ -374,3 +374,34 @@ Specify the dictionary text file specification
 #### `DictSrc.create_dict(self, reprocess: bool = False, recreate_dump: bool = False) -> CtlDict`
 
 Create a dictionary. All the specified dictionary text files are separately loaded and dumped and then combined in-order and dumped again. By default, the already dumped data are loaded if exist.
+
+## Dictionary Preparation
+
+A dictionary is required only when text segmentation or pronunciation querying is needed.
+
+The dictionary text files under `dict_example/` are minimal examples which merely sufficient to demonstrate these functionalities.
+
+For practical use, it is viable to use the dictionary data from the online dictionaries compiled by the Ministry of Education of Taiwan. The already released dictionary data should be used.
+
+### Get Released Dictionary Data
+
+Among these online dictionaries, the following ones are recommended to use and their released data are available:
+
+* *臺灣閩南語常用詞辭典* (*Dictionary of Frequently-Used Taiwan Minnan*). Ministry of Education.
+    * Dictionary data: Currently officially not available.
+    * Unofficial past release: https://github.com/g0v/moedict-data-twblg/blob/master/uni/詞目總檔.csv (comma-separated values)
+* *國語辭典簡編本* (*Concised Mandarin Chinese Dictionary*). Ministry of Education.
+    * Dictionary data:  https://language.moe.gov.tw/001/Upload/Files/site_content/M0001/respub/dict_concised_download.html
+    * Filename: `dict_concised_2014_20220627.zip` (`.xlsx`; Excel Spreadsheet XML)
+* *臺灣客家語常用詞辭典* (*Dictionary of Frequently-Used Taiwan Hakka*) Ministry of Education.
+    * Dictionary data: No official permanent links available.
+    * Please go to <https://hakkadict.moe.edu.tw/cgi-bin/gs32/gsweb.cgi/ccd=HSJwxI/newsearch> and then refer to the post *提供《臺灣客家語常用詞辭典》文字內容資料下載* (*The text data of «Dictionary of Frequently-Used Taiwan Hakka» has been made available for download*) 
+    * Format: `.ods` (OpenDocument Spreadsheet)
+
+### Convert Dictionary Data
+
+To allow these dictionary data files to be read into a `CtlDict` object, these files should be converted into tab-separated values.
+
+There are many tools available for such conversion. which are not covered here.
+
+The converted dictionary text files should be able to be loaded into a `CtlDict` object by using suitable dictionary text file specifications.
