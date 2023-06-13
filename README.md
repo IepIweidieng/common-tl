@@ -308,12 +308,42 @@ Segment the TL-like phonetic `sentence` into words, and then convert the result 
 
 To→ <br> From↓ | Phonetic \* <br> (string-form) | IPA \* <br> (pair-form) | CTL \* <br> (pair-form)
 --- |:---:|:---:|:---:
-Ordinarily written | <br> `chinese_word_to_phonetic()` | `chinese_to_roman()` <br> &nbsp;
+Ordinarily written | <br> (`chinese_word_to_phonetic()`) | `chinese_to_roman()` <br> &nbsp;
 Phonetic string | | | `phonetic_to_tl()` <br> &nbsp;
 Phonetic \* <br> (string-form) | | <br> `phonetic_word_to_ipa()` <br> `*_syllable_to_ipa()` | <br> `phonetic_word_to_tl()` <br> &nbsp;
 IPA \* <br> (pair-form) | | | <br> `ipa_pair_to_tl()` <br> `ipa_pair_to_tl_pair()`
 
-Note that there are no conversion functions which directly convert texts from a level (sentence/word/syllable) to another.
+Note that:
+
+* `chinese_word_to_phonetic()` returns a list of string-form words, which resembles a string-form sentence but every syllable is ensured to be of a subtype of `_Phonetic`. The return value is treated as in the word level and has the typing hint `ctl_dict.DictPronounCandList`.
+* There are no other conversion functions which directly convert texts from a level (sentence/word/syllable) to another.
+
+### Dialect-specifying arguments
+
+Except for `chinese_word_to_phonetic()`, all sentence-level and word-level conversion functions accept an optional argument `dialects` (typing hint: `Lang`) for specifying the (sub-)dialect for each applicable language/dialect. Its default value is equivalent to:
+
+```python3
+ch2rm.lang(
+    hokkien=ch2rm.lang_opt(dialect='chiang', variant='southern'),
+    mandarin=ch2rm.lang_opt(dialect=None, variant=None),
+    hakka=ch2rm.lang_opt(dialect='sixian', variant=None),
+    common_tl=ch2rm.lang_opt(dialect=None, variant='southern'))
+```
+
+All arguments of `ch2rm.lang()` and `ch2rm.lang_opt()` are optional. All arguments of `ch2rm.lang_opt()` can be positional.
+
+Expected combinations of arguments to `ch2rm.lang()` are listed in the following table:
+
+Keyword | Language/Dialect | `(dialect, variant)` | Valid `*`
+--- | --- | --- | ---
+`hokkien` | Taiwanese Hokkien | `('chiang', *)` <br> `('choan', *)` | `'southern'` <br> `'northern'`
+`mandarin` | Standard Mandarin | `(None, None)` |
+`hakka` | Taiwanese Hakka | `('sixian', None)` <br> `('hailu', None)` <br> `('dabu', None)` <br> `('raoping', 'hsinchu')` <br> `('raoping', 'zhuolan')` <br> `('zhao_an', None)` <br> `('southern_sixian', None)` |
+`common_tl` | (For choosing CTL variant) | `(None, *)` | `'southern'` <br> `'northern'`
+
+For choosing CTL variant, if the argument `common_tl` is omitted, the argument `hokkien` is used if provided.
+
+For syllable-level conversion functions, the arguments `dialect` and `variant`  can be used for specifying the (sub-)dialect. See the above table for expected combinations of `dialect` and `variant`.
 
 ## Word Segmentation Functions
 
