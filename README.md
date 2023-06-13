@@ -308,7 +308,7 @@ Segment the TL-like phonetic `sentence` into words, and then convert the result 
 
 To→ <br> From↓ | Phonetic \* <br> (string-form) | IPA \* <br> (pair-form) | CTL \* <br> (pair-form)
 --- |:---:|:---:|:---:
-Ordinarily written | <br> (`chinese_word_to_phonetic()`) | `chinese_to_roman()` <br> &nbsp;
+Ordinarily written | <br> (`chinese_word_to_phonetic()`) | | `chinese_to_roman()` <br> &nbsp;
 Phonetic string | | | `phonetic_to_tl()` <br> &nbsp;
 Phonetic \* <br> (string-form) | | <br> `phonetic_word_to_ipa()` <br> `*_syllable_to_ipa()` | <br> `phonetic_word_to_tl()` <br> &nbsp;
 IPA \* <br> (pair-form) | | | <br> `ipa_pair_to_tl()` <br> `ipa_pair_to_tl_pair()`
